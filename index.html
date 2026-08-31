@@ -248,6 +248,93 @@ button{cursor:pointer;border:none;background:none}
   font-size:11.5px;color:var(--faint);font-family:"IBM Plex Mono",monospace;
   padding:6px 0 0;margin:0;text-align:center;
 }
+.ex-swap{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);border:1px solid var(--line);
+  border-radius:5px;padding:3px 6px;white-space:nowrap;
+}
+.ex-swap:active{background:var(--surface-2)}
+.ex-swapped .ex-name{color:var(--accent)}
+.target{
+  display:flex;align-items:baseline;gap:7px;padding:0 13px 9px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;
+}
+.target b{
+  color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums;
+  background:var(--accent-soft);padding:2px 7px;border-radius:5px;
+}
+.target span{color:var(--faint);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+
+.notes{
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:12px 13px;margin:14px 0 4px;box-shadow:var(--shadow);
+}
+.notes label{
+  display:block;font-family:"IBM Plex Mono",monospace;font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:7px;
+}
+.notes textarea{
+  width:100%;min-height:64px;resize:vertical;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:8px;padding:9px;
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:14px;line-height:1.4;
+}
+.notes textarea:focus{border-color:var(--accent);background:var(--surface)}
+.hist-notes{
+  font-size:12.5px;color:var(--muted);font-style:italic;padding:7px 0 0;
+  margin:6px 0 0;border-top:1px dashed var(--line);
+}
+.hist-top button{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--faint);padding:3px 6px;border-radius:5px;
+  border:1px solid var(--line);
+}
+.hist-open{cursor:pointer}
+.hist-open:active{background:var(--surface-2)}
+
+.sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end}
+.sheet-back{position:absolute;inset:0;background:rgba(10,13,15,.55)}
+.sheet-panel{
+  position:relative;width:100%;max-height:80vh;background:var(--surface);
+  border-radius:16px 16px 0 0;border-top:1px solid var(--line);
+  display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.sheet-head{
+  display:flex;align-items:center;gap:10px;padding:14px 16px 10px;
+  border-bottom:1px solid var(--line);
+}
+.sheet-head b{
+  flex:1;font-family:Archivo,system-ui,sans-serif;font-size:15px;font-weight:700;
+  letter-spacing:-.015em;
+}
+.sheet-head button{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);padding:6px 8px;
+}
+.sheet-body{overflow-y:auto;padding:8px 10px 16px;-webkit-overflow-scrolling:touch}
+.sheet-group{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);padding:12px 6px 6px;
+}
+.sheet-item{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  padding:11px 8px;border-radius:8px;font-size:14.5px;
+}
+.sheet-item:active{background:var(--surface-2)}
+.sheet-item em{
+  font-style:normal;margin-left:auto;font-family:"IBM Plex Mono",monospace;
+  font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;
+}
+.sheet-item.current{color:var(--accent)}
+.sheet-custom{display:flex;gap:7px;padding:8px 8px 4px}
+.sheet-custom input{
+  flex:1;min-height:42px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:8px;padding:0 10px;font-size:15px;
+}
+.sheet-custom button{
+  background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:0 15px;
+  font-family:Archivo,sans-serif;font-weight:600;font-size:14px;
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -265,6 +352,14 @@ button{cursor:pointer;border:none;background:none}
 </header>
 
 <main class="wrap" id="main"></main>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-back" id="sheetback"></div>
+  <div class="sheet-panel">
+    <div class="sheet-head"><b id="sheettitle">Swap exercise</b><button id="sheetclose">Close</button></div>
+    <div class="sheet-body" id="sheetbody"></div>
+  </div>
+</div>
 
 <div class="savebar">
   <div class="savebar-in">
@@ -444,6 +539,30 @@ const DAYS = {
 };
 const DAY_KEYS = ["chest","legs","arms"];
 const LEGACY_DAYS = {mon:"chest", wed:"legs", fri:"arms"};
+const CUSTOM_KEY = "overload.custom.v1";
+
+const PATTERNS = {
+  "Horizontal press":["flat_db_press","incline_db_press","squeeze_press","pushup_burnout","feet_elev_pushup","diamond_pushup","close_grip_press"],
+  "Chest isolation":["db_fly","incline_db_fly","cable_crossover","db_pullover"],
+  "Vertical pull":["pullup","chinup","wide_pullup","lat_pulldown"],
+  "Horizontal pull":["cs_db_row","single_arm_row","seated_row","renegade_row","inverted_row"],
+  "Squat pattern":["goblet_squat","bulgarian","walking_lunge","db_front_squat","db_step_up","reverse_lunge","sumo_squat","lateral_lunge"],
+  "Hip hinge":["db_rdl","single_leg_rdl","db_good_morning","stiff_leg_dl","glute_bridge","hip_thrust","leg_curl"],
+  "Calves":["standing_calf","seated_calf","single_leg_calf"],
+  "Vertical press":["seated_db_press","standing_ohp","arnold_press","push_press"],
+  "Lateral delts":["lateral_raise","seated_lateral_raise","ez_upright_row"],
+  "Rear delts":["rear_delt_fly","face_pull","rear_delt_raise"],
+  "Biceps":["ez_curl","hammer_curl","cable_curl","incline_curl","concentration_curl","ez_21s","cross_hammer_curl"],
+  "Triceps":["ez_skullcrusher","oh_tri_ext","bench_dip","ez_oh_ext","tri_kickback"],
+  "Traps":["db_shrug"],
+  "Core flexion":["hanging_knee_raise","hanging_leg_raise","bicycle_crunch","reverse_crunch","decline_situp","flutter_kicks","v_up","toes_to_bar","cable_crunch","weighted_leg_raise","hanging_knee_twist","oblique_knee_raise"],
+  "Core bracing":["plank","side_plank","dead_bug","hollow_hold","shoulder_taps","ab_wheel","bird_dog","copenhagen","hollow_rock","side_plank_reach","weighted_dead_bug","plank_up_down","mountain_climber"],
+  "Core rotation":["russian_twist","woodchop","pallof_press","db_side_bend"],
+  "Carries":["suitcase_carry","farmer_carry"]
+};
+
+const PATTERN_OF = {};
+for(const p in PATTERNS) PATTERNS[p].forEach(id => { PATTERN_OF[id] = p; });
 const BLOCKS = ["A","B","C"];
 const LS_KEY = "overload.v1";
 const LEGACY_LS_KEY = "ironledger.v1";
@@ -451,7 +570,8 @@ const LEGACY_LS_KEY = "ironledger.v1";
 let db = null;
 let sessions = {};
 let view = "log";
-let current = {date:null, day:null, block:null, blockIndex:0, entries:{}};
+let current = {date:null, day:null, block:null, blockIndex:0, entries:{}, swaps:{}, notes:""};
+let customNames = {};
 let saveTimer = null;
 let retryTimer = null;
 let retryDelay = 0;
@@ -545,6 +665,14 @@ function loggedCount(session){
   return n;
 }
 
+function deleteSession(date){
+  delete sessions[date];
+  writeLocal();
+  if(db) db.doc("sessions/" + date).delete().catch(() => {});
+  if(date === current.date) loadDate(current.date);
+  else render();
+}
+
 function sessionVolume(session, block, day){
   const plan = PROGRAM[block] && PROGRAM[block][day];
   const byId = {};
@@ -613,25 +741,114 @@ function renderLog(main){
   legend.innerHTML = `<span>all weights in lb</span><span>grey = last time</span><span>▲ beat it</span><span>= matched</span>`;
   main.appendChild(legend);
 
-  w.ex.forEach((ex, i) => main.appendChild(exerciseCard(ex, i + 1)));
+  w.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot), i + 1, slot)));
 
   if(w.core){
     const label = document.createElement("p");
     label.className = "section-label";
     label.textContent = "Core finisher · 3 supersets, 2 rounds each";
     main.appendChild(label);
-    w.core.forEach((pair, i) => main.appendChild(corePairCard(pair, i)));
+    w.core.forEach((pair, i) => main.appendChild(corePairCard(pair.map(resolveSlot), i, pair)));
   }
+
+  main.appendChild(notesCard());
 }
 
-function exerciseCard(ex, num){
+function notesCard(){
+  const box = document.createElement("div");
+  box.className = "notes";
+  const label = document.createElement("label");
+  label.textContent = "Session notes";
+  label.setAttribute("for", "notes");
+  const area = document.createElement("textarea");
+  area.id = "notes";
+  area.value = current.notes || "";
+  area.placeholder = "How it felt, what was occupied, anything worth remembering next cycle.";
+  area.addEventListener("change", () => { current.notes = area.value; queueSave(); });
+  area.addEventListener("blur", () => { current.notes = area.value; queueSave(); });
+  box.append(label, area);
+  return box;
+}
+
+function openSwapSheet(slot){
+  const sheet = $("sheet");
+  const body = $("sheetbody");
+  $("sheettitle").textContent = "Instead of " + slot.n;
+  body.innerHTML = "";
+
+  const pattern = PATTERN_OF[slot.id];
+  const pick = id => { swapTo(slot, id); closeSheet(); };
+
+  const addGroup = text => {
+    const h = document.createElement("p");
+    h.className = "sheet-group";
+    h.textContent = text;
+    body.appendChild(h);
+  };
+
+  const addItem = (id, name) => {
+    const btn = document.createElement("button");
+    btn.className = "sheet-item" + (id === slot.id ? " current" : "");
+    const last = priorSets(id, current.date);
+    const done = last ? last.sets.filter(v => v && v.r).length : 0;
+    btn.innerHTML = `<span>${name}</span>${done ? `<em>${last.date.slice(5)}</em>` : ""}`;
+    btn.addEventListener("click", () => pick(id));
+    body.appendChild(btn);
+  };
+
+  if(pattern){
+    addGroup("Same movement · " + pattern);
+    PATTERNS[pattern].forEach(id => addItem(id, exerciseName(id)));
+  }
+
+  addGroup("Type your own");
+  const row = document.createElement("div");
+  row.className = "sheet-custom";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = "Exercise name";
+  const go = document.createElement("button");
+  go.textContent = "Use";
+  const useCustom = () => {
+    const name = input.value.trim();
+    if(!name) return;
+    const id = "custom_" + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    customNames[id] = name;
+    writeCustom();
+    pick(id);
+  };
+  go.addEventListener("click", useCustom);
+  input.addEventListener("keydown", e => { if(e.key === "Enter") useCustom(); });
+  row.append(input, go);
+  body.appendChild(row);
+
+  addGroup("Everything else");
+  Object.keys(PATTERNS).filter(p => p !== pattern).forEach(p => {
+    addGroup(p);
+    PATTERNS[p].forEach(id => addItem(id, exerciseName(id)));
+  });
+
+  sheet.hidden = false;
+  body.scrollTop = 0;
+}
+
+function swapTo(slot, id){
+  if(id === slot.id) delete current.swaps[slot.id];
+  else current.swaps[slot.id] = id;
+  queueSave();
+  render();
+}
+
+function closeSheet(){ $("sheet").hidden = true; }
+
+function exerciseCard(ex, num, slot){
   const card = document.createElement("section");
   card.className = "ex";
-  fillCard(card, ex, num);
+  fillCard(card, ex, num, slot);
   return card;
 }
 
-function corePairCard(pair, index){
+function corePairCard(pair, index, slots){
   const card = document.createElement("section");
   card.className = "ex core";
   const badge = document.createElement("div");
@@ -640,12 +857,13 @@ function corePairCard(pair, index){
   card.appendChild(badge);
   pair.forEach((ex, i) => {
     if(i) card.appendChild(Object.assign(document.createElement("div"), {className:"rule"}));
-    fillCard(card, ex);
+    fillCard(card, ex, null, slots[i]);
   });
   return card;
 }
 
-function fillCard(card, ex, num){
+function fillCard(card, ex, num, slot){
+  slot = slot || ex;
   const prior = priorSets(ex.id, current.date);
   const unit = ex.unit === "sec" ? "sec" : "reps";
   const suffix = ex.unit === "sec" ? "s" : "";
@@ -654,7 +872,24 @@ function fillCard(card, ex, num){
   head.className = "ex-head";
   const badge = num ? `<span class="ex-num">${String(num).padStart(2, "0")}</span>` : "";
   head.innerHTML = `${badge}<h3 class="ex-name">${ex.n}</h3><span class="ex-target">${ex.s} × ${ex.r}${suffix} · ${ex.rest}s</span>`;
+  const swapBtn = document.createElement("button");
+  swapBtn.className = "ex-swap";
+  swapBtn.textContent = ex.swappedFrom ? "undo" : "swap";
+  swapBtn.addEventListener("click", () => {
+    if(ex.swappedFrom){ delete current.swaps[ex.swappedFrom]; queueSave(); render(); }
+    else openSwapSheet(slot);
+  });
+  head.appendChild(swapBtn);
+  if(ex.swappedFrom) card.classList.add("ex-swapped");
   card.appendChild(head);
+
+  const target = suggestTarget(ex, prior);
+  if(target){
+    const row = document.createElement("div");
+    row.className = "target";
+    row.innerHTML = `<span>go for</span><b>${target.label}</b><span>${target.why}</span>`;
+    card.appendChild(row);
+  }
 
   if(ex.cue){
     const cue = document.createElement("p");
@@ -764,27 +999,52 @@ function renderHistory(main){
     const plan = PROGRAM[s.block] && PROGRAM[s.block][s.day];
     if(!plan) return;
     const card = document.createElement("div");
-    card.className = "hist-day";
+    card.className = "hist-day hist-open";
+    card.title = "Open this session to fix it";
+    card.addEventListener("click", () => {
+      loadDate(d);
+      view = "log";
+      render();
+      window.scrollTo(0, 0);
+    });
     const vol = sessionVolume(s, s.block, s.day);
     card.innerHTML = `<div class="hist-top">
         <h3>${plan.focus}</h3>
         <span class="chip">${d}</span>
         <span class="chip live">${s.block}</span>
       </div>`;
+    const del = document.createElement("button");
+    del.textContent = "delete";
+    del.addEventListener("click", e => {
+      e.stopPropagation();
+      if(del.dataset.armed){ deleteSession(d); return; }
+      del.dataset.armed = "1";
+      del.textContent = "sure?";
+      setTimeout(() => { delete del.dataset.armed; del.textContent = "delete"; }, 4000);
+    });
+    card.querySelector(".hist-top").appendChild(del);
     allExercises(plan).forEach(ex => {
-      const sets = (s.entries || {})[ex.id];
+      const swapped = s.swaps && s.swaps[ex.id];
+      const id = swapped || ex.id;
+      const sets = (s.entries || {})[id];
       if(!sets || !sets.some(v => v && v.r)) return;
       const line = document.createElement("div");
       line.className = "hist-line";
       const suffix = ex.unit === "sec" ? "s" : "";
       const txt = sets.filter(v => v && v.r).map(v => v.w ? `${v.w}×${v.r}${suffix}` : `${v.r}${suffix}`).join(" · ");
-      line.innerHTML = `<span>${ex.core ? "◦ " : ""}${ex.n}</span><b>${txt}</b>`;
+      line.innerHTML = `<span>${ex.core ? "◦ " : ""}${swapped ? exerciseName(id) : ex.n}</span><b>${txt}</b>`;
       card.appendChild(line);
     });
     const foot = document.createElement("div");
     foot.className = "hist-line";
     foot.innerHTML = `<span style="color:var(--faint)">volume</span><b>${vol.toLocaleString()} lb</b>`;
     card.appendChild(foot);
+    if(s.notes){
+      const note = document.createElement("p");
+      note.className = "hist-notes";
+      note.textContent = s.notes;
+      card.appendChild(note);
+    }
     main.appendChild(card);
   });
 
@@ -926,6 +1186,55 @@ function sparkline(vals){
   return svg;
 }
 
+function readCustom(){
+  try{ return JSON.parse(localStorage.getItem(CUSTOM_KEY) || "{}"); }catch(e){ return {}; }
+}
+
+function writeCustom(){
+  try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(customNames)); }catch(e){}
+}
+
+function exerciseName(id){
+  const known = findExercise(id);
+  return known ? known.n : (customNames[id] || id);
+}
+
+function resolveSlot(slot){
+  const subId = current.swaps[slot.id];
+  if(!subId || subId === slot.id) return slot;
+  const known = findExercise(subId);
+  return Object.assign({}, slot, {
+    id: subId,
+    n: exerciseName(subId),
+    cue: known ? known.cue : "",
+    bw: known ? known.bw : slot.bw,
+    unit: known ? known.unit : slot.unit,
+    swappedFrom: slot.id
+  });
+}
+
+function repRange(r){
+  const span = /(\d+)\s*-\s*(\d+)/.exec(r);
+  if(span) return {min:+span[1], max:+span[2]};
+  const one = /^(\d+)/.exec(r);
+  return one ? {min:+one[1], max:+one[1]} : null;
+}
+
+function suggestTarget(ex, prior){
+  if(!prior) return null;
+  const sets = prior.sets.filter(v => v && v.r);
+  if(!sets.length) return null;
+  const top = sets.reduce((a, b) => score(b, ex.bw) > score(a, ex.bw) ? b : a);
+  const topR = num(top.r), topW = num(top.w);
+  const unit = ex.unit === "sec" ? "s" : "";
+  if(!topW) return {label:`${topR + 1}${unit || " reps"}`, why:"add a rep"};
+  const range = repRange(ex.r);
+  if(!range) return {label:`${topW}×${topR + 1}${unit}`, why:"add a rep"};
+  const allTopped = sets.length >= 2 && sets.every(v => num(v.r) >= range.max);
+  if(allTopped || topR > range.max) return {label:`${topW + 5}×${range.min}${unit}`, why:"add weight"};
+  return {label:`${topW}×${Math.min(topR + 1, range.max)}${unit}`, why:"add a rep"};
+}
+
 function findExercise(id){
   for(const b of BLOCKS) for(const d of DAY_KEYS){
     const hit = allExercises(PROGRAM[b][d]).find(e => e.id === id);
@@ -977,7 +1286,10 @@ function cleanEntries(entries){
 }
 
 function snapshot(){
-  return {date:current.date, day:current.day, block:current.block, blockIndex:current.blockIndex, entries:cleanEntries(current.entries)};
+  const snap = {date:current.date, day:current.day, block:current.block, blockIndex:current.blockIndex, entries:cleanEntries(current.entries)};
+  if(current.notes && current.notes.trim()) snap.notes = current.notes.trim();
+  if(Object.keys(current.swaps).length) snap.swaps = Object.assign({}, current.swaps);
+  return snap;
 }
 
 function setStatus(text, busy){
@@ -1057,6 +1369,8 @@ function loadDate(dateStr){
     current.day = nextSessionIn(current.blockIndex);
   }
   current.entries = {};
+  current.swaps = saved && saved.swaps ? Object.assign({}, saved.swaps) : {};
+  current.notes = (saved && saved.notes) || "";
   if(saved && saved.entries) for(const k in saved.entries) current.entries[k] = saved.entries[k].map(s => ({w:s.w||"", r:s.r||""}));
   render();
 }
@@ -1090,6 +1404,9 @@ function tickTimer(){
 }
 
 $("timer").addEventListener("click", () => { timerState.end ? stopTimer() : startTimer(timerState.default); });
+$("sheetclose").addEventListener("click", closeSheet);
+$("sheetback").addEventListener("click", closeSheet);
+document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
 $("tabs").addEventListener("click", e => {
   const t = e.target.closest(".tab");
   if(!t) return;
@@ -1097,6 +1414,7 @@ $("tabs").addEventListener("click", e => {
   render();
 });
 
+customNames = readCustom();
 sessions = readLocal();
 loadDate(iso(new Date()));
 

@@ -29,6 +29,14 @@ Type weight and reps into each set. The greyed-out placeholder is what you did t
 
 Because of the A/B/C rotation, "last time" for most lifts is a full cycle ago. Lifts that appear in more than one week come back sooner.
 
+**Swap any exercise** with the `swap` button on its card. You get moves that train the same pattern first, then everything else in the program, then a free-text box for anything not in it. A swap applies to that session only; the next cycle prescribes the original again. History follows the movement, not the slot, so a substitute is compared against the last time you did *that* move.
+
+**The target line** on each card reads `GO FOR 50×8 · ADD WEIGHT`. It suggests more weight once you have topped the prescribed rep range on every set, and one more rep otherwise.
+
+**Session notes** at the bottom of the log. They show on the History tab.
+
+**Fixing a mistake**: tap any card on the History tab to open that session in the Log tab, where every field is editable. `delete` on a history card removes the session; it asks once before it does.
+
 **Rest timer** starts itself when you enter reps and picks its own length: 120s between sets of the day's first two heavy compounds, 60s between sets of everything else, 90s moving to the next exercise, 15s between the two moves in a superset, 45s between superset rounds.
 
 The session buttons mark which of the three you have already logged in the current week. **Tabs** — Log is the working screen. History lists past sessions with per-exercise numbers and total volume. Progress charts estimated 1RM per lift over time.
