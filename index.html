@@ -109,6 +109,10 @@ button{cursor:pointer;border:none;background:none}
   margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow);
 }
 .ex-head{display:flex;align-items:baseline;gap:8px;padding:12px 13px 9px}
+.ex-num{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;
+  color:var(--accent);letter-spacing:.04em;font-variant-numeric:tabular-nums;
+}
 .ex-name{
   font-family:Archivo,system-ui,sans-serif;font-weight:600;font-size:15.5px;
   letter-spacing:-.012em;flex:1;margin:0;
@@ -144,6 +148,7 @@ button{cursor:pointer;border:none;background:none}
   font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--faint);
   text-align:center;font-variant-numeric:tabular-nums;
 }
+.set-n.done{color:var(--accent);font-weight:600}
 .set input{
   width:100%;min-height:42px;background:var(--surface-2);border:1px solid var(--line);
   border-radius:8px;padding:0 9px;text-align:center;
@@ -225,8 +230,10 @@ button{cursor:pointer;border:none;background:none}
 }
 .section-label{
   font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--faint);margin:16px 0 8px;
+  text-transform:uppercase;color:var(--accent);margin:16px 0 8px;
 }
+.eyebrow b{color:var(--accent);font-weight:600}
+.blockset.sessions small.done{color:var(--accent)}
 .backup{
   display:flex;gap:8px;padding:14px 0 4px;
 }
@@ -585,7 +592,8 @@ function renderLog(main){
   days.className = "blockset sessions";
   DAY_KEYS.forEach(k => {
     const btn = document.createElement("button");
-    btn.innerHTML = `${DAYS[k].short}<small>${done.has(k) && k !== current.day ? "done" : "&nbsp;"}</small>`;
+    const isDone = done.has(k) && k !== current.day;
+    btn.innerHTML = `${DAYS[k].short}<small class="${isDone ? "done" : ""}">${isDone ? "done" : "&nbsp;"}</small>`;
     btn.setAttribute("aria-pressed", String(k === current.day));
     btn.addEventListener("click", () => { current.day = k; queueSave(); render(); });
     days.appendChild(btn);
@@ -597,7 +605,7 @@ function renderLog(main){
   head.className = "dayhead";
   const remaining = DAY_KEYS.length - done.size;
   const progress = remaining > 0 ? `${remaining} left this week` : "week complete";
-  head.innerHTML = `<p class="eyebrow">Week ${current.block} · Cycle ${Math.floor(current.blockIndex / 3) + 1} · ${progress}</p><h2>${w.focus}</h2><p>${w.cue}</p>`;
+  head.innerHTML = `<p class="eyebrow"><b>Week ${current.block}</b> · Cycle ${Math.floor(current.blockIndex / 3) + 1} · ${progress}</p><h2>${w.focus}</h2><p>${w.cue}</p>`;
   main.appendChild(head);
 
   const legend = document.createElement("div");
@@ -605,21 +613,21 @@ function renderLog(main){
   legend.innerHTML = `<span>all weights in lb</span><span>grey = last time</span><span>▲ beat it</span><span>= matched</span>`;
   main.appendChild(legend);
 
-  w.ex.forEach(ex => main.appendChild(exerciseCard(ex)));
+  w.ex.forEach((ex, i) => main.appendChild(exerciseCard(ex, i + 1)));
 
   if(w.core){
     const label = document.createElement("p");
     label.className = "section-label";
-    label.textContent = "Core finisher · 6 moves, 2 rounds each";
+    label.textContent = "Core finisher · 3 supersets, 2 rounds each";
     main.appendChild(label);
     w.core.forEach((pair, i) => main.appendChild(corePairCard(pair, i)));
   }
 }
 
-function exerciseCard(ex){
+function exerciseCard(ex, num){
   const card = document.createElement("section");
   card.className = "ex";
-  fillCard(card, ex);
+  fillCard(card, ex, num);
   return card;
 }
 
@@ -637,14 +645,15 @@ function corePairCard(pair, index){
   return card;
 }
 
-function fillCard(card, ex){
+function fillCard(card, ex, num){
   const prior = priorSets(ex.id, current.date);
   const unit = ex.unit === "sec" ? "sec" : "reps";
   const suffix = ex.unit === "sec" ? "s" : "";
 
   const head = document.createElement("div");
   head.className = "ex-head";
-  head.innerHTML = `<h3 class="ex-name">${ex.n}</h3><span class="ex-target">${ex.s} × ${ex.r}${suffix} · ${ex.rest}s</span>`;
+  const badge = num ? `<span class="ex-num">${String(num).padStart(2, "0")}</span>` : "";
+  head.innerHTML = `${badge}<h3 class="ex-name">${ex.n}</h3><span class="ex-target">${ex.s} × ${ex.r}${suffix} · ${ex.rest}s</span>`;
   card.appendChild(head);
 
   if(ex.cue){
@@ -693,6 +702,7 @@ function fillCard(card, ex){
     const paint = () => {
       wIn.classList.toggle("filled", !!wIn.value);
       rIn.classList.toggle("filled", !!rIn.value);
+      n.classList.toggle("done", !!rIn.value);
       const cur = {w:wIn.value.trim(), r:rIn.value.trim()};
       if(!cur.r){ delta.className = "delta none"; delta.textContent = last ? "—" : ""; return; }
       if(!last || !last.r){ delta.className = "delta up"; delta.textContent = "new"; return; }
