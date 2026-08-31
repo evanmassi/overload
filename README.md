@@ -57,6 +57,8 @@ Everything is written to `localStorage` on the device, immediately, as you leave
 
 That means the log lives on one device. Use **Export backup** on the History tab to save a JSON file, and **Import backup** to merge it into another device. Import merges rather than overwrites: for any date present in both, the copy with more logged sets wins.
 
+The header carries no sync indicator: on GitHub Pages there is no cloud to sync with, so a chip that always reads the same thing is noise. The save status in the bottom bar is the live one.
+
 The page also looks for a `claude.use("db")` runtime and will sync through it when one exists. On GitHub Pages it doesn't, so it stays local and the header chip reads `this device`.
 
 ## Development
