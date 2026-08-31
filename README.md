@@ -61,6 +61,10 @@ The header carries no sync indicator: on GitHub Pages there is no cloud to sync 
 
 The page also looks for a `claude.use("db")` runtime and will sync through it when one exists. On GitHub Pages it doesn't, so it stays local and the header chip reads `this device`.
 
+## Type
+
+Two families, no more. **Lato** for everything written (titles, labels, buttons, prose). **IBM Plex Mono** for anything numeric or technical: weights, reps, set numbers, rest times, tags, dates. If a value is something you read as data, it is mono; if it is something you read as language, it is Lato.
+
 ## Development
 
 Static files, no build step. Serve the directory over HTTP and open it:
