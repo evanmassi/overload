@@ -29,6 +29,10 @@ Type weight and reps into each set. The greyed-out placeholder is what you did t
 
 Because of the A/B/C rotation, "last time" for most lifts is a full cycle ago. Lifts that appear in more than one week come back sooner.
 
+**What weight to write** is stated on every card. `PER DUMBBELL` means the number stamped on one bell, not the pair (two 50s is 50). `ONE DUMBBELL` is a single bell held in both hands. `TOTAL W/ BAR` is the EZ bar plus plates. `STACK` is the pin number. `BODYWEIGHT +` means leave it blank unless you added weight. A `PER LEG` / `PER ARM` / `PER SIDE` tag marks the 20 unilateral moves, where the reps shown are what each side does.
+
+Session volume accounts for both: a walking lunge holding two 40s for 12 per leg counts 40 × 2 dumbbells × 12 reps × 2 legs.
+
 **Swap any exercise** with the `swap` button on its card. You get moves that train the same pattern first, then everything else in the program, then a free-text box for anything not in it. A swap applies to that session only; the next cycle prescribes the original again. History follows the movement, not the slot, so a substitute is compared against the last time you did *that* move.
 
 Exercises you type yourself are saved and listed under **Your exercises** at the top of the swap sheet, with rename and remove. Names are matched loosely, so `lateral push ups`, `Lateral Push-Ups` and `lateral pushups` are all the same exercise and keep one shared history; typing the name of a move already in the program resolves to that move rather than creating a duplicate. Removing a custom exercise also deletes its logged sets, and says how many before it does.

@@ -253,6 +253,13 @@ button{cursor:pointer;border:none;background:none}
   font-size:11.5px;color:var(--faint);font-family:"IBM Plex Mono",monospace;
   padding:6px 0 0;margin:0;text-align:center;
 }
+.tags{display:flex;flex-wrap:wrap;gap:5px;padding:0 13px 9px}
+.tag{
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:3px 7px;border-radius:5px;
+  background:var(--surface-2);color:var(--muted);border:1px solid var(--line);
+}
+.tag.side{background:var(--accent-soft);color:var(--accent);border-color:transparent;font-weight:600}
 .ex-swap{
   font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--faint);border:1px solid var(--line);
@@ -406,21 +413,21 @@ const PROGRAM = {
       [{id:"hanging_knee_raise", n:"Hanging Knee Raise", s:2, r:"12", bw:1},
        {id:"plank", n:"Plank", s:2, r:"45", unit:"sec", bw:1}],
       [{id:"bicycle_crunch", n:"Bicycle Crunch", s:2, r:"20", bw:1},
-       {id:"side_plank", n:"Side Plank / side", s:2, r:"30", unit:"sec", bw:1}],
+       {id:"side_plank", n:"Side Plank", s:2, r:"30", unit:"sec", bw:1}],
       [{id:"russian_twist", n:"DB Russian Twist", s:2, r:"20"},
        {id:"dead_bug", n:"Dead Bug", s:2, r:"12", bw:1}]
     ]},
     legs: {focus:"Legs & Back", cue:"Hips and pulls. Brace the core on everything.", ex:[
       {id:"goblet_squat", n:"DB Goblet Squat", s:4, r:"10-12"},
       {id:"db_rdl", n:"DB Romanian Deadlift", s:4, r:"8-10", cue:"Push hips back, bar close, stop at the stretch."},
-      {id:"bulgarian", n:"Bulgarian Split Squat", s:3, r:"10 / leg", per:"leg"},
-      {id:"single_arm_row", n:"Single-arm DB Row", s:3, r:"10 / arm", per:"arm"},
-      {id:"walking_lunge", n:"DB Walking Lunge", s:3, r:"12 / leg", per:"leg"},
+      {id:"bulgarian", n:"Bulgarian Split Squat", s:3, r:"10"},
+      {id:"single_arm_row", n:"Single-arm DB Row", s:3, r:"10"},
+      {id:"walking_lunge", n:"DB Walking Lunge", s:3, r:"12"},
       {id:"glute_bridge", n:"DB Glute Bridge", s:3, r:"15", cue:"Drive through the heels, squeeze 1s at the top."},
       {id:"standing_calf", n:"Standing DB Calf Raise", s:4, r:"15-20", cue:"Pause 1s at the top."},
       {id:"hanging_leg_raise", n:"Hanging Leg Raise", s:3, r:"AMRAP", bw:1}
     ], core:[
-      [{id:"woodchop", n:"Cable Woodchop / side", s:2, r:"12"},
+      [{id:"woodchop", n:"Cable Woodchop", s:2, r:"12"},
        {id:"hollow_hold", n:"Hollow Body Hold", s:2, r:"30", unit:"sec", bw:1}],
       [{id:"reverse_crunch", n:"Reverse Crunch", s:2, r:"15", bw:1},
        {id:"shoulder_taps", n:"Plank Shoulder Taps", s:2, r:"20", bw:1}],
@@ -438,11 +445,11 @@ const PROGRAM = {
       {id:"cable_curl", n:"Cable Rope Curl", s:3, r:"15", cue:"Finisher. Constant tension, no swinging."}
     ], core:[
       [{id:"hanging_leg_raise", n:"Hanging Leg Raise", s:2, r:"10", bw:1},
-       {id:"pallof_press", n:"Pallof Press / side", s:2, r:"12"}],
+       {id:"pallof_press", n:"Pallof Press", s:2, r:"12"}],
       [{id:"v_up", n:"V-Ups", s:2, r:"12", bw:1},
-       {id:"suitcase_carry", n:"Suitcase Carry / arm", s:2, r:"40", unit:"sec"}],
+       {id:"suitcase_carry", n:"Suitcase Carry", s:2, r:"40", unit:"sec"}],
       [{id:"ab_wheel", n:"Ab Wheel Rollout", s:2, r:"10", bw:1},
-       {id:"bird_dog", n:"Bird Dog / side", s:2, r:"12", bw:1}]
+       {id:"bird_dog", n:"Bird Dog", s:2, r:"12", bw:1}]
     ]}
   },
   B: {
@@ -450,32 +457,32 @@ const PROGRAM = {
       {id:"incline_db_press", n:"Incline DB Press", s:4, r:"8-10"},
       {id:"chinup", n:"Chin-ups", s:4, r:"AMRAP", bw:1, cue:"Underhand. Hits biceps harder than pull-ups."},
       {id:"squeeze_press", n:"DB Squeeze Press", s:3, r:"12", cue:"Press the dumbbells into each other the whole set."},
-      {id:"single_arm_row", n:"Single-arm DB Row", s:4, r:"10 / arm", per:"arm"},
+      {id:"single_arm_row", n:"Single-arm DB Row", s:4, r:"10"},
       {id:"cs_db_row", n:"Chest-Supported DB Row", s:3, r:"12"},
       {id:"cable_crossover", n:"Cable Crossover", s:3, r:"15", cue:"Low-to-high. Squeeze at the top for a beat."},
       {id:"db_pullover", n:"DB Pullover", s:3, r:"12"},
       {id:"feet_elev_pushup", n:"Feet-Elevated Push-ups", s:3, r:"AMRAP", bw:1}
     ], core:[
       [{id:"toes_to_bar", n:"Toes-to-Bar", s:2, r:"8", bw:1},
-       {id:"copenhagen", n:"Copenhagen Plank / side", s:2, r:"20", unit:"sec", bw:1}],
+       {id:"copenhagen", n:"Copenhagen Plank", s:2, r:"20", unit:"sec", bw:1}],
       [{id:"cable_crunch", n:"Cable Crunch", s:2, r:"15"},
        {id:"mountain_climber", n:"Mountain Climbers", s:2, r:"40", unit:"sec", bw:1}],
-      [{id:"db_side_bend", n:"DB Side Bend / side", s:2, r:"15"},
+      [{id:"db_side_bend", n:"DB Side Bend", s:2, r:"15"},
        {id:"hollow_rock", n:"Hollow Rock", s:2, r:"20", bw:1}]
     ]},
     legs: {focus:"Legs & Back", cue:"Unilateral bias. Weaker side sets the reps.", ex:[
       {id:"db_front_squat", n:"DB Front Squat", s:4, r:"8-10", cue:"DBs on the shoulders, elbows up."},
-      {id:"single_leg_rdl", n:"Single-leg DB RDL", s:3, r:"10 / leg", per:"leg"},
-      {id:"db_step_up", n:"DB Step-up", s:3, r:"10 / leg", per:"leg"},
+      {id:"single_leg_rdl", n:"Single-leg DB RDL", s:3, r:"10"},
+      {id:"db_step_up", n:"DB Step-up", s:3, r:"10"},
       {id:"seated_row", n:"Seated Cable Row", s:4, r:"10-12", cue:"Chest up, no torso swing."},
-      {id:"reverse_lunge", n:"DB Reverse Lunge", s:3, r:"12 / leg", per:"leg"},
+      {id:"reverse_lunge", n:"DB Reverse Lunge", s:3, r:"12"},
       {id:"leg_curl", n:"Seated Leg Curl", s:3, r:"12", cue:"One of the few machines worth it. Slow on the way back."},
       {id:"seated_calf", n:"Seated Calf Raise w/ DB", s:4, r:"20"},
       {id:"db_good_morning", n:"DB Good Morning", s:3, r:"12", cue:"Light. Hamstrings, not lower back."}
     ], core:[
       [{id:"decline_situp", n:"Decline Sit-up w/ DB", s:2, r:"12"},
-       {id:"side_plank_reach", n:"Side Plank w/ Reach / side", s:2, r:"30", unit:"sec", bw:1}],
-      [{id:"oblique_knee_raise", n:"Hanging Oblique Knee Raise / side", s:2, r:"10", bw:1},
+       {id:"side_plank_reach", n:"Side Plank w/ Reach", s:2, r:"30", unit:"sec", bw:1}],
+      [{id:"oblique_knee_raise", n:"Hanging Oblique Knee Raise", s:2, r:"10", bw:1},
        {id:"weighted_dead_bug", n:"Dead Bug w/ DB", s:2, r:"12"}],
       [{id:"plank_up_down", n:"Plank Up-Downs", s:2, r:"12", bw:1},
        {id:"flutter_kicks", n:"Flutter Kicks", s:2, r:"40", unit:"sec", bw:1}]
@@ -487,11 +494,11 @@ const PROGRAM = {
       {id:"face_pull", n:"Face Pull", s:3, r:"15", cue:"Rope to the forehead, elbows high. Fixes desk posture."},
       {id:"incline_curl", n:"Incline DB Curl", s:3, r:"10-12", cue:"Bench at 45°, let the arms hang back."},
       {id:"close_grip_press", n:"EZ-Bar Close-Grip Press", s:3, r:"10"},
-      {id:"concentration_curl", n:"DB Concentration Curl", s:3, r:"12 / arm", per:"arm"},
+      {id:"concentration_curl", n:"DB Concentration Curl", s:3, r:"12"},
       {id:"bench_dip", n:"Bench Dips", s:3, r:"AMRAP", bw:1}
     ], core:[
       [{id:"ab_wheel", n:"Ab Wheel Rollout", s:2, r:"10", bw:1},
-       {id:"pallof_press", n:"Pallof Press / side", s:2, r:"12"}],
+       {id:"pallof_press", n:"Pallof Press", s:2, r:"12"}],
       [{id:"v_up", n:"V-Ups", s:2, r:"15", bw:1},
        {id:"farmer_carry", n:"Farmer Carry", s:2, r:"45", unit:"sec"}],
       [{id:"reverse_crunch", n:"Reverse Crunch", s:2, r:"15", bw:1},
@@ -504,33 +511,33 @@ const PROGRAM = {
       {id:"wide_pullup", n:"Wide-grip Pull-ups", s:4, r:"6-8", bw:1},
       {id:"incline_db_press", n:"Incline DB Press", s:3, r:"8-10"},
       {id:"incline_db_fly", n:"Incline DB Flye", s:3, r:"12"},
-      {id:"renegade_row", n:"Renegade Row", s:3, r:"8 / arm", per:"arm", cue:"Wide feet, no hip rotation."},
+      {id:"renegade_row", n:"Renegade Row", s:3, r:"8", cue:"Wide feet, no hip rotation."},
       {id:"db_pullover", n:"DB Pullover", s:3, r:"12"},
       {id:"db_shrug", n:"Heavy DB Shrug", s:3, r:"12-15", cue:"Pause a full second at the top."},
       {id:"diamond_pushup", n:"Diamond Push-ups", s:3, r:"AMRAP", bw:1}
     ], core:[
       [{id:"weighted_leg_raise", n:"Weighted Hanging Leg Raise", s:2, r:"10"},
        {id:"hollow_hold", n:"Hollow Body Hold", s:2, r:"40", unit:"sec", bw:1}],
-      [{id:"woodchop", n:"Cable Woodchop / side", s:2, r:"12"},
+      [{id:"woodchop", n:"Cable Woodchop", s:2, r:"12"},
        {id:"bicycle_crunch", n:"Bicycle Crunch", s:2, r:"24", bw:1}],
       [{id:"russian_twist", n:"DB Russian Twist", s:2, r:"24"},
-       {id:"side_plank", n:"Side Plank / side", s:2, r:"40", unit:"sec", bw:1}]
+       {id:"side_plank", n:"Side Plank", s:2, r:"40", unit:"sec", bw:1}]
     ]},
     legs: {focus:"Legs & Back", cue:"Heavy single-leg. This is the one that hurts tomorrow.", ex:[
-      {id:"bulgarian", n:"Bulgarian Split Squat", s:4, r:"8 / leg", per:"leg"},
+      {id:"bulgarian", n:"Bulgarian Split Squat", s:4, r:"8"},
       {id:"stiff_leg_dl", n:"DB Stiff-leg Deadlift", s:4, r:"10"},
       {id:"sumo_squat", n:"DB Sumo Squat", s:3, r:"12", cue:"One heavy DB between the legs, toes out."},
       {id:"hip_thrust", n:"DB Hip Thrust", s:4, r:"8-10", cue:"Shoulders on the bench, chin tucked. Go heavy."},
       {id:"inverted_row", n:"Inverted Row", s:3, r:"AMRAP", bw:1, cue:"Smith bar set low, or a barbell in the rack."},
-      {id:"lateral_lunge", n:"DB Lateral Lunge", s:3, r:"10 / leg", per:"leg"},
-      {id:"single_leg_calf", n:"Single-leg Calf Raise", s:3, r:"15 / leg", per:"leg"},
+      {id:"lateral_lunge", n:"DB Lateral Lunge", s:3, r:"10"},
+      {id:"single_leg_calf", n:"Single-leg Calf Raise", s:3, r:"15"},
       {id:"hanging_knee_twist", n:"Hanging Knee Raise w/ Twist", s:3, r:"12", bw:1}
     ], core:[
       [{id:"toes_to_bar", n:"Toes-to-Bar", s:2, r:"8", bw:1},
-       {id:"pallof_press", n:"Pallof Press / side", s:2, r:"15"}],
+       {id:"pallof_press", n:"Pallof Press", s:2, r:"15"}],
       [{id:"decline_situp", n:"Decline Sit-up w/ DB", s:2, r:"10"},
-       {id:"bird_dog", n:"Bird Dog / side", s:2, r:"12", bw:1}],
-      [{id:"suitcase_carry", n:"Suitcase Carry / arm", s:2, r:"45", unit:"sec"},
+       {id:"bird_dog", n:"Bird Dog", s:2, r:"12", bw:1}],
+      [{id:"suitcase_carry", n:"Suitcase Carry", s:2, r:"45", unit:"sec"},
        {id:"dead_bug", n:"Dead Bug", s:2, r:"15", bw:1}]
     ]},
     arms: {focus:"Shoulders & Arms", cue:"Explosive press, then burn the arms out.", ex:[
@@ -540,11 +547,11 @@ const PROGRAM = {
       {id:"rear_delt_raise", n:"Bent-over Rear-delt Raise", s:3, r:"15", cue:"Chest on an incline bench, thumbs down."},
       {id:"ez_21s", n:"EZ-Bar 21s", s:3, r:"21", cue:"7 bottom half, 7 top half, 7 full."},
       {id:"ez_oh_ext", n:"Overhead EZ-Bar Extension", s:3, r:"12"},
-      {id:"cross_hammer_curl", n:"Cross-body Hammer Curl", s:3, r:"12 / arm", per:"arm"},
+      {id:"cross_hammer_curl", n:"Cross-body Hammer Curl", s:3, r:"12"},
       {id:"tri_kickback", n:"DB Tricep Kickback", s:3, r:"15"}
     ], core:[
       [{id:"ab_wheel", n:"Ab Wheel Rollout", s:2, r:"12", bw:1},
-       {id:"copenhagen", n:"Copenhagen Plank / side", s:2, r:"25", unit:"sec", bw:1}],
+       {id:"copenhagen", n:"Copenhagen Plank", s:2, r:"25", unit:"sec", bw:1}],
       [{id:"cable_crunch", n:"Cable Crunch", s:2, r:"15"},
        {id:"mountain_climber", n:"Mountain Climbers", s:2, r:"45", unit:"sec", bw:1}],
       [{id:"v_up", n:"V-Ups", s:2, r:"15", bw:1},
@@ -561,6 +568,147 @@ const DAYS = {
 const DAY_KEYS = ["chest","legs","arms"];
 const LEGACY_DAYS = {mon:"chest", wed:"legs", fri:"arms"};
 const CUSTOM_KEY = "overload.custom.v1";
+
+const LOAD = {
+  "pair": [
+    "flat_db_press",
+    "incline_db_press",
+    "squeeze_press",
+    "db_fly",
+    "incline_db_fly",
+    "cs_db_row",
+    "seated_db_press",
+    "standing_ohp",
+    "arnold_press",
+    "push_press",
+    "lateral_raise",
+    "seated_lateral_raise",
+    "rear_delt_fly",
+    "rear_delt_raise",
+    "hammer_curl",
+    "db_rdl",
+    "stiff_leg_dl",
+    "db_good_morning",
+    "walking_lunge",
+    "reverse_lunge",
+    "bulgarian",
+    "db_step_up",
+    "lateral_lunge",
+    "standing_calf",
+    "seated_calf",
+    "single_leg_calf",
+    "db_shrug",
+    "renegade_row",
+    "farmer_carry",
+    "db_front_squat"
+  ],
+  "single": [
+    "goblet_squat",
+    "sumo_squat",
+    "db_pullover",
+    "single_arm_row",
+    "concentration_curl",
+    "oh_tri_ext",
+    "tri_kickback",
+    "cross_hammer_curl",
+    "glute_bridge",
+    "hip_thrust",
+    "single_leg_rdl",
+    "russian_twist",
+    "decline_situp",
+    "db_side_bend",
+    "weighted_dead_bug",
+    "suitcase_carry",
+    "weighted_leg_raise"
+  ],
+  "bar": [
+    "ez_curl",
+    "ez_skullcrusher",
+    "ez_upright_row",
+    "ez_21s",
+    "ez_oh_ext",
+    "close_grip_press",
+    "incline_curl"
+  ],
+  "stack": [
+    "lat_pulldown",
+    "seated_row",
+    "cable_crossover",
+    "cable_curl",
+    "face_pull",
+    "leg_curl",
+    "cable_crunch",
+    "woodchop",
+    "pallof_press"
+  ],
+  "bw": [
+    "pullup",
+    "chinup",
+    "wide_pullup",
+    "pushup_burnout",
+    "feet_elev_pushup",
+    "diamond_pushup",
+    "bench_dip",
+    "inverted_row",
+    "plank",
+    "side_plank",
+    "side_plank_reach",
+    "copenhagen",
+    "hollow_hold",
+    "hollow_rock",
+    "dead_bug",
+    "bird_dog",
+    "shoulder_taps",
+    "plank_up_down",
+    "ab_wheel",
+    "mountain_climber",
+    "flutter_kicks",
+    "bicycle_crunch",
+    "reverse_crunch",
+    "v_up",
+    "hanging_knee_raise",
+    "hanging_leg_raise",
+    "hanging_knee_twist",
+    "toes_to_bar",
+    "oblique_knee_raise"
+  ]
+};
+
+const PER = {
+  "leg": [
+    "bulgarian",
+    "walking_lunge",
+    "reverse_lunge",
+    "lateral_lunge",
+    "db_step_up",
+    "single_leg_rdl",
+    "single_leg_calf"
+  ],
+  "arm": [
+    "single_arm_row",
+    "concentration_curl",
+    "cross_hammer_curl",
+    "renegade_row",
+    "suitcase_carry"
+  ],
+  "side": [
+    "side_plank",
+    "side_plank_reach",
+    "copenhagen",
+    "bird_dog",
+    "oblique_knee_raise",
+    "woodchop",
+    "pallof_press",
+    "db_side_bend"
+  ]
+};
+
+const LOAD_OF = {}, PER_OF = {};
+for(const kind in LOAD) LOAD[kind].forEach(id => { LOAD_OF[id] = kind; });
+for(const side in PER) PER[side].forEach(id => { PER_OF[id] = side; });
+
+const LOAD_LABEL = {pair:"per dumbbell", single:"one dumbbell", bar:"total w/ bar", stack:"stack", bw:"bodyweight +"};
+const LOAD_FACTOR = {pair:2, single:1, bar:1, stack:1, bw:1};
 
 const PATTERNS = {
   "Horizontal press":["flat_db_press","incline_db_press","squeeze_press","pushup_burnout","feet_elev_pushup","diamond_pushup","close_grip_press"],
@@ -637,6 +785,16 @@ function setBlockIndex(index){
   current.block = BLOCKS[current.blockIndex % 3];
 }
 
+
+for(const b of BLOCKS) for(const d of DAY_KEYS){
+  allExercises(PROGRAM[b][d]).forEach(e => {
+    e.load = LOAD_OF[e.id] || (e.bw ? "bw" : "single");
+    e.per = PER_OF[e.id] || null;
+    e.sides = e.per ? 2 : 1;
+    e.implements = LOAD_FACTOR[e.load];
+  });
+}
+
 function workout(){ return PROGRAM[current.block][current.day]; }
 
 function allExercises(plan){
@@ -701,7 +859,9 @@ function sessionVolume(session, block, day){
   let v = 0;
   for(const k in (session.entries||{})){
     const bw = byId[k] && byId[k].bw;
-    for(const s of session.entries[k]) if(s && s.r) v += bw ? 0 : num(s.w) * num(s.r);
+    const ex = byId[k] || findExercise(k);
+    const reach = ex ? (ex.sides || 1) * (ex.implements || 1) : 1;
+    for(const s of session.entries[k]) if(s && s.r) v += bw ? 0 : num(s.w) * num(s.r) * reach;
   }
   return Math.round(v);
 }
@@ -943,6 +1103,12 @@ function fillCard(card, ex, num, slot){
   head.appendChild(swapBtn);
   if(ex.swappedFrom) card.classList.add("ex-swapped");
   card.appendChild(head);
+
+  const tags = document.createElement("div");
+  tags.className = "tags";
+  if(ex.per) tags.innerHTML += `<span class="tag side">per ${ex.per}</span>`;
+  tags.innerHTML += `<span class="tag">${LOAD_LABEL[ex.load]}</span>`;
+  card.appendChild(tags);
 
   const target = suggestTarget(ex, prior);
   if(target){
