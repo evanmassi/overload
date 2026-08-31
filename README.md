@@ -31,6 +31,8 @@ Because of the A/B/C rotation, "last time" for most lifts is a full cycle ago. L
 
 **Swap any exercise** with the `swap` button on its card. You get moves that train the same pattern first, then everything else in the program, then a free-text box for anything not in it. A swap applies to that session only; the next cycle prescribes the original again. History follows the movement, not the slot, so a substitute is compared against the last time you did *that* move.
 
+Exercises you type yourself are saved and listed under **Your exercises** at the top of the swap sheet, with rename and remove. Names are matched loosely, so `lateral push ups`, `Lateral Push-Ups` and `lateral pushups` are all the same exercise and keep one shared history; typing the name of a move already in the program resolves to that move rather than creating a duplicate. Removing a custom exercise also deletes its logged sets, and says how many before it does.
+
 **The target line** on each card reads `GO FOR 50×8 · ADD WEIGHT`. It suggests more weight once you have topped the prescribed rep range on every set, and one more rep otherwise.
 
 **Session notes** at the bottom of the log. They show on the History tab.

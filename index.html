@@ -331,6 +331,22 @@ button{cursor:pointer;border:none;background:none}
   font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;
 }
 .sheet-item.current{color:var(--accent)}
+.sheet-mine{display:flex;align-items:center;gap:6px;padding:5px 8px}
+.sheet-mine .pick{
+  flex:1;text-align:left;padding:9px 0;font-size:14.5px;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.sheet-mine em{
+  font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.mini{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--faint);border:1px solid var(--line);
+  border-radius:5px;padding:5px 7px;white-space:nowrap;
+}
+.mini:active{background:var(--surface-2)}
+.mini.armed{color:var(--accent);border-color:var(--accent)}
 .sheet-custom{display:flex;gap:7px;padding:8px 8px 4px}
 .sheet-custom input{
   flex:1;min-height:42px;background:var(--surface-2);border:1px solid var(--line);
@@ -775,7 +791,10 @@ function notesCard(){
   return box;
 }
 
+let swapSlot = null;
+
 function openSwapSheet(slot){
+  swapSlot = slot;
   const sheet = $("sheet");
   const body = $("sheetbody");
   $("sheettitle").textContent = "Instead of " + slot.n;
@@ -801,6 +820,43 @@ function openSwapSheet(slot){
     body.appendChild(btn);
   };
 
+  const mine = Object.keys(customNames).sort((a, b) => customNames[a].localeCompare(customNames[b]));
+  if(mine.length){
+    addGroup("Your exercises");
+    mine.forEach(id => {
+      const row = document.createElement("div");
+      row.className = "sheet-mine";
+      const use = document.createElement("button");
+      use.className = "pick" + (id === slot.id ? " current" : "");
+      use.textContent = customNames[id];
+      use.addEventListener("click", () => pick(id));
+      const last = priorSets(id, current.date);
+      const when = document.createElement("em");
+      when.textContent = last ? last.date.slice(5) : "";
+      const edit = document.createElement("button");
+      edit.className = "mini";
+      edit.textContent = "rename";
+      edit.addEventListener("click", () => renameCustom(id));
+      const drop = document.createElement("button");
+      drop.className = "mini";
+      drop.textContent = "remove";
+      drop.addEventListener("click", () => {
+        const n = setsLoggedFor(id);
+        if(drop.dataset.armed){ removeCustom(id); return; }
+        drop.dataset.armed = "1";
+        drop.className = "mini armed";
+        drop.textContent = n ? `drop ${n} sets?` : "sure?";
+        setTimeout(() => {
+          delete drop.dataset.armed;
+          drop.className = "mini";
+          drop.textContent = "remove";
+        }, 4000);
+      });
+      row.append(use, when, edit, drop);
+      body.appendChild(row);
+    });
+  }
+
   if(pattern){
     addGroup("Same movement · " + pattern);
     PATTERNS[pattern].forEach(id => addItem(id, exerciseName(id)));
@@ -817,9 +873,9 @@ function openSwapSheet(slot){
   const useCustom = () => {
     const name = input.value.trim();
     if(!name) return;
-    const id = "custom_" + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
-    customNames[id] = name;
-    writeCustom();
+    const id = customIdFor(name);
+    if(!id) return;
+    if(!findExercise(id) && !customNames[id]){ customNames[id] = name; writeCustom(); }
     pick(id);
   };
   go.addEventListener("click", useCustom);
@@ -1197,6 +1253,59 @@ function readCustom(){
 
 function writeCustom(){
   try{ localStorage.setItem(CUSTOM_KEY, JSON.stringify(customNames)); }catch(e){}
+}
+
+const squash = t => String(t).toLowerCase().replace(/[^a-z0-9]/g, "");
+
+function programIds(){
+  const out = [];
+  for(const p in PATTERNS) PATTERNS[p].forEach(id => out.push(id));
+  return out;
+}
+
+function customIdFor(name){
+  const target = squash(name);
+  if(!target) return null;
+  for(const id in customNames) if(squash(customNames[id]) === target) return id;
+  for(const id of programIds()) if(squash(exerciseName(id)) === target) return id;
+  return "custom_" + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+}
+
+function setsLoggedFor(id){
+  let n = 0;
+  for(const d in sessions){
+    const arr = (sessions[d].entries || {})[id];
+    if(arr) n += arr.filter(v => v && v.r).length;
+  }
+  return n;
+}
+
+function renameCustom(id){
+  const next = prompt("Rename this exercise", customNames[id] || "");
+  if(next === null) return;
+  const name = next.trim();
+  if(!name) return;
+  customNames[id] = name;
+  writeCustom();
+  render();
+  openSwapSheet(swapSlot);
+}
+
+function removeCustom(id){
+  delete customNames[id];
+  writeCustom();
+  for(const d in sessions){
+    const s = sessions[d];
+    if(s.entries && s.entries[id]) delete s.entries[id];
+    if(s.swaps) for(const k in s.swaps) if(s.swaps[k] === id) delete s.swaps[k];
+    if(!loggedCount(s)) delete sessions[d];
+  }
+  for(const k in current.swaps) if(current.swaps[k] === id) delete current.swaps[k];
+  delete current.entries[id];
+  writeLocal();
+  if(db) for(const d in sessions) db.doc("sessions/" + d).set(sessions[d]).catch(() => {});
+  render();
+  openSwapSheet(swapSlot);
 }
 
 function exerciseName(id){
