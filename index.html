@@ -97,17 +97,16 @@ button{cursor:pointer;border:none;background:none}
 .blockset button[aria-pressed="true"]{background:var(--surface);color:var(--accent);box-shadow:var(--shadow)}
 .blockset.sessions{margin-top:8px}
 .blockset.sessions button{
-  flex:1;width:auto;min-height:48px;padding:0;font-size:15px;font-weight:700;
-  letter-spacing:-.005em;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:3px;line-height:1;
+  position:relative;flex:1;width:auto;height:50px;padding:0;
+  font-size:15px;font-weight:700;letter-spacing:-.005em;line-height:1;
+  display:flex;align-items:center;justify-content:center;
 }
 .blockset.sessions small{
+  position:absolute;left:0;right:0;bottom:5px;text-align:center;
   font-family:"IBM Plex Mono",monospace;font-size:8.5px;font-weight:600;
-  letter-spacing:.12em;text-transform:uppercase;color:var(--faint);line-height:1;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--accent);line-height:1;
+  pointer-events:none;
 }
-.blockset.sessions small:empty{visibility:hidden}
-.blockset.sessions small:empty::before{content:"·"}
-.blockset.sessions small.done{color:var(--accent)}
 
 .dayhead{padding:14px 0 6px}
 .eyebrow{
