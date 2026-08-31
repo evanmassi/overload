@@ -33,6 +33,10 @@ Because of the A/B/C rotation, "last time" for most lifts is a full cycle ago. L
 
 Session volume accounts for both: a walking lunge holding two 40s for 12 per leg counts 40 × 2 dumbbells × 12 reps × 2 legs.
 
+**Tap an exercise name** for a how-to: 3-4 numbered steps and the one thing people get wrong, for all 92 movements. It ships in the page, so it opens instantly with no signal. A YouTube search link sits at the bottom of the sheet for when you want to see it moving.
+
+The write-ups are plain-language descriptions of standard technique, not a trainer's instruction. For the fussier moves (Copenhagen plank, Z-press, ab wheel) watch a video the first time and use the steps as a reminder afterwards.
+
 **Swap any exercise** with the `swap` button on its card. You get moves that train the same pattern first, then everything else in the program, then a free-text box for anything not in it. A swap applies to that session only; the next cycle prescribes the original again. History follows the movement, not the slot, so a substitute is compared against the last time you did *that* move.
 
 Exercises you type yourself are saved and listed under **Your exercises** at the top of the swap sheet, with rename and remove. Names are matched loosely, so `lateral push ups`, `Lateral Push-Ups` and `lateral pushups` are all the same exercise and keep one shared history; typing the name of a move already in the program resolves to that move rather than creating a duplicate. Removing a custom exercise also deletes its logged sets, and says how many before it does.
@@ -68,5 +72,7 @@ Service workers need HTTPS or localhost, so opening `index.html` as a `file://` 
 `sw.js` caches with stale-while-revalidate: the app launches instantly from cache and picks up a new deploy on the next launch. Bump `CACHE` only to recover from a bad cache, not per deploy.
 
 Session keys in `PROGRAM` are `chest` / `legs` / `arms`; sessions carry a `blockIndex` that drives the A/B/C rotation, and `block` is derived from it.
+
+Exercise how-tos live in the `HOWTO` object, keyed by exercise id: `s` is the step array, `w` is the watch-out line. A move with no entry still opens the sheet and shows the YouTube link.
 
 Editing the program means editing the `PROGRAM` object at the top of the script in `index.html`. Exercise `id` values are what link a lift to its history, so renaming an id orphans its past data; changing the display name `n` is safe.
