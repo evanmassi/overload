@@ -8,6 +8,9 @@ const {BLOCKS, DAY_KEYS, IMPLEMENTS_PER_LOAD} = constants;
 const {activeBlockIndex, nextSessionIn, sessionsDoneIn, blockLetter, cycleNumber} = rotation;
 const {suggestTarget, repRange, sessionVolume, loggedCount, priorSets} = progression;
 
+const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01");
+const prescribedCountFor = (block, day) => progression.prescribedCount(block, day);
+
 section("Program data");
 {
   const moves = everyMovement();
@@ -224,6 +227,72 @@ section("Storage round trip and legacy migration");
   const {saveSessions, loadSessions} = await import("../src/storage.js");
   saveSessions(state.sessions);
   equal("sessions survive a save and load", loadSessions()["2026-09-01"].day, "chest");
+}
+
+section("Effort tunes the next target");
+{
+  const {topSet, exposures, hasStalled, prescribedCount} = progression;
+  const press = {id: "flat_db_press", r: "8-10", bw: 0};
+  const at = (pairs, effort) =>
+    suggestTarget(press, {date: "2026-09-01", sets: setsOf(pairs), effort});
+
+  equal("no effort recorded behaves as medium",
+    at([[45, 10], [45, 10]]).label, at([[45, 10], [45, 10]], "medium").label);
+  equal("medium adds one step of weight",
+    at([[45, 10], [45, 10]], "medium").label, "50×8");
+  equal("easy adds two steps",
+    at([[45, 10], [45, 10]], "easy").label, "55×8");
+  equal("hard repeats the same set",
+    at([[45, 10], [45, 10]], "hard").label, "45×10");
+  equal("hard says so", at([[45, 10], [45, 10]], "hard").why, "repeat it");
+  equal("easy mid-range adds two reps",
+    at([[45, 8], [45, 8]], "easy").label, "45×10");
+  equal("easy cannot push reps past the top of the range",
+    at([[45, 9], [45, 9]], "easy").label, "45×10");
+
+  const pullup = {id: "pullup", r: "AMRAP", bw: 1};
+  equal("bodyweight easy adds two reps",
+    suggestTarget(pullup, {sets: setsOf([["", 8]]), effort: "easy"}).label, "10 reps");
+
+  equal("the top set is the one with the most weight x reps",
+    topSet(setsOf([[40, 10], [60, 10], [45, 9]]), false).w, "60");
+  equal("a heavy short set does not beat a lighter long one",
+    topSet(setsOf([[50, 3], [45, 9]]), false).w, "45");
+  equal("a set with no reps is not a top set", topSet(setsOf([["", ""]]), false), null);
+}
+
+section("Stall detection");
+{
+  reset();
+  const press = movements.findExercise("flat_db_press");
+  const flat = {};
+  ["2026-08-04", "2026-08-11", "2026-08-18"].forEach(date => {
+    flat[date] = {date, day: "chest", block: "A", blockIndex: 0,
+      entries: {flat_db_press: setsOf([[45, 10]])}};
+  });
+  state.sessions = flat;
+  check("three flat sessions is a stall", hasStalledFor(press));
+
+  state.sessions["2026-08-18"].entries.flat_db_press = setsOf([[50, 10]]);
+  check("an improvement clears it", !hasStalledFor(press));
+
+  delete state.sessions["2026-08-04"];
+  state.sessions["2026-08-18"].entries.flat_db_press = setsOf([[45, 10]]);
+  check("two exposures is not enough to call it", !hasStalledFor(press));
+
+  reset();
+  check("no history is not a stall", !hasStalledFor(press));
+}
+
+section("Prescribed set counts");
+{
+  for(const block of BLOCKS) for(const day of DAY_KEYS){
+    const total = prescribedCountFor(block, day);
+    check(`${block}/${day} prescribes 35-39 sets`, total >= 35 && total <= 39, total);
+  }
+  equal("main work plus core makes up the total",
+    prescribedCountFor("A", "chest"),
+    movements.workoutFor("A", "chest").ex.reduce((n, e) => n + e.s, 0) + 12);
 }
 
 process.exit(report() ? 0 : 1);

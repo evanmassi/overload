@@ -32,10 +32,24 @@ export function loadDate(dateStr){
   current.entries = {};
   current.swaps = saved && saved.swaps ? Object.assign({}, saved.swaps) : {};
   current.notes = (saved && saved.notes) || "";
+  current.effort = saved && saved.effort ? Object.assign({}, saved.effort) : {};
+  current.startedAt = (saved && saved.startedAt) || null;
   if(saved && saved.entries)
     for(const id in saved.entries)
       current.entries[id] = saved.entries[id].map(set => ({w: set.w || "", r: set.r || ""}));
 
+  notify();
+}
+
+export function markStarted(){
+  if(!state.current.startedAt) state.current.startedAt = Date.now();
+}
+
+export function setEffort(exerciseId, level){
+  if(!state.current.effort) state.current.effort = {};
+  if(state.current.effort[exerciseId] === level) delete state.current.effort[exerciseId];
+  else state.current.effort[exerciseId] = level;
+  queueSave();
   notify();
 }
 
@@ -64,6 +78,8 @@ function snapshot(){
     entries: cleanEntries(current.entries)
   };
   if(current.notes && current.notes.trim()) snap.notes = current.notes.trim();
+  if(Object.keys(current.effort || {}).length) snap.effort = Object.assign({}, current.effort);
+  if(current.startedAt) snap.startedAt = current.startedAt;
   if(Object.keys(current.swaps).length) snap.swaps = Object.assign({}, current.swaps);
   return snap;
 }

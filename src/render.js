@@ -1,15 +1,25 @@
-import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, CONFIRM_WINDOW_MS} from "./constants.js";
+import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, ICON_REPEAT,
+        CONFIRM_WINDOW_MS, EFFORT_LEVELS, SESSION_CLOCK_TICK_MS} from "./constants.js";
 import {workoutFor, allExercises, findExercise} from "./movements.js";
 import {state, notify} from "./state.js";
-import {num, score, estimatedMax, loggedCount, priorSets, sessionVolume, suggestTarget} from "./progression.js";
+import {num, score, estimatedMax, loggedCount, priorSets, sessionVolume, suggestTarget,
+        prescribedCount, hasStalled} from "./progression.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
 import {resolveSlot, exerciseName} from "./swaps.js";
-import {loadDate, setBlockIndex, setsFor, queueSave, deleteSession, previousSameWorkout} from "./session.js";
+import {loadDate, setBlockIndex, setsFor, queueSave, deleteSession, previousSameWorkout,
+        setEffort, markStarted} from "./session.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer} from "./timer.js";
 import {exportSessions, importSessions} from "./backup.js";
 
 const el = id => document.getElementById(id);
+
+const expanded = new Set();
+let clockTimer = null;
+
+function toggleExpanded(id){
+  expanded.has(id) ? expanded.delete(id) : expanded.add(id);
+}
 
 export function render(){
   const main = el("main");
@@ -72,6 +82,8 @@ function renderLog(main){
   legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">▲</em> beat it</span><span><em class="same">=</em> matched</span>`;
   main.appendChild(legend);
 
+  main.appendChild(dotNav(plan));
+
   plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot), i + 1, slot)));
 
   if(plan.core){
@@ -85,16 +97,54 @@ function renderLog(main){
   main.appendChild(notesCard());
 }
 
+function isComplete(exercise){
+  const sets = state.current.entries[exercise.id];
+  if(!sets) return false;
+  let done = 0;
+  for(let i = 0; i < exercise.s; i++) if(sets[i] && sets[i].r) done++;
+  return done >= exercise.s;
+}
+
+function jumpTo(id){
+  const card = document.getElementById(id);
+  if(card && card.scrollIntoView) card.scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+function dotNav(plan){
+  const nav = document.createElement("div");
+  nav.className = "dotnav";
+  plan.ex.map(resolveSlot).forEach((exercise, i) => {
+    const dot = document.createElement("button");
+    dot.className = "dot" + (isComplete(exercise) ? " filled" : "");
+    dot.textContent = String(i + 1).padStart(2, "0");
+    dot.title = exercise.n;
+    dot.addEventListener("click", () => jumpTo("card-" + exercise.id));
+    nav.appendChild(dot);
+  });
+  (plan.core || []).forEach((pair, i) => {
+    const dot = document.createElement("button");
+    dot.className = "dot core" + (pair.map(resolveSlot).every(isComplete) ? " filled" : "");
+    dot.textContent = "S" + (i + 1);
+    dot.title = "Superset " + (i + 1);
+    dot.addEventListener("click", () => jumpTo("card-core-" + i));
+    nav.appendChild(dot);
+  });
+  return nav;
+}
+
 function exerciseCard(exercise, position, slot){
   const card = document.createElement("section");
   card.className = "ex";
+  card.id = "card-" + exercise.id;
   fillCard(card, exercise, position, slot);
+  if(isComplete(exercise) && !expanded.has(exercise.id)) card.classList.add("done");
   return card;
 }
 
 function corePairCard(pair, index, slots){
   const card = document.createElement("section");
   card.className = "ex core";
+  card.id = "card-core-" + index;
   const badge = document.createElement("div");
   badge.className = "superset";
   badge.innerHTML = `<b>Superset ${index + 1}</b><span>2 rounds · 45s between rounds</span>`;
@@ -116,6 +166,20 @@ function fillCard(card, exercise, position, slot){
   head.className = "ex-head";
   head.innerHTML = `${position ? `<span class="ex-num">${String(position).padStart(2, "0")}</span>` : ""}<h3 class="ex-name">${exercise.n}</h3>`;
   head.querySelector(".ex-name").addEventListener("click", () => openHowTo(exercise));
+
+  const summary = document.createElement("span");
+  summary.className = "ex-summary";
+  summary.textContent = (state.current.entries[exercise.id] || [])
+    .filter(set => set && set.r)
+    .map(set => (set.w ? set.w + "\u00d7" : "") + set.r)
+    .join("  ");
+  head.appendChild(summary);
+
+  const fold = document.createElement("button");
+  fold.className = "ex-fold";
+  fold.setAttribute("aria-label", "Show or hide sets");
+  fold.addEventListener("click", () => { toggleExpanded(exercise.id); notify(); });
+  head.appendChild(fold);
 
   const swap = document.createElement("button");
   swap.className = "ex-swap";
@@ -148,17 +212,25 @@ function fillCard(card, exercise, position, slot){
     card.appendChild(band);
   }
 
+  if(hasStalled(state.sessions, exercise, state.current.date)){
+    const flag = document.createElement("p");
+    flag.className = "stall";
+    flag.textContent = "Stuck here three sessions running. Swap it, or drop 10% and build back up.";
+    card.appendChild(flag);
+  }
+
   const sets = document.createElement("div");
   sets.className = "sets";
   const logged = setsFor(exercise.id);
 
   const columns = document.createElement("div");
   columns.className = "set head";
-  columns.innerHTML = `<div>#</div><div>weight (lbs)</div><div></div><div>${unit}</div><div></div>`;
+  columns.innerHTML = `<div>#</div><div>weight (lbs)</div><div></div><div>${unit}</div><div></div><div></div>`;
   sets.appendChild(columns);
 
   for(let i = 0; i < exercise.s; i++) sets.appendChild(setRow(exercise, i, logged, prior));
   card.appendChild(sets);
+  card.appendChild(effortRow(exercise));
 
   if(prior){
     const foot = document.createElement("p");
@@ -226,6 +298,7 @@ function setRow(exercise, index, logged, prior){
     queueSave();
     if(!hadReps && sets[index].r)
       startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
+    markStarted();
   };
 
   [weight, reps].forEach(input => {
@@ -234,8 +307,40 @@ function setRow(exercise, index, logged, prior){
     input.addEventListener("blur", commit);
   });
 
+  const repeat = document.createElement("button");
+  repeat.className = "repeat";
+  repeat.innerHTML = ICON_REPEAT;
+  repeat.disabled = !last || !last.r;
+  repeat.title = repeat.disabled
+    ? "Nothing logged last time"
+    : "Fill with " + (last.w ? last.w + " \u00d7 " : "") + last.r;
+  repeat.setAttribute("aria-label", repeat.title);
+  repeat.addEventListener("click", () => {
+    if(repeat.disabled) return;
+    weight.value = last.w || "";
+    reps.value = last.r;
+    commit();
+  });
+
   paint();
-  row.append(number, weight, times, reps, delta);
+  row.append(number, weight, times, reps, repeat, delta);
+  return row;
+}
+
+function effortRow(exercise){
+  const row = document.createElement("div");
+  row.className = "effort";
+  const chosen = (state.current.effort || {})[exercise.id];
+  const label = document.createElement("span");
+  label.textContent = "How did that feel?";
+  row.appendChild(label);
+  EFFORT_LEVELS.forEach(level => {
+    const button = document.createElement("button");
+    button.textContent = level;
+    button.className = chosen === level ? "on" : "";
+    button.addEventListener("click", () => setEffort(exercise.id, level));
+    row.appendChild(button);
+  });
   return row;
 }
 
@@ -377,8 +482,17 @@ function renderProgress(main){
   const ids = Object.keys(byExercise).sort((a, b) => byExercise[b].points.length - byExercise[a].points.length);
   if(!ids.length){
     main.innerHTML = `<p class="empty">Log two sessions of the same lift and the trend line shows up here.</p>`;
+    const consistency = document.createElement("p");
+    consistency.className = "section-label";
+    consistency.textContent = "Consistency";
+    main.append(consistency, consistencyGrid());
     return;
   }
+
+  const consistency = document.createElement("p");
+  consistency.className = "section-label";
+  consistency.textContent = "Consistency";
+  main.append(consistency, consistencyGrid());
 
   const label = document.createElement("p");
   label.className = "section-label";
@@ -400,6 +514,69 @@ function renderProgress(main){
     if(entry.points.length > 1) card.appendChild(sparkline(entry.points.map(p => p.value)));
     main.appendChild(card);
   });
+}
+
+function updateRing(done, total){
+  const fill = el("ringfill");
+  const text = el("ringtext");
+  if(!fill || !text) return;
+  const circumference = 2 * Math.PI * 15.5;
+  const ratio = total ? Math.min(1, done / total) : 0;
+  fill.style.strokeDasharray = circumference.toFixed(1);
+  fill.style.strokeDashoffset = (circumference * (1 - ratio)).toFixed(1);
+  text.textContent = done;
+  el("ring").title = done + " of " + total + " sets";
+}
+
+function elapsedLabel(startedAt){
+  const minutes = Math.floor((Date.now() - startedAt) / 60000);
+  if(minutes < 1) return "just started";
+  if(minutes < 60) return minutes + " min";
+  return Math.floor(minutes / 60) + "h " + (minutes % 60) + "m";
+}
+
+function updateClock(){
+  clearTimeout(clockTimer);
+  const note = el("volnote");
+  if(!note || !state.current.startedAt) return;
+  note.textContent = note.textContent + " · " + elapsedLabel(state.current.startedAt);
+  clockTimer = setTimeout(updateFooter, SESSION_CLOCK_TICK_MS);
+}
+
+function consistencyGrid(){
+  const wrap = document.createElement("div");
+  wrap.className = "grid-wrap";
+
+  const weeks = 26;
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(start.getDate() - (weeks * 7 - 1));
+
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  let trained = 0;
+
+  for(let i = 0; i < weeks * 7; i++){
+    const day = new Date(start);
+    day.setDate(day.getDate() + i);
+    const key = day.getFullYear() + "-" +
+      String(day.getMonth() + 1).padStart(2, "0") + "-" +
+      String(day.getDate()).padStart(2, "0");
+    const session = state.sessions[key];
+    const sets = session ? loggedCount(session) : 0;
+    const cell = document.createElement("i");
+    cell.className = "cell" + (sets ? " lit" + Math.min(3, Math.ceil(sets / 10)) : "");
+    cell.title = key + (sets ? " · " + sets + " sets" : "");
+    grid.appendChild(cell);
+    if(sets) trained++;
+  }
+
+  const caption = document.createElement("p");
+  caption.className = "grid-note";
+  caption.textContent = trained + " sessions in the last " + weeks + " weeks";
+
+  wrap.append(grid, caption);
+  return wrap;
 }
 
 function sparkline(values){
@@ -441,9 +618,10 @@ function updateFooter(){
   const current = state.current;
   const volume = sessionVolume(current, current.block, current.day);
   const count = loggedCount(current);
+  updateRing(count, prescribedCount(current.block, current.day));
   el("volume").textContent = volume ? `${volume.toLocaleString()} lb` : (count ? `${count} sets` : "0");
 
-  if(!count){ el("volnote").textContent = "no sets logged"; return; }
+  if(!count){ el("volnote").textContent = "no sets logged"; updateClock(); return; }
   const previous = previousSameWorkout();
   if(previous){
     const before = sessionVolume(previous.session, previous.session.block, previous.session.day);
@@ -454,4 +632,5 @@ function updateFooter(){
   } else {
     el("volnote").textContent = `${count} sets logged`;
   }
+  updateClock();
 }

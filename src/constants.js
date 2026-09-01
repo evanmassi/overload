@@ -47,3 +47,10 @@ export const IMPLEMENTS_PER_LOAD = {pair: 2, single: 1, bar: 1, stack: 1, bw: 1}
 
 export const ICON_SWAP = '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h12M12 4l3 3-3 3"/><path d="M17 13H5m3-3-3 3 3 3"/></svg>';
 export const ICON_UNDO = '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h9a3.5 3.5 0 010 7H9"/><path d="M4 10l3.5-3.5M4 10l3.5 3.5"/></svg>';
+
+export const EFFORT_LEVELS = ["easy", "medium", "hard"];
+export const EFFORT_STEPS = {easy: 2, medium: 1, hard: 0};
+export const STALL_EXPOSURES = 3;
+export const SESSION_CLOCK_TICK_MS = 30000;
+
+export const ICON_REPEAT = '<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 11a5.5 5.5 0 1 1-1.6-3.9"/><path d="M14.5 3.5v4h-4"/></svg>';

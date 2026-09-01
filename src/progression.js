@@ -1,5 +1,6 @@
 import {findExercise, allExercises, workoutFor} from "./movements.js";
-import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR} from "./constants.js";
+import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
+        EFFORT_STEPS, STALL_EXPOSURES} from "./constants.js";
 
 export function num(value){
   const parsed = parseFloat(value);
@@ -22,13 +23,45 @@ export function loggedCount(session){
   return n;
 }
 
+export function prescribedCount(block, day){
+  const plan = workoutFor(block, day);
+  return allExercises(plan).reduce((total, exercise) => total + exercise.s, 0);
+}
+
+export function topSet(sets, isBodyweight){
+  const logged = sets.filter(set => set && set.r);
+  if(!logged.length) return null;
+  return logged.reduce((best, set) => score(set, isBodyweight) > score(best, isBodyweight) ? set : best);
+}
+
 export function priorSets(sessions, exerciseId, beforeDate){
   const dates = Object.keys(sessions).filter(d => d < beforeDate).sort().reverse();
   for(const date of dates){
-    const sets = sessions[date].entries && sessions[date].entries[exerciseId];
-    if(sets && sets.some(set => set && set.r)) return {date, sets};
+    const session = sessions[date];
+    const sets = session.entries && session.entries[exerciseId];
+    if(sets && sets.some(set => set && set.r))
+      return {date, sets, effort: session.effort && session.effort[exerciseId]};
   }
   return null;
+}
+
+export function exposures(sessions, exerciseId, beforeDate, limit){
+  const dates = Object.keys(sessions).filter(d => d < beforeDate).sort().reverse();
+  const found = [];
+  for(const date of dates){
+    const sets = sessions[date].entries && sessions[date].entries[exerciseId];
+    if(sets && sets.some(set => set && set.r)) found.push({date, sets});
+    if(found.length === limit) break;
+  }
+  return found;
+}
+
+export function hasStalled(sessions, exercise, beforeDate){
+  const recent = exposures(sessions, exercise.id, beforeDate, STALL_EXPOSURES);
+  if(recent.length < STALL_EXPOSURES) return false;
+  const best = recent.map(entry => score(topSet(entry.sets, exercise.bw), exercise.bw));
+  const oldest = best[best.length - 1];
+  return best.every(value => value <= oldest);
 }
 
 export function sessionVolume(session, block, day){
@@ -55,22 +88,27 @@ export function repRange(reps){
 
 export function suggestTarget(exercise, prior){
   if(!prior) return null;
-  const sets = prior.sets.filter(set => set && set.r);
-  if(!sets.length) return null;
+  const top = topSet(prior.sets, exercise.bw);
+  if(!top) return null;
 
-  const top = sets.reduce((best, set) => score(set, exercise.bw) > score(best, exercise.bw) ? set : best);
+  const sets = prior.sets.filter(set => set && set.r);
   const topReps = num(top.r);
   const topWeight = num(top.w);
   const unit = exercise.unit === "sec" ? "s" : "";
+  const effort = prior.effort || "medium";
+  const step = EFFORT_STEPS[effort] === undefined ? 1 : EFFORT_STEPS[effort];
 
-  if(!topWeight) return {label: `${topReps + 1}${unit || " reps"}`, why: "add a rep"};
+  if(effort === "hard")
+    return {label: `${topWeight ? topWeight + "×" : ""}${topReps}${unit}`, why: "repeat it"};
+
+  if(!topWeight) return {label: `${topReps + step}${unit || " reps"}`, why: "add reps"};
 
   const range = repRange(exercise.r);
-  if(!range) return {label: `${topWeight}×${topReps + 1}${unit}`, why: "add a rep"};
+  if(!range) return {label: `${topWeight}×${topReps + step}${unit}`, why: "add reps"};
 
   const toppedEverySet = sets.length >= 2 && sets.every(set => num(set.r) >= range.max);
   if(toppedEverySet || topReps > range.max)
-    return {label: `${topWeight + WEIGHT_STEP_LB}×${range.min}${unit}`, why: "add weight"};
+    return {label: `${topWeight + WEIGHT_STEP_LB * step}×${range.min}${unit}`, why: "add weight"};
 
-  return {label: `${topWeight}×${Math.min(topReps + 1, range.max)}${unit}`, why: "add a rep"};
+  return {label: `${topWeight}×${Math.min(topReps + step, range.max)}${unit}`, why: "add reps"};
 }

@@ -63,7 +63,8 @@ class FakeNode {
 export function installDom(){
   const byId = {};
   const ids = ["main", "tabs", "volume", "volnote", "status", "timer", "clock",
-               "sheet", "sheetback", "sheetclose", "sheettitle", "sheetbody", "notes"];
+               "sheet", "sheetback", "sheetclose", "sheettitle", "sheetbody", "notes",
+               "ring", "ringfill", "ringtext"];
   ids.forEach(id => { byId[id] = new FakeNode("div"); });
 
   const doc = {
