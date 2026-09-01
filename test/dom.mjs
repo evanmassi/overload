@@ -36,11 +36,14 @@ class FakeNode {
   appendChild(child){ this.children.push(child); return child; }
   append(...nodes){ nodes.forEach(n => this.children.push(n)); }
   remove(){}
-  setAttribute(name, value){ this.attrs[name] = String(value); }
+  setAttribute(name, value){ this.attrs[name] = String(value); if(name === "id") this.id = String(value); }
   getAttribute(name){ return this.attrs[name]; }
   addEventListener(type, fn){ (this.listeners[type] = this.listeners[type] || []).push(fn); }
   fire(type, event){ (this.listeners[type] || []).forEach(fn => fn(event || {stopPropagation: noop})); }
-  querySelector(sel){ return this.find(sel)[0] || new FakeNode("div"); }
+  querySelector(sel){
+    if(sel.startsWith("#")) return this.descendants().find(n => n.attrs.id === sel.slice(1) || n.id === sel.slice(1)) || null;
+    return this.find(sel)[0] || new FakeNode("div");
+  }
   querySelectorAll(sel){ return this.find(sel); }
   find(sel){
     const want = sel.replace(/^\./, "");

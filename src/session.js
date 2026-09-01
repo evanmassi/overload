@@ -14,6 +14,12 @@ export const iso = date =>
 export function setBlockIndex(index){
   state.current.blockIndex = Math.max(0, index);
   state.current.block = blockLetter(state.current.blockIndex);
+  state.expanded.clear();
+}
+
+export function setDay(day){
+  state.current.day = day;
+  state.expanded.clear();
 }
 
 export function loadDate(dateStr){
@@ -29,6 +35,7 @@ export function loadDate(dateStr){
     current.day = nextSessionIn(state.sessions, current.blockIndex);
   }
 
+  state.expanded.clear();
   current.entries = {};
   current.swaps = saved && saved.swaps ? Object.assign({}, saved.swaps) : {};
   current.notes = (saved && saved.notes) || "";

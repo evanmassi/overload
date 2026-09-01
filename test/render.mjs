@@ -15,7 +15,7 @@ const {render} = await import("../src/render.js");
 const {mountSheet, openSwapSheet, openHowTo} = await import("../src/sheet.js");
 const {mountTimer} = await import("../src/timer.js");
 const {findExercise} = await import("../src/movements.js");
-const {loadDate} = await import("../src/session.js");
+const {loadDate, setDay} = await import("../src/session.js");
 
 mountTimer(els.timer, els.clock);
 mountSheet(els.sheet, els.sheettitle, els.sheetbody, els.sheetclose, els.sheetback);
@@ -80,7 +80,7 @@ section("A prior session drives placeholders and a target");
     entries: {flat_db_press: [{w: "45", r: "10"}, {w: "45", r: "10"}, {w: "45", r: "10"}]}
   };
   loadDate("2026-09-01");
-  state.current.day = "chest";
+  setDay("chest");
   render();
 
   check("a target band appears", els.main.find("target").length >= 1);
@@ -174,7 +174,7 @@ section("Repeat-last-set button");
     entries: {flat_db_press: [{w: "45", r: "9"}]}
   };
   loadDate("2026-09-01");
-  state.current.day = "chest";
+  setDay("chest");
   render();
 
   const rows = els.main.find("ex")[0].find("set").filter(r => !r.classList.contains("head"));
@@ -193,7 +193,7 @@ section("Effort buttons");
   fresh();
   render();
   const rows = els.main.find("effort");
-  check("every card asks how it felt", rows.length === 14, rows.length);
+  check("every main move asks how it felt", rows.length === 8, rows.length);
 
   const buttons = rows[0].children.filter(c => c.tag === "button");
   equal("three levels", buttons.map(b => b.textContent), ["easy", "medium", "hard"]);
@@ -223,6 +223,69 @@ section("Consistency grid");
     entries: {flat_db_press: [{w: "50", r: "10"}]}};
   render();
   check("a logged day lights a cell", els.main.find("cell").some(c => c._class.includes("lit")));
+}
+
+section("Logging updates the page without a re-render");
+{
+  fresh();
+  render();
+  const card = els.main.find("ex")[0];
+  const rows = card.find("set").filter(r => !r.classList.contains("head"));
+
+  rows.slice(0, 3).forEach(row => {
+    row.children[1].value = "50";
+    row.children[3].value = "10";
+    row.children[3].fire("change");
+  });
+  check("a partly finished card stays open", !card.classList.contains("done"));
+  check("its dot is not filled yet", !els.main.find("dot")[0].classList.contains("filled"));
+
+  const lastRow = rows[3];
+  lastRow.children[1].value = "50";
+  lastRow.children[3].value = "9";
+  lastRow.children[3].fire("change");
+
+  check("finishing the last set collapses it there and then",
+    card.classList.contains("done"));
+  check("the summary fills in without a re-render",
+    card.find("ex-summary")[0].textContent.includes("50"),
+    card.find("ex-summary")[0].textContent);
+  check("the dot fills in without a re-render",
+    els.main.find("dot")[0].classList.contains("filled"));
+  check("the ring updates", els.ringtext.textContent === "4", els.ringtext.textContent);
+  check("the clock appears on the first logged set",
+    els.volnote.textContent.includes("just started"), els.volnote.textContent);
+}
+
+section("Expansion does not leak between sessions");
+{
+  fresh();
+  render();
+  const card = els.main.find("ex")[0];
+  card.find("set").filter(r => !r.classList.contains("head")).forEach(row => {
+    row.children[1].value = "50";
+    row.children[3].value = "10";
+    row.children[3].fire("change");
+  });
+  els.main.find("ex-fold")[0].fire("click");
+  render();
+  check("the card is expanded on this session", !els.main.find("ex")[0].classList.contains("done"));
+
+  setDay("legs");
+  render();
+  setDay("chest");
+  render();
+  check("switching away and back collapses it again",
+    els.main.find("ex")[0].classList.contains("done"));
+}
+
+section("Effort is asked once per main move");
+{
+  fresh();
+  render();
+  equal("eight prompts, not fourteen", els.main.find("effort").length, 8);
+  const coreCards = els.main.find("core");
+  check("no core superset asks", coreCards.every(c => c.find("effort").length === 0));
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

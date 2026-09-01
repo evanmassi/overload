@@ -6,7 +6,7 @@ import {num, score, estimatedMax, loggedCount, priorSets, sessionVolume, suggest
         prescribedCount, hasStalled} from "./progression.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
 import {resolveSlot, exerciseName} from "./swaps.js";
-import {loadDate, setBlockIndex, setsFor, queueSave, deleteSession, previousSameWorkout,
+import {loadDate, setBlockIndex, setDay, setsFor, queueSave, deleteSession, previousSameWorkout,
         setEffort, markStarted} from "./session.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer} from "./timer.js";
@@ -14,11 +14,10 @@ import {exportSessions, importSessions} from "./backup.js";
 
 const el = id => document.getElementById(id);
 
-const expanded = new Set();
 let clockTimer = null;
 
 function toggleExpanded(id){
-  expanded.has(id) ? expanded.delete(id) : expanded.add(id);
+  state.expanded.has(id) ? state.expanded.delete(id) : state.expanded.add(id);
 }
 
 export function render(){
@@ -65,7 +64,7 @@ function renderLog(main){
     const isDone = done.has(day) && day !== current.day;
     button.innerHTML = `<span>${DAYS[day].short}</span><small class="${isDone ? "done" : ""}">${isDone ? "done" : ""}</small>`;
     button.setAttribute("aria-pressed", String(day === current.day));
-    button.addEventListener("click", () => { current.day = day; queueSave(); notify(); });
+    button.addEventListener("click", () => { setDay(day); queueSave(); notify(); });
     days.appendChild(button);
   });
   main.appendChild(days);
@@ -95,6 +94,39 @@ function renderLog(main){
   }
 
   main.appendChild(notesCard());
+}
+
+function summaryFor(exercise){
+  return (state.current.entries[exercise.id] || [])
+    .filter(set => set && set.r)
+    .map(set => (set.w ? set.w + "\u00d7" : "") + set.r)
+    .join("  ");
+}
+
+function syncDots(){
+  const plan = workoutFor(state.current.block, state.current.day);
+  const nav = el("main").querySelector(".dotnav");
+  if(!plan || !nav || !nav.children) return;
+  const slots = plan.ex.map(resolveSlot);
+  slots.forEach((exercise, i) => {
+    const dot = nav.children[i];
+    if(dot) dot.classList.toggle("filled", isComplete(exercise));
+  });
+  (plan.core || []).forEach((pair, i) => {
+    const dot = nav.children[slots.length + i];
+    if(dot) dot.classList.toggle("filled", pair.map(resolveSlot).every(isComplete));
+  });
+}
+
+function syncCard(exercise){
+  const card = el("main").querySelector("#card-" + exercise.id) ||
+    document.getElementById("card-" + exercise.id);
+  if(card && card.classList){
+    card.classList.toggle("done", isComplete(exercise) && !state.expanded.has(exercise.id));
+    const summary = card.querySelector(".ex-summary");
+    if(summary) summary.textContent = summaryFor(exercise);
+  }
+  syncDots();
 }
 
 function isComplete(exercise){
@@ -137,7 +169,7 @@ function exerciseCard(exercise, position, slot){
   card.className = "ex";
   card.id = "card-" + exercise.id;
   fillCard(card, exercise, position, slot);
-  if(isComplete(exercise) && !expanded.has(exercise.id)) card.classList.add("done");
+  if(isComplete(exercise) && !state.expanded.has(exercise.id)) card.classList.add("done");
   return card;
 }
 
@@ -169,10 +201,7 @@ function fillCard(card, exercise, position, slot){
 
   const summary = document.createElement("span");
   summary.className = "ex-summary";
-  summary.textContent = (state.current.entries[exercise.id] || [])
-    .filter(set => set && set.r)
-    .map(set => (set.w ? set.w + "\u00d7" : "") + set.r)
-    .join("  ");
+  summary.textContent = summaryFor(exercise);
   head.appendChild(summary);
 
   const fold = document.createElement("button");
@@ -230,7 +259,7 @@ function fillCard(card, exercise, position, slot){
 
   for(let i = 0; i < exercise.s; i++) sets.appendChild(setRow(exercise, i, logged, prior));
   card.appendChild(sets);
-  card.appendChild(effortRow(exercise));
+  if(position) card.appendChild(effortRow(exercise));
 
   if(prior){
     const foot = document.createElement("p");
@@ -293,12 +322,13 @@ function setRow(exercise, index, logged, prior){
     while(sets.length <= index) sets.push({w: "", r: ""});
     const hadReps = !!sets[index].r;
     sets[index] = {w: weight.value.trim(), r: reps.value.trim()};
+    if(sets[index].r) markStarted();
     paint();
+    syncCard(exercise);
     updateFooter();
     queueSave();
     if(!hadReps && sets[index].r)
       startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
-    markStarted();
   };
 
   [weight, reps].forEach(input => {
@@ -540,7 +570,7 @@ function updateClock(){
   const note = el("volnote");
   if(!note || !state.current.startedAt) return;
   note.textContent = note.textContent + " · " + elapsedLabel(state.current.startedAt);
-  clockTimer = setTimeout(updateFooter, SESSION_CLOCK_TICK_MS);
+  if(state.view === "log") clockTimer = setTimeout(updateFooter, SESSION_CLOCK_TICK_MS);
 }
 
 function consistencyGrid(){
