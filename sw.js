@@ -1,7 +1,12 @@
-const CACHE = 'overload-v1';
+const CACHE = 'overload-v2';
 
 const ASSETS = [
-  './', './index.html', './manifest.json',
+  './', './index.html', './style.css', './manifest.json',
+  './src/main.js', './src/state.js', './src/session.js', './src/render.js',
+  './src/sheet.js', './src/timer.js', './src/backup.js', './src/storage.js',
+  './src/rotation.js', './src/progression.js', './src/swaps.js',
+  './src/movements.js', './src/constants.js',
+  './src/program.js', './src/howto.js', './src/taxonomy.js',
   './icons/icon-192.png', './icons/icon-512.png',
   './icons/maskable-512.png', './icons/apple-touch-180.png',
 ];

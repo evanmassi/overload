@@ -1,0 +1,457 @@
+import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, CONFIRM_WINDOW_MS} from "./constants.js";
+import {workoutFor, allExercises, findExercise} from "./movements.js";
+import {state, notify} from "./state.js";
+import {num, score, estimatedMax, loggedCount, priorSets, sessionVolume, suggestTarget} from "./progression.js";
+import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
+import {resolveSlot, exerciseName} from "./swaps.js";
+import {loadDate, setBlockIndex, setsFor, queueSave, deleteSession, previousSameWorkout} from "./session.js";
+import {openSwapSheet, openHowTo} from "./sheet.js";
+import {start as startTimer} from "./timer.js";
+import {exportSessions, importSessions} from "./backup.js";
+
+const el = id => document.getElementById(id);
+
+export function render(){
+  const main = el("main");
+  main.innerHTML = "";
+  if(state.view === "log") renderLog(main);
+  else if(state.view === "history") renderHistory(main);
+  else renderProgress(main);
+  updateFooter();
+  document.querySelectorAll(".tab").forEach(tab =>
+    tab.setAttribute("aria-selected", String(tab.dataset.view === state.view)));
+}
+
+function renderLog(main){
+  const current = state.current;
+
+  const bar = document.createElement("div");
+  bar.className = "daybar";
+  const date = document.createElement("input");
+  date.type = "date";
+  date.className = "date-input";
+  date.value = current.date;
+  date.addEventListener("change", () => { if(date.value) loadDate(date.value); });
+
+  const blocks = document.createElement("div");
+  blocks.className = "blockset";
+  const start = cycleStart(current.blockIndex);
+  BLOCKS.forEach((letter, i) => {
+    const button = document.createElement("button");
+    button.textContent = letter;
+    button.title = `Week ${letter}`;
+    button.setAttribute("aria-pressed", String(letter === current.block));
+    button.addEventListener("click", () => { setBlockIndex(start + i); queueSave(); notify(); });
+    blocks.appendChild(button);
+  });
+  bar.append(date, blocks);
+  main.appendChild(bar);
+
+  const done = sessionsDoneIn(state.sessions, current.blockIndex);
+  const days = document.createElement("div");
+  days.className = "blockset sessions";
+  DAY_KEYS.forEach(day => {
+    const button = document.createElement("button");
+    const isDone = done.has(day) && day !== current.day;
+    button.innerHTML = `<span>${DAYS[day].short}</span><small class="${isDone ? "done" : ""}">${isDone ? "done" : ""}</small>`;
+    button.setAttribute("aria-pressed", String(day === current.day));
+    button.addEventListener("click", () => { current.day = day; queueSave(); notify(); });
+    days.appendChild(button);
+  });
+  main.appendChild(days);
+
+  const plan = workoutFor(current.block, current.day);
+  const remaining = DAY_KEYS.length - done.size;
+  const head = document.createElement("div");
+  head.className = "dayhead";
+  head.innerHTML = `<p class="eyebrow"><b>Week ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)} · ${remaining > 0 ? `${remaining} left this week` : "week complete"}</p><h2>${plan.focus}</h2><p>${plan.cue}</p>`;
+  main.appendChild(head);
+
+  const legend = document.createElement("div");
+  legend.className = "legend";
+  legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">▲</em> beat it</span><span><em class="same">=</em> matched</span>`;
+  main.appendChild(legend);
+
+  plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot), i + 1, slot)));
+
+  if(plan.core){
+    const label = document.createElement("p");
+    label.className = "section-label";
+    label.textContent = "Core finisher · 3 supersets, 2 rounds each";
+    main.appendChild(label);
+    plan.core.forEach((pair, i) => main.appendChild(corePairCard(pair.map(resolveSlot), i, pair)));
+  }
+
+  main.appendChild(notesCard());
+}
+
+function exerciseCard(exercise, position, slot){
+  const card = document.createElement("section");
+  card.className = "ex";
+  fillCard(card, exercise, position, slot);
+  return card;
+}
+
+function corePairCard(pair, index, slots){
+  const card = document.createElement("section");
+  card.className = "ex core";
+  const badge = document.createElement("div");
+  badge.className = "superset";
+  badge.innerHTML = `<b>Superset ${index + 1}</b><span>2 rounds · 45s between rounds</span>`;
+  card.appendChild(badge);
+  pair.forEach((exercise, i) => {
+    if(i) card.appendChild(Object.assign(document.createElement("div"), {className: "rule"}));
+    fillCard(card, exercise, null, slots[i]);
+  });
+  return card;
+}
+
+function fillCard(card, exercise, position, slot){
+  slot = slot || exercise;
+  const prior = priorSets(state.sessions, exercise.id, state.current.date);
+  const unit = exercise.unit === "sec" ? "sec" : "reps";
+  const suffix = exercise.unit === "sec" ? "s" : "";
+
+  const head = document.createElement("div");
+  head.className = "ex-head";
+  head.innerHTML = `${position ? `<span class="ex-num">${String(position).padStart(2, "0")}</span>` : ""}<h3 class="ex-name">${exercise.n}</h3>`;
+  head.querySelector(".ex-name").addEventListener("click", () => openHowTo(exercise));
+
+  const swap = document.createElement("button");
+  swap.className = "ex-swap";
+  swap.title = exercise.swappedFrom ? "Undo swap" : "Swap exercise";
+  swap.setAttribute("aria-label", swap.title);
+  swap.innerHTML = exercise.swappedFrom ? ICON_UNDO : ICON_SWAP;
+  swap.addEventListener("click", () => {
+    if(exercise.swappedFrom){
+      delete state.current.swaps[exercise.swappedFrom];
+      queueSave();
+      notify();
+    } else openSwapSheet(slot);
+  });
+  head.appendChild(swap);
+  if(exercise.swappedFrom) card.classList.add("ex-swapped");
+  card.appendChild(head);
+
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  if(exercise.per) meta.innerHTML += `<span class="tag side">per ${exercise.per}</span>`;
+  meta.innerHTML += `<span class="tag">${LOAD_LABEL[exercise.load]}</span>`;
+  meta.innerHTML += `<span>${exercise.s} × ${exercise.r}${suffix}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
+  card.appendChild(meta);
+
+  const target = suggestTarget(exercise, prior);
+  if(target){
+    const band = document.createElement("div");
+    band.className = "target";
+    band.innerHTML = `<span>go for</span><b>${target.label}</b><i>${target.why}</i>`;
+    card.appendChild(band);
+  }
+
+  const sets = document.createElement("div");
+  sets.className = "sets";
+  const logged = setsFor(exercise.id);
+
+  const columns = document.createElement("div");
+  columns.className = "set head";
+  columns.innerHTML = `<div>#</div><div>weight (lbs)</div><div></div><div>${unit}</div><div></div>`;
+  sets.appendChild(columns);
+
+  for(let i = 0; i < exercise.s; i++) sets.appendChild(setRow(exercise, i, logged, prior));
+  card.appendChild(sets);
+
+  if(prior){
+    const foot = document.createElement("p");
+    foot.className = "ex-cue";
+    foot.style.paddingTop = "0";
+    const summary = prior.sets.filter(set => set && set.r)
+      .map(set => set.w ? `${set.w}×${set.r}${suffix}` : `${set.r}${suffix}`).join("  ");
+    foot.textContent = `${prior.date} — ${summary}`;
+    card.appendChild(foot);
+  }
+}
+
+function setRow(exercise, index, logged, prior){
+  const row = document.createElement("div");
+  row.className = "set";
+  const last = prior && prior.sets[index];
+  const unit = exercise.unit === "sec" ? "sec" : "reps";
+
+  const number = document.createElement("div");
+  number.className = "set-n";
+  number.textContent = index + 1;
+
+  const weight = document.createElement("input");
+  weight.type = "text";
+  weight.inputMode = "decimal";
+  weight.placeholder = last && last.w ? last.w : (exercise.bw ? "BW" : "wt");
+  weight.value = (logged[index] && logged[index].w) || "";
+  weight.setAttribute("aria-label", `${exercise.n} set ${index + 1} weight`);
+
+  const times = document.createElement("div");
+  times.className = "x";
+  times.textContent = "×";
+
+  const reps = document.createElement("input");
+  reps.type = "text";
+  reps.inputMode = "numeric";
+  reps.placeholder = last && last.r ? last.r : unit;
+  reps.value = (logged[index] && logged[index].r) || "";
+  reps.setAttribute("aria-label", `${exercise.n} set ${index + 1} ${unit}`);
+
+  const delta = document.createElement("div");
+  delta.className = "delta";
+
+  const paint = () => {
+    weight.classList.toggle("filled", !!weight.value);
+    reps.classList.toggle("filled", !!reps.value);
+    number.classList.toggle("done", !!reps.value);
+    const entered = {w: weight.value.trim(), r: reps.value.trim()};
+    if(!entered.r){ delta.className = "delta none"; delta.textContent = last ? "—" : ""; return; }
+    if(!last || !last.r){ delta.className = "delta up"; delta.textContent = "new"; return; }
+    const now = score(entered, exercise.bw);
+    const then = score(last, exercise.bw);
+    if(now > then){ delta.className = "delta up"; delta.textContent = "▲"; }
+    else if(now === then){ delta.className = "delta same"; delta.textContent = "="; }
+    else { delta.className = "delta down"; delta.textContent = "▼"; }
+  };
+
+  const commit = () => {
+    const sets = setsFor(exercise.id);
+    while(sets.length <= index) sets.push({w: "", r: ""});
+    const hadReps = !!sets[index].r;
+    sets[index] = {w: weight.value.trim(), r: reps.value.trim()};
+    paint();
+    updateFooter();
+    queueSave();
+    if(!hadReps && sets[index].r)
+      startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
+  };
+
+  [weight, reps].forEach(input => {
+    input.addEventListener("input", paint);
+    input.addEventListener("change", commit);
+    input.addEventListener("blur", commit);
+  });
+
+  paint();
+  row.append(number, weight, times, reps, delta);
+  return row;
+}
+
+function notesCard(){
+  const box = document.createElement("div");
+  box.className = "notes";
+  const label = document.createElement("label");
+  label.textContent = "Session notes";
+  label.setAttribute("for", "notes");
+  const area = document.createElement("textarea");
+  area.id = "notes";
+  area.value = state.current.notes || "";
+  area.placeholder = "How it felt, what was occupied, anything worth remembering next cycle.";
+  const save = () => { state.current.notes = area.value; queueSave(); };
+  area.addEventListener("change", save);
+  area.addEventListener("blur", save);
+  box.append(label, area);
+  return box;
+}
+
+function backupControls(){
+  const box = document.createElement("div");
+  box.className = "backup";
+
+  const save = document.createElement("button");
+  save.className = "btn";
+  save.textContent = "Export backup";
+  save.addEventListener("click", exportSessions);
+
+  const load = document.createElement("label");
+  load.className = "btn";
+  load.textContent = "Import backup";
+  const picker = document.createElement("input");
+  picker.type = "file";
+  picker.accept = "application/json,.json";
+  picker.hidden = true;
+  picker.addEventListener("change", importSessions);
+  load.appendChild(picker);
+
+  box.append(save, load);
+  return box;
+}
+
+function backupNote(){
+  const note = document.createElement("p");
+  note.className = "backup-note";
+  note.textContent = "Your log lives on this device. Export before clearing browser data.";
+  return note;
+}
+
+function renderHistory(main){
+  const dates = Object.keys(state.sessions).sort().reverse();
+  if(!dates.length){
+    main.innerHTML = `<p class="empty">Nothing logged yet. Fill in a set on the Log tab and it shows up here.</p>`;
+    main.append(backupControls(), backupNote());
+    return;
+  }
+
+  const label = document.createElement("p");
+  label.className = "section-label";
+  label.textContent = `${dates.length} sessions`;
+  main.appendChild(label);
+
+  dates.forEach(date => {
+    const session = state.sessions[date];
+    const plan = workoutFor(session.block, session.day);
+    if(!plan) return;
+
+    const card = document.createElement("div");
+    card.className = "hist-day hist-open";
+    card.title = "Open this session to fix it";
+    card.addEventListener("click", () => {
+      loadDate(date);
+      state.view = "log";
+      notify();
+      window.scrollTo(0, 0);
+    });
+    card.innerHTML = `<div class="hist-top"><h3>${plan.focus}</h3><span class="chip">${date}</span><span class="chip live">${session.block}</span></div>`;
+
+    const remove = document.createElement("button");
+    remove.textContent = "delete";
+    remove.addEventListener("click", event => {
+      event.stopPropagation();
+      if(remove.dataset.armed){ deleteSession(date); return; }
+      remove.dataset.armed = "1";
+      remove.textContent = "sure?";
+      setTimeout(() => { delete remove.dataset.armed; remove.textContent = "delete"; }, CONFIRM_WINDOW_MS);
+    });
+    card.querySelector(".hist-top").appendChild(remove);
+
+    allExercises(plan).forEach(exercise => {
+      const swapped = session.swaps && session.swaps[exercise.id];
+      const id = swapped || exercise.id;
+      const sets = (session.entries || {})[id];
+      if(!sets || !sets.some(set => set && set.r)) return;
+      const suffix = exercise.unit === "sec" ? "s" : "";
+      const line = document.createElement("div");
+      line.className = "hist-line";
+      const text = sets.filter(set => set && set.r)
+        .map(set => set.w ? `${set.w}×${set.r}${suffix}` : `${set.r}${suffix}`).join(" · ");
+      line.innerHTML = `<span>${exercise.core ? "◦ " : ""}${swapped ? exerciseName(id) : exercise.n}</span><b>${text}</b>`;
+      card.appendChild(line);
+    });
+
+    const total = document.createElement("div");
+    total.className = "hist-line";
+    total.innerHTML = `<span style="color:var(--faint)">volume</span><b>${sessionVolume(session, session.block, session.day).toLocaleString()} lb</b>`;
+    card.appendChild(total);
+
+    if(session.notes){
+      const note = document.createElement("p");
+      note.className = "hist-notes";
+      note.textContent = session.notes;
+      card.appendChild(note);
+    }
+
+    main.appendChild(card);
+  });
+
+  main.append(backupControls(), backupNote());
+}
+
+function renderProgress(main){
+  const byExercise = {};
+  Object.keys(state.sessions).sort().forEach(date => {
+    const session = state.sessions[date];
+    for(const id in (session.entries || {})){
+      const sets = session.entries[id].filter(set => set && set.r);
+      if(!sets.length) continue;
+      const exercise = findExercise(id);
+      if(!exercise) continue;
+      const top = sets.reduce((best, set) => score(set, exercise.bw) > score(best, exercise.bw) ? set : best);
+      const value = exercise.bw ? num(top.r) : Math.round(estimatedMax(num(top.w), num(top.r)));
+      (byExercise[id] = byExercise[id] || {name: exercise.n, bw: exercise.bw, points: []})
+        .points.push({date, value, top});
+    }
+  });
+
+  const ids = Object.keys(byExercise).sort((a, b) => byExercise[b].points.length - byExercise[a].points.length);
+  if(!ids.length){
+    main.innerHTML = `<p class="empty">Log two sessions of the same lift and the trend line shows up here.</p>`;
+    return;
+  }
+
+  const label = document.createElement("p");
+  label.className = "section-label";
+  label.textContent = "Top set trend · est. 1RM";
+  main.appendChild(label);
+
+  ids.forEach(id => {
+    const entry = byExercise[id];
+    const latest = entry.points[entry.points.length - 1];
+    const best = entry.points.reduce((a, b) => b.value > a.value ? b : a);
+    const unit = entry.bw ? "reps" : "lb";
+
+    const card = document.createElement("div");
+    card.className = "prog";
+    card.innerHTML = `<h3>${entry.name}</h3>
+      <div class="best">${latest.value} ${unit}</div>
+      <div class="meta">${entry.points.length} sessions · best ${best.value}</div>
+      <div class="meta" style="text-align:right">${latest.top.w ? latest.top.w + "×" : ""}${latest.top.r} on ${latest.date.slice(5)}</div>`;
+    if(entry.points.length > 1) card.appendChild(sparkline(entry.points.map(p => p.value)));
+    main.appendChild(card);
+  });
+}
+
+function sparkline(values){
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 100 36");
+  svg.setAttribute("preserveAspectRatio", "none");
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const points = values.map((value, i) => [(i / (values.length - 1)) * 100, 32 - ((value - min) / span) * 28]);
+  const path = points.map(p => p.join(",")).join(" ");
+
+  const area = document.createElementNS(ns, "polygon");
+  area.setAttribute("points", `0,36 ${path} 100,36`);
+  area.setAttribute("fill", "var(--accent-soft)");
+
+  const line = document.createElementNS(ns, "polyline");
+  line.setAttribute("points", path);
+  line.setAttribute("fill", "none");
+  line.setAttribute("stroke", "var(--accent)");
+  line.setAttribute("stroke-width", "1.5");
+  line.setAttribute("stroke-linejoin", "round");
+  line.setAttribute("vector-effect", "non-scaling-stroke");
+
+  const dot = document.createElementNS(ns, "circle");
+  dot.setAttribute("cx", points[points.length - 1][0]);
+  dot.setAttribute("cy", points[points.length - 1][1]);
+  dot.setAttribute("r", "2.5");
+  dot.setAttribute("fill", "var(--accent)");
+  dot.setAttribute("vector-effect", "non-scaling-stroke");
+
+  svg.append(area, line, dot);
+  return svg;
+}
+
+function updateFooter(){
+  const current = state.current;
+  const volume = sessionVolume(current, current.block, current.day);
+  const count = loggedCount(current);
+  el("volume").textContent = volume ? `${volume.toLocaleString()} lb` : (count ? `${count} sets` : "0");
+
+  if(!count){ el("volnote").textContent = "no sets logged"; return; }
+  const previous = previousSameWorkout();
+  if(previous){
+    const before = sessionVolume(previous.session, previous.session.block, previous.session.day);
+    const diff = volume - before;
+    el("volnote").textContent = before
+      ? `${diff >= 0 ? "+" : ""}${diff.toLocaleString()} vs ${previous.date.slice(5)}`
+      : `${count} sets logged`;
+  } else {
+    el("volnote").textContent = `${count} sets logged`;
+  }
+}

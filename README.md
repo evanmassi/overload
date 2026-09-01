@@ -65,6 +65,44 @@ The page also looks for a `claude.use("db")` runtime and will sync through it wh
 
 Two families, no more. **Lato** for everything written (titles, labels, buttons, prose). **IBM Plex Mono** for anything numeric or technical: weights, reps, set numbers, rest times, tags, dates. If a value is something you read as data, it is mono; if it is something you read as language, it is Lato.
 
+## Layout
+
+Static files, ES modules, no build step.
+
+| | |
+|---|---|
+| `src/program.js` | the nine workouts |
+| `src/howto.js` | 92 movement write-ups |
+| `src/taxonomy.js` | movement patterns, load conventions, per-side table |
+| `src/movements.js` | derives rest times and load factors onto the program |
+| `src/constants.js` | every tunable number |
+| `src/state.js` | shared state and a subscribe/notify pair |
+| `src/storage.js` | localStorage read and write |
+| `src/rotation.js` | which week and which session comes next |
+| `src/progression.js` | scoring, volume, target suggestions |
+| `src/swaps.js` | substitutions and custom exercises |
+| `src/session.js` | the session being edited, autosave |
+| `src/render.js` | the three views |
+| `src/sheet.js` | swap and how-to sheets |
+| `src/timer.js` | rest timer |
+| `src/backup.js` | JSON export and import |
+
+Nothing imports `render.js` except `main.js`. State changes call `notify()`, and `main.js` subscribes `render` to it. That keeps the view out of the logic and the module graph free of cycles.
+
+## Tests
+
+```
+node test/all.mjs
+```
+
+Three suites, 111 assertions, no dependencies.
+
+- `modules.mjs` loads every module against a DOM stub and fails on a dead export.
+- `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
+- `render.mjs` boots the real views against a fake DOM and asserts what renders, including the sheet's hidden state.
+
+Blocks must not inherit state from each other; each opens with `fresh()`.
+
 ## Development
 
 Static files, no build step. Serve the directory over HTTP and open it:
@@ -79,6 +117,6 @@ Service workers need HTTPS or localhost, so opening `index.html` as a `file://` 
 
 Session keys in `PROGRAM` are `chest` / `legs` / `arms`; sessions carry a `blockIndex` that drives the A/B/C rotation, and `block` is derived from it.
 
-Exercise how-tos live in the `HOWTO` object, keyed by exercise id: `s` is the step array, `w` is the watch-out line. A move with no entry still opens the sheet and shows the YouTube link.
+Exercise how-tos live in `src/howto.js`, keyed by exercise id: `s` is the step array, `w` is the watch-out line. A move with no entry still opens the sheet and shows the YouTube link.
 
-Editing the program means editing the `PROGRAM` object at the top of the script in `index.html`. Exercise `id` values are what link a lift to its history, so renaming an id orphans its past data; changing the display name `n` is safe.
+Editing the program means editing `src/program.js`. Exercise `id` values are what link a lift to its history, so renaming an id orphans its past data; changing the display name `n` is safe.
