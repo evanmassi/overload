@@ -1,21 +1,13 @@
 import {state, hydrate, subscribe, notify} from "./state.js";
-import {loadDate, iso, onStatus, flushNow} from "./session.js";
+import {loadDate, iso, flushNow} from "./session.js";
 import {render} from "./render.js";
 import {mountSheet} from "./sheet.js";
 import {mountTimer} from "./timer.js";
-import {onBackupStatus} from "./backup.js";
+import {mountSaveState} from "./savestate.js";
 
 const el = id => document.getElementById(id);
 
-function setStatus(text){
-  const node = el("status");
-  node.textContent = text === "saving" ? "…" : text === "saved" ? "saved on device" : text;
-  node.className = text === "saving" ? "status saving" : "status";
-}
-
-onStatus(setStatus);
-onBackupStatus(setStatus);
-
+mountSaveState(el("status"));
 mountTimer(el("timer"), el("clock"));
 mountSheet(el("sheet"), el("sheettitle"), el("sheetbody"), el("sheetclose"), el("sheetback"));
 

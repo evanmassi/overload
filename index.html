@@ -20,6 +20,8 @@
 <header class="topbar">
   <div class="topbar-in">
     <h1 class="brand">Over<span>&middot;</span>load</h1>
+    <span class="save" id="status" role="status" aria-live="polite" title="Saved on this device"></span>
+    <button class="timer" id="timer"><small>rest</small><span id="clock">90s</span></button>
   </div>
   <nav class="tabs" id="tabs" role="tablist">
     <button class="tab" role="tab" data-view="log" aria-selected="true">Log</button>
@@ -45,8 +47,6 @@
       <span id="ringtext">0</span>
     </div>
     <div class="stat"><b id="volume">0</b><span id="volnote">no sets logged</span></div>
-    <button class="timer" id="timer"><small>rest</small><span id="clock">90s</span></button>
-    <div class="status" id="status"></div>
   </div>
 </div>
 

@@ -29,6 +29,7 @@ export const LEAD_SET_COUNT = 4;
 export const DEFAULT_REST = 90;
 export const TIMER_TICK_MS = 250;
 export const TIMER_RESET_DELAY_MS = 3000;
+export const FINAL_COUNTDOWN_SECONDS = 3;
 export const VIBRATE_PATTERN = [200, 100, 200];
 
 export const AUTOSAVE_DELAY_MS = 1200;

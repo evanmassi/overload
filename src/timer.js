@@ -1,4 +1,5 @@
-import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, VIBRATE_PATTERN} from "./constants.js";
+import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, VIBRATE_PATTERN,
+        FINAL_COUNTDOWN_SECONDS} from "./constants.js";
 
 const timer = {endsAt: 0, tick: null, seconds: DEFAULT_REST};
 
@@ -12,12 +13,15 @@ export function mountTimer(buttonEl, clockEl){
   showIdle();
 }
 
-function showIdle(){ if(clock) clock.textContent = `${timer.seconds}s`; }
+function showIdle(){
+  if(clock) clock.textContent = `${timer.seconds}s`;
+  if(button) button.classList.remove("ending");
+}
 
 export function start(seconds){
   timer.seconds = seconds || DEFAULT_REST;
   timer.endsAt = Date.now() + timer.seconds * 1000;
-  if(button) button.classList.add("running");
+  if(button){ button.classList.add("running"); button.classList.remove("up"); }
   clearInterval(timer.tick);
   timer.tick = setInterval(tick, TIMER_TICK_MS);
   tick();
@@ -26,18 +30,24 @@ export function start(seconds){
 export function stop(){
   clearInterval(timer.tick);
   timer.endsAt = 0;
-  if(button) button.classList.remove("running");
+  if(button) button.classList.remove("running", "up");
   showIdle();
 }
 
 function tick(){
   const left = Math.max(0, Math.round((timer.endsAt - Date.now()) / 1000));
   if(clock) clock.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+  if(button) button.classList.toggle("ending", left > 0 && left <= FINAL_COUNTDOWN_SECONDS);
   if(left > 0) return;
 
   clearInterval(timer.tick);
   timer.endsAt = 0;
-  if(button) button.classList.remove("running");
+  if(button){ button.classList.remove("running"); button.classList.add("up"); }
   if(typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(VIBRATE_PATTERN);
-  setTimeout(() => { if(!timer.endsAt) showIdle(); }, TIMER_RESET_DELAY_MS);
+  if(clock) clock.textContent = "go";
+  setTimeout(() => {
+    if(timer.endsAt) return;
+    if(button) button.classList.remove("up");
+    showIdle();
+  }, TIMER_RESET_DELAY_MS);
 }

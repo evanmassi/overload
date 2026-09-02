@@ -53,6 +53,8 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 
 **The ring in the save bar** counts logged sets against the session total, and the footer shows how long you have been at it.
 
+**The countdown sits in the header**, not the bottom bar, because the number keyboard covers the bottom of the screen the moment you tap a weight or reps box. The header is sticky, so it stays in view while you type. In the last 3 seconds the number grows and turns amber, then flips to a green `GO` when the rest is up, which is readable at arm's length with the phone on the floor.
+
 **After each exercise, say how it felt** — easy, medium or hard. Easy doubles next week's jump, medium takes the normal step, hard repeats the same numbers instead of pushing. That turns a fixed +5 rule into something that answers to the day you actually had.
 
 **A lift that has not improved in three sessions** gets flagged with a note to swap it or drop 10% and build back.
@@ -79,7 +81,7 @@ Everything is written to `localStorage` on the device, immediately, as you leave
 
 That means the log lives on one device. Use **Export backup** on the History tab to save a JSON file, and **Import backup** to merge it into another device. Import merges rather than overwrites: for any date present in both, the copy with more logged sets wins.
 
-The header carries no sync indicator: on GitHub Pages there is no cloud to sync with, so a chip that always reads the same thing is noise. The save status in the bottom bar is the live one.
+**Save state is a single dot in the header**, green when written and amber while writing. It was a line of text in the bottom bar, but the text changed width as it changed state, which shoved the countdown sideways on every autosave. Backup results (`merged 3`, `bad file`) print under the Export and Import buttons instead, where the action happened.
 
 The page also looks for a `claude.use("db")` runtime and will sync through it when one exists. On GitHub Pages it doesn't, so it stays local and the header chip reads `this device`.
 
@@ -107,6 +109,7 @@ Static files, ES modules, no build step.
 | `src/render.js` | the three views |
 | `src/sheet.js` | swap and how-to sheets |
 | `src/timer.js` | rest timer |
+| `src/savestate.js` | the header save dot |
 | `src/backup.js` | JSON export and import |
 
 Nothing imports `render.js` except `main.js`. State changes call `notify()`, and `main.js` subscribes `render` to it. That keeps the view out of the logic and the module graph free of cycles.
@@ -117,7 +120,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 205 assertions, no dependencies.
+Three suites, 218 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

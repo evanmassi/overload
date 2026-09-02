@@ -14,10 +14,12 @@ const {state} = await import("../src/state.js");
 const {render} = await import("../src/render.js");
 const {mountSheet, openSwapSheet, openHowTo} = await import("../src/sheet.js");
 const {mountTimer} = await import("../src/timer.js");
+const {mountSaveState} = await import("../src/savestate.js");
 const {findExercise} = await import("../src/movements.js");
 const {loadDate, setDay} = await import("../src/session.js");
 
 mountTimer(els.timer, els.clock);
+mountSaveState(els.status);
 mountSheet(els.sheet, els.sheettitle, els.sheetbody, els.sheetclose, els.sheetback);
 
 let passed = 0, failed = 0;
@@ -295,6 +297,52 @@ section("Expansion does not leak between sessions");
   render();
   check("switching away and back collapses it again",
     els.main.find("ex-move")[0].classList.contains("done"));
+}
+
+section("The countdown escalates in its last seconds");
+{
+  const {start, stop} = await import("../src/timer.js");
+  const {FINAL_COUNTDOWN_SECONDS} = await import("../src/constants.js");
+
+  stop();
+  check("an idle timer shows its length", els.clock.textContent === "90s", els.clock.textContent);
+  check("and carries no state classes",
+    !els.timer.classList.contains("running") && !els.timer.classList.contains("ending"));
+
+  start(90);
+  check("starting marks it running", els.timer.classList.contains("running"));
+  check("with plenty left it does not escalate", !els.timer.classList.contains("ending"));
+
+  start(FINAL_COUNTDOWN_SECONDS);
+  check("inside the final seconds it escalates", els.timer.classList.contains("ending"));
+
+  start(FINAL_COUNTDOWN_SECONDS + 5);
+  check("a fresh longer rest drops the escalation", !els.timer.classList.contains("ending"));
+
+  stop();
+  check("stopping clears every state class",
+    !els.timer.classList.contains("running") &&
+    !els.timer.classList.contains("ending") &&
+    !els.timer.classList.contains("up"));
+  check("and restores the idle reading", els.clock.textContent.endsWith("s"), els.clock.textContent);
+}
+
+section("Save state is a dot, not a shifting line");
+{
+  const {queueSave} = await import("../src/session.js");
+  fresh();
+  render();
+  queueSave();
+  check("saving marks the dot", els.status.classList.contains("saving"), els.status._class);
+  check("the dot carries no text", !els.status.textContent, els.status.textContent);
+  check("it explains itself to a screen reader",
+    /saving/i.test(els.status.getAttribute("aria-label") || ""), els.status.getAttribute("aria-label"));
+
+  state.view = "history";
+  render();
+  check("backup results render by the backup buttons",
+    els.main.find("backup-result").length === 1);
+  state.view = "log";
 }
 
 section("A superset reads as an alternating pair");

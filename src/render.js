@@ -10,7 +10,7 @@ import {loadDate, setBlockIndex, setDay, setsFor, queueSave, deleteSession, prev
         setEffort, markStarted} from "./session.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer} from "./timer.js";
-import {exportSessions, importSessions} from "./backup.js";
+import {exportSessions, importSessions, onBackupStatus} from "./backup.js";
 
 const el = id => document.getElementById(id);
 
@@ -390,7 +390,11 @@ function backupControls(){
   picker.addEventListener("change", importSessions);
   load.appendChild(picker);
 
-  box.append(save, load);
+  const result = document.createElement("span");
+  result.className = "backup-result";
+  onBackupStatus(text => { result.textContent = text; });
+
+  box.append(save, load, result);
   return box;
 }
 
