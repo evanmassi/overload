@@ -134,13 +134,15 @@ section("History and progress views render");
   check("notes show on the card", els.main.find("hist-notes").length === 1);
   check("backup controls render", els.main.find("backup").length === 1);
 
-  const withTime = els.main.find("hist-day").filter(c =>
-    c.find("hist-line").some(l => l.innerHTML.includes("first set to last")));
+  const feet = els.main.find("hist-foot");
+  check("every card gets a totals strip", feet.length === 2, feet.length);
+  check("the strip carries volume and set count",
+    feet.every(f => /lb/.test(f.innerHTML) && /sets/.test(f.innerHTML)), feet[0].innerHTML);
+  const timed = feet.filter(f => /1h 04m/.test(f.innerHTML));
   check("only the session with timestamps reports how long it took",
-    withTime.length === 1 && els.main.find("hist-day").length === 2, withTime.length);
-  check("reading as hours and minutes",
-    withTime[0].find("hist-line").some(l => l.innerHTML.includes("1h 04m")),
-    withTime[0].find("hist-line").map(l => l.innerHTML).join(" | "));
+    timed.length === 1, feet.map(f => f.innerHTML).join(" | "));
+  check("totals are no longer exercise rows",
+    !els.main.find("hist-line").some(l => /volume|first set to last/.test(l.innerHTML)));
 
   state.view = "progress";
   render();
@@ -427,6 +429,60 @@ section("Save state is a dot, not a shifting line");
   check("backup results render by the backup buttons",
     els.main.find("backup-result").length === 1);
   state.view = "log";
+}
+
+section("A history card groups, collapses and marks");
+{
+  fresh();
+  state.sessions["2026-09-01"] = {
+    date: "2026-09-01", day: "chest", block: "A", blockIndex: 0,
+    startedAt: 1000, lastLoggedAt: 1000 + 64 * 60000,
+    swaps: {db_fly: "cable_crossover"},
+    entries: {
+      flat_db_press: [{w: "65", r: "10"}, {w: "65", r: "10"}, {w: "65", r: "9"}],
+      incline_db_press: [{w: "50", r: "12"}, {w: "50", r: "12"}, {w: "50", r: "12"}],
+      cable_crossover: [{w: "30", r: "15"}],
+      hanging_knee_raise: [{w: "", r: "12"}, {w: "", r: "12"}],
+      plank: [{w: "", r: "45"}, {w: "", r: "45"}]
+    }
+  };
+  state.view = "history";
+  render();
+  const card = els.main.find("hist-day")[0];
+  const rowFor = name => card.find("hist-line").find(l => l.innerHTML.includes(name));
+
+  check("identical sets collapse to a count",
+    rowFor("Incline DB Press").innerHTML.includes("3 × 50×12"),
+    rowFor("Incline DB Press").innerHTML);
+  check("mixed sets stay spelled out",
+    rowFor("Flat DB Bench Press").innerHTML.includes("65×10 · 65×10 · 65×9"),
+    rowFor("Flat DB Bench Press").innerHTML);
+  check("a single set needs no count",
+    /<b>30×15<\/b>/.test(rowFor("Cable Crossover").innerHTML),
+    rowFor("Cable Crossover").innerHTML);
+
+  check("a swapped move carries the swap glyph",
+    rowFor("Cable Crossover").innerHTML.includes("hist-swap"));
+  check("and names what it replaced",
+    rowFor("Cable Crossover").innerHTML.includes("Swapped in for Flat DB Flye"),
+    rowFor("Cable Crossover").innerHTML);
+  check("an unswapped move carries no glyph",
+    !rowFor("Incline DB Press").innerHTML.includes("hist-swap"));
+
+  check("core sits under its own label",
+    card.find("hist-sub").length === 1 && card.find("hist-sub")[0].textContent === "Core finisher");
+  const supers = card.find("hist-super");
+  check("one group per logged superset", supers.length === 1, supers.length);
+  check("holding both of its moves", supers[0].children.length === 2, supers[0].children.length);
+  check("with no leftover bullet glyph", !card.innerHTML.includes("◦"));
+
+  const foot = card.find("hist-foot")[0];
+  check("the totals strip counts every logged set",
+    foot.innerHTML.includes("11 sets"), foot.innerHTML);
+  check("and reports the duration", foot.innerHTML.includes("1h 04m"), foot.innerHTML);
+
+  state.view = "log";
+  render();
 }
 
 section("Sound is optional, remembered and testable");

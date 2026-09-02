@@ -445,6 +445,31 @@ function backupNote(){
   return note;
 }
 
+function setSummary(sets, suffix){
+  const parts = sets.filter(set => set && set.r)
+    .map(set => set.w ? `${set.w}×${set.r}${suffix}` : `${set.r}${suffix}`);
+  if(!parts.length) return "";
+  return parts.length > 1 && parts.every(part => part === parts[0])
+    ? `${parts.length} × ${parts[0]}`
+    : parts.join(" · ");
+}
+
+function historyLine(session, slot){
+  const swapped = session.swaps && session.swaps[slot.id];
+  const id = swapped || slot.id;
+  const sets = (session.entries || {})[id];
+  if(!sets || !sets.some(set => set && set.r)) return null;
+
+  const line = document.createElement("div");
+  line.className = "hist-line";
+  const name = swapped ? exerciseName(id) : slot.n;
+  const mark = swapped
+    ? `<i class="hist-swap" title="Swapped in for ${slot.n}" aria-label="Swapped in for ${slot.n}">${ICON_SWAP}</i>`
+    : "";
+  line.innerHTML = `<span>${name}${mark}</span><b>${setSummary(sets, slot.unit === "sec" ? "s" : "")}</b>`;
+  return line;
+}
+
 function renderHistory(main){
   const dates = Object.keys(state.sessions).sort().reverse();
   if(!dates.length){
@@ -472,7 +497,7 @@ function renderHistory(main){
       notify();
       window.scrollTo(0, 0);
     });
-    card.innerHTML = `<div class="hist-top"><h3>${plan.focus}</h3><span class="chip">${date}</span><span class="chip live">${session.block}</span></div>`;
+    card.innerHTML = `<div class="hist-top"><h3>${plan.focus}</h3><span class="chip live">${session.block}</span><span class="chip">${date}</span></div>`;
 
     const remove = document.createElement("button");
     remove.textContent = "delete";
@@ -485,32 +510,37 @@ function renderHistory(main){
     });
     card.querySelector(".hist-top").appendChild(remove);
 
-    allExercises(plan).forEach(exercise => {
-      const swapped = session.swaps && session.swaps[exercise.id];
-      const id = swapped || exercise.id;
-      const sets = (session.entries || {})[id];
-      if(!sets || !sets.some(set => set && set.r)) return;
-      const suffix = exercise.unit === "sec" ? "s" : "";
-      const line = document.createElement("div");
-      line.className = "hist-line";
-      const text = sets.filter(set => set && set.r)
-        .map(set => set.w ? `${set.w}×${set.r}${suffix}` : `${set.r}${suffix}`).join(" · ");
-      line.innerHTML = `<span>${exercise.core ? "◦ " : ""}${swapped ? exerciseName(id) : exercise.n}</span><b>${text}</b>`;
-      card.appendChild(line);
+    plan.ex.forEach(slot => {
+      const line = historyLine(session, slot);
+      if(line) card.appendChild(line);
     });
 
-    const total = document.createElement("div");
-    total.className = "hist-line";
-    total.innerHTML = `<span style="color:var(--faint)">volume</span><b>${sessionVolume(session, session.block, session.day).toLocaleString()} lb</b>`;
-    card.appendChild(total);
+    const supersets = (plan.core || [])
+      .map(pair => pair.map(slot => historyLine(session, slot)).filter(Boolean))
+      .filter(lines => lines.length);
 
-    const took = elapsedLabel(session.startedAt, session.lastLoggedAt);
-    if(took){
-      const time = document.createElement("div");
-      time.className = "hist-line";
-      time.innerHTML = `<span style="color:var(--faint)">first set to last</span><b>${took}</b>`;
-      card.appendChild(time);
+    if(supersets.length){
+      const label = document.createElement("p");
+      label.className = "hist-sub";
+      label.textContent = "Core finisher";
+      card.appendChild(label);
+      supersets.forEach(lines => {
+        const group = document.createElement("div");
+        group.className = "hist-super";
+        lines.forEach(line => group.appendChild(line));
+        card.appendChild(group);
+      });
     }
+
+    const foot = document.createElement("div");
+    foot.className = "hist-foot";
+    const took = elapsedLabel(session.startedAt, session.lastLoggedAt);
+    foot.innerHTML = [
+      `<b>${sessionVolume(session, session.block, session.day).toLocaleString()} lb</b>`,
+      `<span>${loggedCount(session)} sets</span>`,
+      took ? `<span>${took}</span>` : ""
+    ].join("");
+    card.appendChild(foot);
 
     if(session.notes){
       const note = document.createElement("p");

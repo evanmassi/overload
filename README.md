@@ -45,6 +45,22 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 
 **Session notes** at the bottom of the log. They show on the History tab.
 
+**A history card** reads as three things, not one flat list:
+
+```
+Chest & Back              A   2026-09-01   delete
+Flat DB Bench Press        65×10 · 65×10 · 65×9
+Incline DB Press                    3 × 50×12
+Cable Crossover ⇄                   3 × 30×15
+CORE FINISHER
+│ Hanging Knee Raise                   2 × 12
+│ Plank                               2 × 45s
+────────────────────────────────────────────
+9,680 lb          16 sets            1h 04m
+```
+
+Sets that are identical collapse to a count, so `50×12 · 50×12 · 50×12` becomes `3 × 50×12`; anything that varies stays spelled out, because that variation is the interesting part. Core moves sit under their own label with each superset bracketed, which replaces the `◦` that used to mark them one at a time and never showed which two went together. A swapped move carries the same glyph as the Log tab's swap button, and says what it replaced. Session totals live in a footer strip rather than pretending to be two more exercises.
+
 **Fixing a mistake**: tap any card on the History tab to open that session in the Log tab, where every field is editable. `delete` on a history card removes the session; it asks once before it does.
 
 **Tap the repeat icon** beside a set to carry the set above it down: same weight, same reps, then edit whatever changed. On set 1 there is no row above, so it pulls set 1 from last session instead. The button stays dark until there is something to copy.
@@ -155,7 +171,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 272 assertions, no dependencies.
+Three suites, 286 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
