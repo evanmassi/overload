@@ -1,5 +1,5 @@
 import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, VIBRATE_PATTERN,
-        FINAL_COUNTDOWN_SECONDS} from "./constants.js";
+        WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS} from "./constants.js";
 
 const timer = {endsAt: 0, tick: null, seconds: DEFAULT_REST, idle: DEFAULT_REST};
 
@@ -15,7 +15,7 @@ export function mountTimer(buttonEl, clockEl){
 
 function showIdle(){
   if(clock) clock.textContent = `${timer.idle}s`;
-  if(button) button.classList.remove("ending");
+  if(button) button.classList.remove("warn", "ending");
 }
 
 export function setIdleRest(seconds){
@@ -26,7 +26,7 @@ export function setIdleRest(seconds){
 export function start(seconds){
   timer.seconds = seconds || DEFAULT_REST;
   timer.endsAt = Date.now() + timer.seconds * 1000;
-  if(button){ button.classList.add("running"); button.classList.remove("up"); }
+  if(button){ button.classList.add("running"); button.classList.remove("warn", "ending", "up"); }
   clearInterval(timer.tick);
   timer.tick = setInterval(tick, TIMER_TICK_MS);
   tick();
@@ -35,19 +35,23 @@ export function start(seconds){
 export function stop(){
   clearInterval(timer.tick);
   timer.endsAt = 0;
-  if(button) button.classList.remove("running", "up");
+  if(button) button.classList.remove("running", "warn", "ending", "up");
   showIdle();
 }
 
 function tick(){
   const left = Math.max(0, Math.round((timer.endsAt - Date.now()) / 1000));
   if(clock) clock.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
-  if(button) button.classList.toggle("ending", left > 0 && left <= FINAL_COUNTDOWN_SECONDS);
+  if(button){
+    button.classList.toggle("warn",
+      left > FINAL_COUNTDOWN_SECONDS && left <= WARN_COUNTDOWN_SECONDS);
+    button.classList.toggle("ending", left > 0 && left <= FINAL_COUNTDOWN_SECONDS);
+  }
   if(left > 0) return;
 
   clearInterval(timer.tick);
   timer.endsAt = 0;
-  if(button){ button.classList.remove("running"); button.classList.add("up"); }
+  if(button){ button.classList.remove("running", "warn", "ending"); button.classList.add("up"); }
   if(typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(VIBRATE_PATTERN);
   if(clock) clock.textContent = "go";
   setTimeout(() => {

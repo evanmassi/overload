@@ -302,7 +302,7 @@ section("Expansion does not leak between sessions");
 section("The countdown escalates in its last seconds");
 {
   const {start, stop} = await import("../src/timer.js");
-  const {FINAL_COUNTDOWN_SECONDS} = await import("../src/constants.js");
+  const {WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS} = await import("../src/constants.js");
 
   fresh();
   render();
@@ -314,17 +314,25 @@ section("The countdown escalates in its last seconds");
 
   start(90);
   check("starting marks it running", els.timer.classList.contains("running"));
-  check("with plenty left it does not escalate", !els.timer.classList.contains("ending"));
+  check("with plenty left it neither warns nor escalates",
+    !els.timer.classList.contains("warn") && !els.timer.classList.contains("ending"));
+
+  start(WARN_COUNTDOWN_SECONDS);
+  check("inside ten seconds it warns", els.timer.classList.contains("warn"));
+  check("but does not yet escalate", !els.timer.classList.contains("ending"));
 
   start(FINAL_COUNTDOWN_SECONDS);
   check("inside the final seconds it escalates", els.timer.classList.contains("ending"));
+  check("and drops the warn tier", !els.timer.classList.contains("warn"));
 
-  start(FINAL_COUNTDOWN_SECONDS + 5);
-  check("a fresh longer rest drops the escalation", !els.timer.classList.contains("ending"));
+  start(WARN_COUNTDOWN_SECONDS + 30);
+  check("a fresh longer rest drops both tiers",
+    !els.timer.classList.contains("warn") && !els.timer.classList.contains("ending"));
 
   stop();
   check("stopping clears every state class",
     !els.timer.classList.contains("running") &&
+    !els.timer.classList.contains("warn") &&
     !els.timer.classList.contains("ending") &&
     !els.timer.classList.contains("up"));
   check("and restores the idle reading", els.clock.textContent.endsWith("s"), els.clock.textContent);

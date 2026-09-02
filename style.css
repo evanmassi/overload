@@ -201,7 +201,10 @@ button{cursor:pointer;border:none;background:none}
 }
 .timer.running{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .timer.running small{color:var(--accent-ink);opacity:.75}
-.timer.ending small,.timer.up small{display:none}
+.timer.warn small,.timer.ending small,.timer.up small{display:none}
+.timer.warn{
+  font-size:19px;background:var(--flat);color:#fff;border-color:transparent;
+}
 .timer.ending{
   font-size:24px;background:var(--flat);color:#fff;border-color:transparent;
   animation:tick-pulse 1s ease-in-out infinite;
