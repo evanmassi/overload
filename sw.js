@@ -3,7 +3,8 @@ const CACHE = 'overload-v2';
 const ASSETS = [
   './', './index.html', './style.css', './manifest.json',
   './src/main.js', './src/state.js', './src/session.js', './src/render.js',
-  './src/savestate.js', './src/sound.js',
+  './src/savestate.js', './src/sound.js', './src/format.js',
+  './src/history.js', './src/progress.js',
   './src/sheet.js', './src/timer.js', './src/backup.js', './src/storage.js',
   './src/rotation.js', './src/progression.js', './src/swaps.js',
   './src/movements.js', './src/constants.js',

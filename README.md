@@ -156,14 +156,17 @@ Static files, ES modules, no build step.
 | `src/progression.js` | scoring, volume, target suggestions |
 | `src/swaps.js` | substitutions and custom exercises |
 | `src/session.js` | the session being edited, autosave |
-| `src/render.js` | the three views |
+| `src/format.js` | set summaries and durations, shared by every view |
+| `src/render.js` | the log view, the save bar |
+| `src/history.js` | the history view, backup and sound controls |
+| `src/progress.js` | the progress view, consistency grid, sparkline |
 | `src/sheet.js` | swap and how-to sheets |
 | `src/timer.js` | rest timer |
 | `src/savestate.js` | the header save dot |
 | `src/sound.js` | countdown beeps and the sound preference |
 | `src/backup.js` | JSON export and import |
 
-Nothing imports `render.js` except `main.js`. State changes call `notify()`, and `main.js` subscribes `render` to it. That keeps the view out of the logic and the module graph free of cycles.
+Nothing imports `render.js` except `main.js`, and `render.js` is the only thing that imports `history.js` and `progress.js`. State changes call `notify()`, and `main.js` subscribes `render` to it. That keeps the view out of the logic and the module graph free of cycles.
 
 ## Tests
 
@@ -171,11 +174,13 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 288 assertions, no dependencies.
+Three suites, 301 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
 - `render.mjs` boots the real views against a fake DOM and asserts what renders, including the sheet's hidden state.
+
+`modules.mjs` also fails the build on an export nothing imports, which is why there is no dead code to find by hand.
 
 Blocks must not inherit state from each other; each opens with `fresh()`.
 

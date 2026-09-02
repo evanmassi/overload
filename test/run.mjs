@@ -246,6 +246,25 @@ section("The progress card reads the best estimate, not the biggest pile");
   equal("an empty list too", bestEstimate([], false), null);
 }
 
+section("One formatter serves both views");
+{
+  const {setSummary, elapsedLabel, unitSuffix} = await import("../src/format.js");
+
+  equal("a run folds", setSummary([{w: "50", r: "12"}, {w: "50", r: "12"}], ""), "2 × 50×12");
+  equal("a lone set does not", setSummary([{w: "50", r: "12"}], ""), "50×12");
+  equal("no sets is empty", setSummary([], ""), "");
+  equal("undefined sets is empty", setSummary(undefined, ""), "");
+  equal("unlogged sets are skipped",
+    setSummary([{w: "50", r: ""}, {w: "50", r: "12"}], ""), "50×12");
+  equal("a bodyweight hold carries its unit",
+    setSummary([{w: "", r: "45"}, {w: "", r: "45"}], "s"), "2 × 45s");
+
+  equal("seconds moves get an s", unitSuffix({unit: "sec"}), "s");
+  equal("everything else gets nothing", unitSuffix({}), "");
+
+  check("elapsedLabel needs both ends", elapsedLabel(1000, null) === null);
+}
+
 section("Backup import merges rather than overwrites");
 {
   reset();

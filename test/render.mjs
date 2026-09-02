@@ -290,6 +290,9 @@ section("Logging updates the page without a re-render");
 
   check("finishing the last set collapses it there and then",
     card.classList.contains("done"));
+  check("the collapsed summary collapses runs like history does",
+    card.find("ex-summary")[0].textContent.includes("×"),
+    card.find("ex-summary")[0].textContent);
   check("the summary fills in without a re-render",
     card.find("ex-summary")[0].textContent.includes("50"),
     card.find("ex-summary")[0].textContent);
@@ -300,7 +303,7 @@ section("Logging updates the page without a re-render");
 
 section("Time in the gym is first log to last log");
 {
-  const {elapsedLabel} = await import("../src/render.js");
+  const {elapsedLabel} = await import("../src/format.js");
   const minutes = n => n * 60000;
 
   check("a session with no end has no duration", elapsedLabel(1000, null) === null);

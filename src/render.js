@@ -1,18 +1,18 @@
 import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, ICON_REPEAT,
-        CONFIRM_WINDOW_MS, EFFORT_LEVELS} from "./constants.js";
-import {workoutFor, allExercises, findExercise} from "./movements.js";
+        EFFORT_LEVELS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT} from "./constants.js";
+import {workoutFor, allExercises} from "./movements.js";
 import {state, notify} from "./state.js";
-import {num, score, loggedCount, priorSets, sessionVolume, suggestTarget,
-        prescribedCount, hasStalled, bestEstimate, estimateFor} from "./progression.js";
+import {score, loggedCount, priorSets, sessionVolume, suggestTarget,
+        prescribedCount, hasStalled} from "./progression.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
-import {resolveSlot, exerciseName} from "./swaps.js";
-import {loadDate, setBlockIndex, setDay, setsFor, queueSave, deleteSession, previousSameWorkout,
+import {resolveSlot} from "./swaps.js";
+import {loadDate, setBlockIndex, setDay, setsFor, queueSave, previousSameWorkout,
         setEffort, markLogged} from "./session.js";
+import {setSummary, elapsedLabel, unitSuffix} from "./format.js";
+import {renderHistory} from "./history.js";
+import {renderProgress} from "./progress.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer, setIdleRest} from "./timer.js";
-import {exportSessions, importSessions, onBackupStatus} from "./backup.js";
-import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
-
 const el = id => document.getElementById(id);
 
 function toggleExpanded(id){
@@ -94,10 +94,7 @@ function renderLog(main){
 }
 
 function summaryFor(exercise){
-  return (state.current.entries[exercise.id] || [])
-    .filter(set => set && set.r)
-    .map(set => (set.w ? set.w + "\u00d7" : "") + set.r)
-    .join("  ");
+  return setSummary(state.current.entries[exercise.id], unitSuffix(exercise));
 }
 
 function syncCard(exercise){
@@ -153,7 +150,7 @@ function fillCard(card, exercise, position, slot, partnerName){
   slot = slot || exercise;
   const prior = priorSets(state.sessions, exercise.id, state.current.date);
   const unit = exercise.unit === "sec" ? "sec" : "reps";
-  const suffix = exercise.unit === "sec" ? "s" : "";
+  const suffix = unitSuffix(exercise);
 
   const head = document.createElement("div");
   head.className = "ex-head";
@@ -207,7 +204,7 @@ function fillCard(card, exercise, position, slot, partnerName){
   if(hasStalled(state.sessions, exercise, state.current.date)){
     const flag = document.createElement("p");
     flag.className = "stall";
-    flag.textContent = "Stuck here three sessions running. Swap it, or drop 10% and build back up.";
+    flag.textContent = `Stuck here ${STALL_EXPOSURES} sessions running. Swap it, or drop ${STALL_BACKOFF_PERCENT}% and build back up.`;
     card.appendChild(flag);
   }
 
@@ -370,251 +367,6 @@ function notesCard(){
   return box;
 }
 
-function backupControls(){
-  const box = document.createElement("div");
-  box.className = "backup";
-
-  const save = document.createElement("button");
-  save.className = "btn";
-  save.textContent = "Export backup";
-  save.addEventListener("click", exportSessions);
-
-  const load = document.createElement("label");
-  load.className = "btn";
-  load.textContent = "Import backup";
-  const picker = document.createElement("input");
-  picker.type = "file";
-  picker.accept = "application/json,.json";
-  picker.hidden = true;
-  picker.addEventListener("change", importSessions);
-  load.appendChild(picker);
-
-  const result = document.createElement("span");
-  result.className = "backup-result";
-  onBackupStatus(text => { result.textContent = text; });
-
-  box.append(save, load, result);
-  return box;
-}
-
-function soundControls(){
-  const box = document.createElement("div");
-  box.className = "soundrow";
-
-  const toggle = document.createElement("button");
-  toggle.className = "btn";
-  const paint = () => {
-    toggle.textContent = soundOn() ? "Sound on" : "Sound off";
-    toggle.classList.toggle("on", soundOn());
-    toggle.setAttribute("aria-pressed", String(soundOn()));
-  };
-  toggle.addEventListener("click", () => { setSoundOn(!soundOn()); paint(); });
-  paint();
-
-  const note = document.createElement("p");
-  note.className = "sound-result";
-
-  const test = document.createElement("button");
-  test.className = "btn";
-  test.textContent = "Test sound";
-  test.addEventListener("click", () => {
-    const played = testTone();
-    const state = audioState();
-    note.textContent = played
-      ? "Played. Heard nothing? Check the ring/silent switch."
-      : state === "unsupported"
-        ? "This browser has no Web Audio."
-        : "Blocked by the browser. Tap once more.";
-  });
-
-  box.append(toggle, test, note);
-  return box;
-}
-
-function soundNote(){
-  const note = document.createElement("p");
-  note.className = "sound-note";
-  note.textContent = "Three short beeps in the last seconds, one long one when the rest is up. iOS suspends audio when the screen locks, so keep the app in front.";
-  return note;
-}
-
-function backupNote(){
-  const note = document.createElement("p");
-  note.className = "backup-note";
-  note.textContent = "Your log lives on this device. Export before clearing browser data.";
-  return note;
-}
-
-function setSummary(sets, suffix){
-  const parts = sets.filter(set => set && set.r)
-    .map(set => set.w ? `${set.w}×${set.r}${suffix}` : `${set.r}${suffix}`);
-
-  const runs = [];
-  for(const part of parts){
-    const last = runs[runs.length - 1];
-    if(last && last.part === part) last.count++;
-    else runs.push({part, count: 1});
-  }
-  return runs.map(run => run.count > 1 ? `${run.count} × ${run.part}` : run.part)
-    .join(" · ");
-}
-
-function historyLine(session, slot){
-  const swapped = session.swaps && session.swaps[slot.id];
-  const id = swapped || slot.id;
-  const sets = (session.entries || {})[id];
-  if(!sets || !sets.some(set => set && set.r)) return null;
-
-  const line = document.createElement("div");
-  line.className = "hist-line";
-  const name = swapped ? exerciseName(id) : slot.n;
-  const mark = swapped
-    ? `<i class="hist-swap" title="Swapped in for ${slot.n}" aria-label="Swapped in for ${slot.n}">${ICON_SWAP}</i>`
-    : "";
-  line.innerHTML = `<span>${name}${mark}</span><b>${setSummary(sets, slot.unit === "sec" ? "s" : "")}</b>`;
-  return line;
-}
-
-function renderHistory(main){
-  const dates = Object.keys(state.sessions).sort().reverse();
-  if(!dates.length){
-    main.innerHTML = `<p class="empty">Nothing logged yet. Fill in a set on the Log tab and it shows up here.</p>`;
-    main.append(soundControls(), soundNote(), backupControls(), backupNote());
-    return;
-  }
-
-  const label = document.createElement("p");
-  label.className = "section-label";
-  label.textContent = `${dates.length} sessions`;
-  main.appendChild(label);
-
-  dates.forEach(date => {
-    const session = state.sessions[date];
-    const plan = workoutFor(session.block, session.day);
-    if(!plan) return;
-
-    const card = document.createElement("div");
-    card.className = "hist-day hist-open";
-    card.title = "Open this session to fix it";
-    card.addEventListener("click", () => {
-      loadDate(date);
-      state.view = "log";
-      notify();
-      window.scrollTo(0, 0);
-    });
-    card.innerHTML = `<div class="hist-top"><h3>${plan.focus}</h3><span class="chip live">${session.block}</span><span class="chip">${date}</span></div>`;
-
-    const remove = document.createElement("button");
-    remove.textContent = "delete";
-    remove.addEventListener("click", event => {
-      event.stopPropagation();
-      if(remove.dataset.armed){ deleteSession(date); return; }
-      remove.dataset.armed = "1";
-      remove.textContent = "sure?";
-      setTimeout(() => { delete remove.dataset.armed; remove.textContent = "delete"; }, CONFIRM_WINDOW_MS);
-    });
-    card.querySelector(".hist-top").appendChild(remove);
-
-    plan.ex.forEach(slot => {
-      const line = historyLine(session, slot);
-      if(line) card.appendChild(line);
-    });
-
-    const supersets = (plan.core || [])
-      .map(pair => pair.map(slot => historyLine(session, slot)).filter(Boolean))
-      .filter(lines => lines.length);
-
-    if(supersets.length){
-      const label = document.createElement("p");
-      label.className = "hist-sub";
-      label.textContent = "Core finisher";
-      card.appendChild(label);
-      supersets.forEach(lines => {
-        const group = document.createElement("div");
-        group.className = "hist-super";
-        lines.forEach(line => group.appendChild(line));
-        card.appendChild(group);
-      });
-    }
-
-    const foot = document.createElement("div");
-    foot.className = "hist-foot";
-    const took = elapsedLabel(session.startedAt, session.lastLoggedAt);
-    foot.innerHTML = [
-      `<b>${sessionVolume(session, session.block, session.day).toLocaleString()} lb</b>`,
-      `<span>${loggedCount(session)} sets</span>`,
-      took ? `<span>${took}</span>` : ""
-    ].join("");
-    card.appendChild(foot);
-
-    if(session.notes){
-      const note = document.createElement("p");
-      note.className = "hist-notes";
-      note.textContent = session.notes;
-      card.appendChild(note);
-    }
-
-    main.appendChild(card);
-  });
-
-  main.append(soundControls(), soundNote(), backupControls(), backupNote());
-}
-
-function renderProgress(main){
-  const byExercise = {};
-  Object.keys(state.sessions).sort().forEach(date => {
-    const session = state.sessions[date];
-    for(const id in (session.entries || {})){
-      const sets = session.entries[id].filter(set => set && set.r);
-      if(!sets.length) continue;
-      const exercise = findExercise(id);
-      if(!exercise) continue;
-      const top = bestEstimate(sets, exercise.bw);
-      const value = Math.round(estimateFor(top, exercise.bw));
-      (byExercise[id] = byExercise[id] || {name: exercise.n, bw: exercise.bw, points: []})
-        .points.push({date, value, top});
-    }
-  });
-
-  const ids = Object.keys(byExercise).sort((a, b) => byExercise[b].points.length - byExercise[a].points.length);
-  if(!ids.length){
-    main.innerHTML = `<p class="empty">Log two sessions of the same lift and the trend line shows up here.</p>`;
-    const consistency = document.createElement("p");
-    consistency.className = "section-label";
-    consistency.textContent = "Consistency";
-    main.append(consistency, consistencyGrid());
-    return;
-  }
-
-  const consistency = document.createElement("p");
-  consistency.className = "section-label";
-  consistency.textContent = "Consistency";
-  main.append(consistency, consistencyGrid());
-
-  const label = document.createElement("p");
-  label.className = "section-label";
-  label.textContent = "Top set trend · est. 1RM";
-  main.appendChild(label);
-
-  ids.forEach(id => {
-    const entry = byExercise[id];
-    const latest = entry.points[entry.points.length - 1];
-    const best = entry.points.reduce((a, b) => b.value > a.value ? b : a);
-    const qualifier = entry.bw ? "best reps" : "est. 1RM";
-    const sessions = `${entry.points.length} session${entry.points.length === 1 ? "" : "s"}`;
-    const history = entry.points.length > 1 ? `${sessions} · best ${best.value}` : sessions;
-
-    const card = document.createElement("div");
-    card.className = "prog";
-    card.innerHTML = `<h3>${entry.name}</h3>
-      <div class="best">${latest.value}<em>${qualifier}</em></div>
-      <div class="meta">${history}</div>
-      <div class="meta" style="text-align:right">${latest.top.w ? latest.top.w + "×" : ""}${latest.top.r} on ${latest.date.slice(5)}</div>`;
-    if(entry.points.length > 1) card.appendChild(sparkline(entry.points.map(p => p.value)));
-    main.appendChild(card);
-  });
-}
-
 function updateSetBar(done, total){
   const bar = el("setbar");
   if(!bar) return;
@@ -628,85 +380,6 @@ function updateSetBar(done, total){
   bar.setAttribute("aria-valuemax", String(total));
   bar.setAttribute("aria-valuenow", String(done));
   bar.setAttribute("aria-label", `${done} of ${total} sets logged`);
-}
-
-export function elapsedLabel(startedAt, endedAt){
-  if(startedAt == null || endedAt == null) return null;
-  const minutes = Math.floor((endedAt - startedAt) / 60000);
-  if(minutes < 1) return null;
-  if(minutes < 60) return minutes + " min";
-  return Math.floor(minutes / 60) + "h " + String(minutes % 60).padStart(2, "0") + "m";
-}
-
-function consistencyGrid(){
-  const wrap = document.createElement("div");
-  wrap.className = "grid-wrap";
-
-  const weeks = 26;
-  const today = new Date();
-  const start = new Date(today);
-  start.setDate(start.getDate() - (weeks * 7 - 1));
-
-  const grid = document.createElement("div");
-  grid.className = "grid";
-  let trained = 0;
-
-  for(let i = 0; i < weeks * 7; i++){
-    const day = new Date(start);
-    day.setDate(day.getDate() + i);
-    const key = day.getFullYear() + "-" +
-      String(day.getMonth() + 1).padStart(2, "0") + "-" +
-      String(day.getDate()).padStart(2, "0");
-    const session = state.sessions[key];
-    const sets = session ? loggedCount(session) : 0;
-    const cell = document.createElement("i");
-    cell.className = "cell" + (sets ? " lit" + Math.min(3, Math.ceil(sets / 10)) : "");
-    cell.title = key + (sets ? " · " + sets + " sets" : "");
-    grid.appendChild(cell);
-    if(sets) trained++;
-  }
-
-  const caption = document.createElement("p");
-  caption.className = "grid-note";
-  caption.textContent = trained + " sessions in the last " + weeks + " weeks";
-
-  wrap.append(grid, caption);
-  return wrap;
-}
-
-function sparkline(values){
-  const ns = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("viewBox", "0 0 100 36");
-  svg.setAttribute("preserveAspectRatio", "none");
-
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = max - min || 1;
-  const points = values.map((value, i) => [(i / (values.length - 1)) * 100, 32 - ((value - min) / span) * 28]);
-  const path = points.map(p => p.join(",")).join(" ");
-
-  const area = document.createElementNS(ns, "polygon");
-  area.setAttribute("points", `0,36 ${path} 100,36`);
-  area.setAttribute("fill", "var(--accent-soft)");
-
-  const line = document.createElementNS(ns, "polyline");
-  line.setAttribute("points", path);
-  line.setAttribute("fill", "none");
-  line.setAttribute("stroke", "var(--accent)");
-  line.setAttribute("stroke-width", "1.5");
-  line.setAttribute("stroke-linejoin", "round");
-  line.setAttribute("vector-effect", "non-scaling-stroke");
-
-  const dot = document.createElementNS(ns, "circle");
-  dot.setAttribute("cx", points[points.length - 1][0]);
-  dot.setAttribute("cy", points[points.length - 1][1]);
-  dot.setAttribute("r", "2.5");
-  dot.setAttribute("fill", "var(--accent)");
-  dot.setAttribute("vector-effect", "non-scaling-stroke");
-
-  svg.append(area, line, dot);
-  return svg;
 }
 
 function nextRestSeconds(){
