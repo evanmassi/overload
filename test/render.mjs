@@ -442,6 +442,9 @@ section("A history card groups, collapses and marks");
       flat_db_press: [{w: "65", r: "10"}, {w: "65", r: "10"}, {w: "65", r: "9"}],
       incline_db_press: [{w: "50", r: "12"}, {w: "50", r: "12"}, {w: "50", r: "12"}],
       cable_crossover: [{w: "30", r: "15"}],
+      lat_pulldown: [{w: "55", r: "20"}, {w: "60", r: "16"}, {w: "60", r: "16"}, {w: "60", r: "16"}],
+      db_pullover: [{w: "40", r: "12"}, {w: "40", r: "12"}, {w: "45", r: "10"},
+                    {w: "40", r: "12"}, {w: "40", r: "12"}],
       hanging_knee_raise: [{w: "", r: "12"}, {w: "", r: "12"}],
       plank: [{w: "", r: "45"}, {w: "", r: "45"}]
     }
@@ -454,8 +457,8 @@ section("A history card groups, collapses and marks");
   check("identical sets collapse to a count",
     rowFor("Incline DB Press").innerHTML.includes("3 × 50×12"),
     rowFor("Incline DB Press").innerHTML);
-  check("mixed sets stay spelled out",
-    rowFor("Flat DB Bench Press").innerHTML.includes("65×10 · 65×10 · 65×9"),
+  check("a run collapses but the odd set out stays",
+    rowFor("Flat DB Bench Press").innerHTML.includes("2 × 65×10 · 65×9"),
     rowFor("Flat DB Bench Press").innerHTML);
   check("a single set needs no count",
     /<b>30×15<\/b>/.test(rowFor("Cable Crossover").innerHTML),
@@ -469,6 +472,16 @@ section("A history card groups, collapses and marks");
   check("an unswapped move carries no glyph",
     !rowFor("Incline DB Press").innerHTML.includes("hist-swap"));
 
+  const ramp = card.find("hist-line").find(l => l.innerHTML.includes("Wide-grip Lat Pulldown"));
+  check("a warmup set then a run reads in order",
+    ramp && ramp.innerHTML.includes("55×20 · 3 × 60×16"),
+    ramp && ramp.innerHTML);
+
+  const split = card.find("hist-line").find(l => l.innerHTML.includes("DB Pullover"));
+  check("a run broken and resumed stays broken",
+    split && split.innerHTML.includes("2 × 40×12 · 45×10 · 2 × 40×12"),
+    split && split.innerHTML);
+
   check("core sits under its own label",
     card.find("hist-sub").length === 1 && card.find("hist-sub")[0].textContent === "Core finisher");
   const supers = card.find("hist-super");
@@ -478,7 +491,7 @@ section("A history card groups, collapses and marks");
 
   const foot = card.find("hist-foot")[0];
   check("the totals strip counts every logged set",
-    foot.innerHTML.includes("11 sets"), foot.innerHTML);
+    foot.innerHTML.includes("20 sets"), foot.innerHTML);
   check("and reports the duration", foot.innerHTML.includes("1h 04m"), foot.innerHTML);
 
   state.view = "log";

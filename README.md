@@ -59,7 +59,7 @@ CORE FINISHER
 9,680 lb          16 sets            1h 04m
 ```
 
-Sets that are identical collapse to a count, so `50×12 · 50×12 · 50×12` becomes `3 × 50×12`; anything that varies stays spelled out, because that variation is the interesting part. Core moves sit under their own label with each superset bracketed, which replaces the `◦` that used to mark them one at a time and never showed which two went together. A swapped move carries the same glyph as the Log tab's swap button, and says what it replaced. Session totals live in a footer strip rather than pretending to be two more exercises.
+Runs of identical sets collapse to a count, so `55×20 · 60×16 · 60×16 · 60×16` becomes `55×20 · 3 × 60×16`. Only consecutive sets fold together and the order never moves, so the shape of the session still reads: a warmup set, a working run, a drop at the end. A run that is broken and resumed stays broken, because going back down and back up is the part worth seeing. Core moves sit under their own label with each superset bracketed, which replaces the `◦` that used to mark them one at a time and never showed which two went together. A swapped move carries the same glyph as the Log tab's swap button, and says what it replaced. Session totals live in a footer strip rather than pretending to be two more exercises.
 
 **Fixing a mistake**: tap any card on the History tab to open that session in the Log tab, where every field is editable. `delete` on a history card removes the session; it asks once before it does.
 
@@ -171,7 +171,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 286 assertions, no dependencies.
+Three suites, 288 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

@@ -448,10 +448,15 @@ function backupNote(){
 function setSummary(sets, suffix){
   const parts = sets.filter(set => set && set.r)
     .map(set => set.w ? `${set.w}×${set.r}${suffix}` : `${set.r}${suffix}`);
-  if(!parts.length) return "";
-  return parts.length > 1 && parts.every(part => part === parts[0])
-    ? `${parts.length} × ${parts[0]}`
-    : parts.join(" · ");
+
+  const runs = [];
+  for(const part of parts){
+    const last = runs[runs.length - 1];
+    if(last && last.part === part) last.count++;
+    else runs.push({part, count: 1});
+  }
+  return runs.map(run => run.count > 1 ? `${run.count} × ${run.part}` : run.part)
+    .join(" · ");
 }
 
 function historyLine(session, slot){
