@@ -471,6 +471,19 @@ section("The countdown beeps once a second, then once at zero");
   stop();
   equal("one second of rest beeps once then goes",
     played, [BEEP_COUNTDOWN.freq, BEEP_GO.freq]);
+
+  played.length = 0;
+  start(5);
+  equal("a fresh five-second rest is silent to begin with", played, []);
+  const frozenUntil = Date.now() + 5600;
+  while(Date.now() < frozenUntil);
+  await new Promise(done => setTimeout(done, 400));
+  equal("a rest that ended while the app was frozen makes no sound", played, []);
+  check("and it does not flash a stale go",
+    !els.timer.classList.contains("up"), els.timer._class);
+  check("it just falls back to the idle reading",
+    els.clock.textContent.endsWith("s"), els.clock.textContent);
+  stop();
 }
 
 section("A superset reads as an alternating pair");

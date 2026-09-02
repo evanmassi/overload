@@ -72,7 +72,7 @@ The caveats are iOS ones, and the reason the visual tiers exist rather than rely
 
 - Web Audio needs a real tap to start, so the context unlocks on your first `pointerdown` of the session and resumes on later taps if iOS suspended it.
 - **The hardware silent switch mutes Web Audio**, AirPods or not, since it mutes by audio session category rather than by output route. Tap **Test sound** on your phone to find out what yours does.
-- **iOS suspends JS timers when the screen locks or you leave the app**, so a beep scheduled for the last seconds never fires if the phone is in your pocket. The clock itself is computed from an `endsAt` timestamp, so the reading is correct again the moment you come back; only the sound is lost.
+- **iOS suspends JS timers when the screen locks or you leave the app**, so a beep scheduled for the last seconds never fires if the phone is in your pocket. The clock itself is computed from an `endsAt` timestamp, so the reading is correct again the moment you come back; only the sound is lost. If the rest ended entirely while you were away, the timer notices the gap between ticks and resets quietly rather than announcing a `GO` for a rest that finished two minutes ago.
 - `navigator.vibrate` does nothing on iOS Safari. The call is still there for Android, where it works.
 
 **After each exercise, say how it felt** — easy, medium or hard. Easy doubles next week's jump, medium takes the normal step, hard repeats the same numbers instead of pushing. That turns a fixed +5 rule into something that answers to the day you actually had.
@@ -141,7 +141,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 246 assertions, no dependencies.
+Three suites, 250 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

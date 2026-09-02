@@ -1,8 +1,8 @@
-import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, VIBRATE_PATTERN,
+import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, STALE_RESUME_MS, VIBRATE_PATTERN,
         WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS} from "./constants.js";
 import {beepCountdown, beepGo} from "./sound.js";
 
-const timer = {endsAt: 0, tick: null, seconds: DEFAULT_REST, idle: DEFAULT_REST, beepedAt: 0};
+const timer = {endsAt: 0, tick: null, seconds: DEFAULT_REST, idle: DEFAULT_REST, beepedAt: 0, lastTick: 0};
 
 let button = null;
 let clock = null;
@@ -28,6 +28,7 @@ export function start(seconds){
   timer.seconds = seconds || DEFAULT_REST;
   timer.endsAt = Date.now() + timer.seconds * 1000;
   timer.beepedAt = 0;
+  timer.lastTick = Date.now();
   if(button){ button.classList.add("running"); button.classList.remove("warn", "ending", "up"); }
   clearInterval(timer.tick);
   timer.tick = setInterval(tick, TIMER_TICK_MS);
@@ -42,7 +43,10 @@ export function stop(){
 }
 
 function tick(){
-  const left = Math.max(0, Math.round((timer.endsAt - Date.now()) / 1000));
+  const now = Date.now();
+  const resumedLate = timer.lastTick > 0 && now - timer.lastTick > STALE_RESUME_MS;
+  timer.lastTick = now;
+  const left = Math.max(0, Math.round((timer.endsAt - now) / 1000));
   if(clock) clock.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
   if(button){
     button.classList.toggle("warn",
@@ -57,6 +61,11 @@ function tick(){
 
   clearInterval(timer.tick);
   timer.endsAt = 0;
+  if(resumedLate){
+    if(button) button.classList.remove("running", "warn", "ending", "up");
+    showIdle();
+    return;
+  }
   if(button){ button.classList.remove("running", "warn", "ending"); button.classList.add("up"); }
   if(typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(VIBRATE_PATTERN);
   beepGo();
