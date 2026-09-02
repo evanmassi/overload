@@ -1,5 +1,5 @@
 import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, ICON_REPEAT,
-        CONFIRM_WINDOW_MS, EFFORT_LEVELS, SESSION_CLOCK_TICK_MS} from "./constants.js";
+        CONFIRM_WINDOW_MS, EFFORT_LEVELS} from "./constants.js";
 import {workoutFor, allExercises, findExercise} from "./movements.js";
 import {state, notify} from "./state.js";
 import {num, score, estimatedMax, loggedCount, priorSets, sessionVolume, suggestTarget,
@@ -7,15 +7,13 @@ import {num, score, estimatedMax, loggedCount, priorSets, sessionVolume, suggest
 import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
 import {resolveSlot, exerciseName} from "./swaps.js";
 import {loadDate, setBlockIndex, setDay, setsFor, queueSave, deleteSession, previousSameWorkout,
-        setEffort, markStarted} from "./session.js";
+        setEffort, markLogged} from "./session.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer, setIdleRest} from "./timer.js";
 import {exportSessions, importSessions, onBackupStatus} from "./backup.js";
 import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
 
 const el = id => document.getElementById(id);
-
-let clockTimer = null;
 
 function toggleExpanded(id){
   state.expanded.has(id) ? state.expanded.delete(id) : state.expanded.add(id);
@@ -290,7 +288,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
     while(sets.length <= index) sets.push({w: "", r: ""});
     const hadReps = !!sets[index].r;
     sets[index] = {w: weight.value.trim(), r: reps.value.trim()};
-    if(sets[index].r) markStarted();
+    if(sets[index].r) markLogged();
     paint();
     syncCard(exercise);
     updateFooter();
@@ -572,31 +570,27 @@ function renderProgress(main){
   });
 }
 
-function updateRing(done, total){
-  const fill = el("ringfill");
-  const text = el("ringtext");
-  if(!fill || !text) return;
-  const circumference = 2 * Math.PI * 15.5;
-  const ratio = total ? Math.min(1, done / total) : 0;
-  fill.style.strokeDasharray = circumference.toFixed(1);
-  fill.style.strokeDashoffset = (circumference * (1 - ratio)).toFixed(1);
-  text.textContent = done;
-  el("ring").title = done + " of " + total + " sets";
+function updateSetBar(done, total){
+  const bar = el("setbar");
+  if(!bar) return;
+  if(bar.children.length !== total){
+    bar.innerHTML = "";
+    for(let i = 0; i < total; i++)
+      bar.appendChild(Object.assign(document.createElement("i"), {className: "tick"}));
+  }
+  for(let i = 0; i < total; i++)
+    if(bar.children[i]) bar.children[i].classList.toggle("on", i < done);
+  bar.setAttribute("aria-valuemax", String(total));
+  bar.setAttribute("aria-valuenow", String(done));
+  bar.setAttribute("aria-label", `${done} of ${total} sets logged`);
 }
 
-function elapsedLabel(startedAt){
-  const minutes = Math.floor((Date.now() - startedAt) / 60000);
-  if(minutes < 1) return "just started";
+export function elapsedLabel(startedAt, endedAt){
+  if(startedAt == null || endedAt == null) return null;
+  const minutes = Math.floor((endedAt - startedAt) / 60000);
+  if(minutes < 1) return null;
   if(minutes < 60) return minutes + " min";
-  return Math.floor(minutes / 60) + "h " + (minutes % 60) + "m";
-}
-
-function updateClock(){
-  clearTimeout(clockTimer);
-  const note = el("volnote");
-  if(!note || !state.current.startedAt) return;
-  note.textContent = note.textContent + " · " + elapsedLabel(state.current.startedAt);
-  if(state.view === "log") clockTimer = setTimeout(updateFooter, SESSION_CLOCK_TICK_MS);
+  return Math.floor(minutes / 60) + "h " + String(minutes % 60).padStart(2, "0") + "m";
 }
 
 function consistencyGrid(){
@@ -686,21 +680,25 @@ function updateFooter(){
   const current = state.current;
   const pending = nextRestSeconds();
   if(pending) setIdleRest(pending);
-  const volume = sessionVolume(current, current.block, current.day);
-  const count = loggedCount(current);
-  updateRing(count, prescribedCount(current.block, current.day));
-  el("volume").textContent = volume ? `${volume.toLocaleString()} lb` : (count ? `${count} sets` : "0");
 
-  if(!count){ el("volnote").textContent = "no sets logged"; updateClock(); return; }
+  const total = prescribedCount(current.block, current.day);
+  const count = loggedCount(current);
+  const volume = sessionVolume(current, current.block, current.day);
+  updateSetBar(count, total);
+
+  el("volume").textContent = volume ? `${volume.toLocaleString()} lb` : (count ? `${count} sets` : "0");
+  el("tally").textContent = `${count}/${total}`;
+
+  if(!count){ el("volnote").textContent = "nothing logged yet"; return; }
+
+  const parts = [];
+  const elapsed = elapsedLabel(current.startedAt, current.lastLoggedAt);
+  if(elapsed) parts.push(elapsed);
+
   const previous = previousSameWorkout();
   if(previous){
     const before = sessionVolume(previous.session, previous.session.block, previous.session.day);
-    const diff = volume - before;
-    el("volnote").textContent = before
-      ? `${diff >= 0 ? "+" : ""}${diff.toLocaleString()} vs ${previous.date.slice(5)}`
-      : `${count} sets logged`;
-  } else {
-    el("volnote").textContent = `${count} sets logged`;
+    if(before) parts.push(`${volume - before >= 0 ? "+" : ""}${(volume - before).toLocaleString()} vs ${previous.date.slice(5)}`);
   }
-  updateClock();
+  el("volnote").textContent = parts.length ? parts.join(" · ") : "first set in";
 }

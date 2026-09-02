@@ -5,7 +5,7 @@ export const state = {
   customNames: {},
   view: "log",
   expanded: new Set(),
-  current: {date: null, day: null, block: null, blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}, startedAt: null}
+  current: {date: null, day: null, block: null, blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}, startedAt: null, lastLoggedAt: null}
 };
 
 const listeners = new Set();

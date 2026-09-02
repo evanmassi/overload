@@ -60,6 +60,5 @@ export const ICON_UNDO = '<svg viewBox="0 0 20 20" width="16" height="16" fill="
 export const EFFORT_LEVELS = ["easy", "medium", "hard"];
 export const EFFORT_STEPS = {easy: 2, medium: 1, hard: 0};
 export const STALL_EXPOSURES = 3;
-export const SESSION_CLOCK_TICK_MS = 30000;
 
 export const ICON_REPEAT = '<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 11a5.5 5.5 0 1 1-1.6-3.9"/><path d="M14.5 3.5v4h-4"/></svg>';

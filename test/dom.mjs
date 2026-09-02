@@ -67,7 +67,7 @@ export function installDom(){
   const byId = {};
   const ids = ["main", "tabs", "volume", "volnote", "status", "timer", "clock",
                "sheet", "sheetback", "sheetclose", "sheettitle", "sheetbody", "notes",
-               "ring", "ringfill", "ringtext"];
+               "setbar", "tally"];
   ids.forEach(id => { byId[id] = new FakeNode("div"); });
 
   const doc = {

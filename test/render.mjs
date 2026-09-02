@@ -56,7 +56,7 @@ section("The log view renders a full session");
   check("a notes box renders", els.main.find("notes").length === 1);
   check("the legend renders", els.main.find("legend").length === 1);
   check("no target band before any history exists", els.main.find("target").length === 0);
-  check("footer reports an empty session", els.volnote.textContent === "no sets logged", els.volnote.textContent);
+  check("footer reports an empty session", els.volnote.textContent === "nothing logged yet", els.volnote.textContent);
 }
 
 section("Logging a set updates the view");
@@ -139,11 +139,14 @@ section("History and progress views render");
   check("two data points draw a sparkline", els.main.find("prog")[0].children.some(c => c.tag === "svg"));
 }
 
-section("Collapsing and the progress ring");
+section("Collapsing and the set bar");
 {
   fresh();
   render();
-  check("the ring starts empty", els.ringtext.textContent === "0", els.ringtext.textContent);
+  check("the set bar starts empty", els.tally.textContent === "0/38", els.tally.textContent);
+  check("and draws one tick per prescribed set",
+    els.setbar.children.length === 38, els.setbar.children.length);
+  check("with none lit", els.setbar.children.every(t => !t.classList.contains("on")));
 
   const card = els.main.find("ex-move")[0];
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
@@ -156,8 +159,12 @@ section("Collapsing and the progress ring");
 
   check("finishing every set collapses the card", els.main.find("ex-move")[0].classList.contains("done"));
   check("its summary is populated", els.main.find("ex-summary")[0].textContent.includes("50"));
-  check("the ring counts the logged sets", els.ringtext.textContent === "4", els.ringtext.textContent);
-  check("the footer shows elapsed time", els.volnote.textContent.includes("just started"), els.volnote.textContent);
+  check("the tally counts the logged sets", els.tally.textContent === "4/38", els.tally.textContent);
+  check("and four ticks light up",
+    els.setbar.children.filter(t => t.classList.contains("on")).length === 4);
+  check("the tally carries the count, not the note",
+    els.tally.textContent === "4/38" && !els.volnote.textContent.includes("sets"),
+    els.volnote.textContent);
 
   els.main.find("ex-fold")[0].fire("click");
   render();
@@ -272,9 +279,37 @@ section("Logging updates the page without a re-render");
   check("the summary fills in without a re-render",
     card.find("ex-summary")[0].textContent.includes("50"),
     card.find("ex-summary")[0].textContent);
-  check("the ring updates", els.ringtext.textContent === "4", els.ringtext.textContent);
-  check("the clock appears on the first logged set",
-    els.volnote.textContent.includes("just started"), els.volnote.textContent);
+  check("the tally updates", els.tally.textContent === "4/38", els.tally.textContent);
+  check("the tally updates without a re-render",
+    els.tally.textContent === "4/38", els.tally.textContent);
+}
+
+section("Time in the gym is first log to last log");
+{
+  const {elapsedLabel} = await import("../src/render.js");
+  const minutes = n => n * 60000;
+
+  check("a session with no end has no duration", elapsedLabel(1000, null) === null);
+  check("under a minute is not worth showing", elapsedLabel(0, 30000) === null);
+  equal("minutes read plainly", elapsedLabel(0, minutes(47)), "47 min");
+  equal("an hour and change reads as hours", elapsedLabel(0, minutes(78)), "1h 18m");
+  equal("it measures the gap, not the wall clock",
+    elapsedLabel(minutes(600), minutes(672)), "1h 12m");
+
+  fresh();
+  render();
+  const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
+  rows[0].children[1].value = "50";
+  rows[0].children[3].value = "10";
+  rows[0].children[3].fire("change");
+
+  check("logging stamps a start", !!state.current.startedAt);
+  check("and a last-logged moment", !!state.current.lastLoggedAt);
+
+  state.current.startedAt = state.current.lastLoggedAt - minutes(52);
+  render();
+  check("the footer shows the gap between them",
+    els.volnote.textContent.includes("52 min"), els.volnote.textContent);
 }
 
 section("Expansion does not leak between sessions");
