@@ -212,7 +212,10 @@ function fillCard(card, exercise, position, slot){
   columns.innerHTML = `<div>#</div><div>weight (lbs)</div><div></div><div>${unit}</div><div></div><div></div>`;
   sets.appendChild(columns);
 
-  for(let i = 0; i < exercise.s; i++) sets.appendChild(setRow(exercise, i, logged, prior));
+  const refreshers = [];
+  const refreshRepeats = () => refreshers.forEach(fn => fn());
+  for(let i = 0; i < exercise.s; i++)
+    sets.appendChild(setRow(exercise, i, logged, prior, refreshers, refreshRepeats));
   card.appendChild(sets);
   if(position) card.appendChild(effortRow(exercise));
 
@@ -227,7 +230,7 @@ function fillCard(card, exercise, position, slot){
   }
 }
 
-function setRow(exercise, index, logged, prior){
+function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
   const row = document.createElement("div");
   row.className = "set";
   const last = prior && prior.sets[index];
@@ -281,6 +284,7 @@ function setRow(exercise, index, logged, prior){
     paint();
     syncCard(exercise);
     updateFooter();
+    refreshRepeats();
     queueSave();
     if(!hadReps && sets[index].r)
       startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
@@ -292,21 +296,33 @@ function setRow(exercise, index, logged, prior){
     input.addEventListener("blur", commit);
   });
 
+  const carryFrom = () => index === 0
+    ? last
+    : (state.current.entries[exercise.id] || [])[index - 1];
+
   const repeat = document.createElement("button");
   repeat.className = "repeat";
   repeat.innerHTML = ICON_REPEAT;
-  repeat.disabled = !last || !last.r;
-  repeat.title = repeat.disabled
-    ? "Nothing logged last time"
-    : "Fill with " + (last.w ? last.w + " \u00d7 " : "") + last.r;
-  repeat.setAttribute("aria-label", repeat.title);
+
+  const refreshRepeat = () => {
+    const source = carryFrom();
+    repeat.disabled = !source || !source.r;
+    repeat.title = repeat.disabled
+      ? (index === 0 ? "Nothing logged last time" : `Log set ${index} first`)
+      : "Fill with " + (source.w ? source.w + " \u00d7 " : "") + source.r;
+    repeat.setAttribute("aria-label", repeat.title);
+  };
+
   repeat.addEventListener("click", () => {
-    if(repeat.disabled) return;
-    weight.value = last.w || "";
-    reps.value = last.r;
+    const source = carryFrom();
+    if(!source || !source.r) return;
+    weight.value = source.w || "";
+    reps.value = source.r;
     commit();
   });
 
+  refreshers.push(refreshRepeat);
+  refreshRepeat();
   paint();
   row.append(number, weight, times, reps, repeat, delta);
   return row;

@@ -47,7 +47,7 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 
 **Fixing a mistake**: tap any card on the History tab to open that session in the Log tab, where every field is editable. `delete` on a history card removes the session; it asks once before it does.
 
-**Tap the repeat icon** beside any set to fill it with what you did that set last time, then edit whatever changed.
+**Tap the repeat icon** beside a set to carry the set above it down: same weight, same reps, then edit whatever changed. On set 1 there is no row above, so it pulls set 1 from last session instead. The button stays dark until there is something to copy.
 
 **A finished exercise collapses** to a one-line summary of what you lifted. Tap the chevron to open it again. The page shrinks as you work, so the remaining scroll is the remaining work.
 
@@ -106,7 +106,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 178 assertions, no dependencies.
+Three suites, 181 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

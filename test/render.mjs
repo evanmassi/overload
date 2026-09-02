@@ -162,7 +162,7 @@ section("Collapsing and the progress ring");
   check("tapping the chevron expands it again", !els.main.find("ex")[0].classList.contains("done"));
 }
 
-section("Repeat-last-set button");
+section("Carry-forward repeat button");
 {
   fresh();
   state.sessions["2026-08-25"] = {
@@ -180,8 +180,19 @@ section("Repeat-last-set button");
   check("a set with none does not", second.disabled === true);
 
   first.fire("click");
-  equal("it fills in last time's numbers",
+  equal("set 1 fills in last time's numbers",
     state.current.entries.flat_db_press[0], {w: "45", r: "9"});
+  check("filling set 1 wakes the button on set 2", second.disabled === false);
+
+  rows[1].children[1].value = "50";
+  rows[1].children[3].value = "8";
+  rows[1].children[3].fire("change");
+
+  rows[2].children[4].fire("click");
+  equal("set 3 carries the set above it, not last session",
+    state.current.entries.flat_db_press[2], {w: "50", r: "8"});
+
+  check("logging set 3 in turn wakes set 4", rows[3].children[4].disabled === false);
 }
 
 section("Effort buttons");
