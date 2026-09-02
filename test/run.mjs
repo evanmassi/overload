@@ -6,7 +6,7 @@ import {
 
 const {BLOCKS, DAY_KEYS, IMPLEMENTS_PER_LOAD} = constants;
 const {activeBlockIndex, nextSessionIn, sessionsDoneIn, blockLetter, cycleNumber} = rotation;
-const {suggestTarget, repRange, sessionVolume, loggedCount, priorSets} = progression;
+const {suggestTarget, sessionVolume, loggedCount, priorSets} = progression;
 
 const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01");
 const prescribedCountFor = (block, day) => progression.prescribedCount(block, day);
@@ -87,9 +87,9 @@ section("Rotation follows work done, not the calendar");
 
 section("Progression targets");
 {
-  equal("a hyphenated rep range parses", repRange("8-10"), {min: 8, max: 10});
-  equal("a single rep count parses", repRange("12"), {min: 12, max: 12});
-  equal("AMRAP has no range", repRange("AMRAP"), null);
+  equal("a hyphenated rep range parses", movements.repRange("8-10"), {min: 8, max: 10});
+  equal("a single rep count parses", movements.repRange("12"), {min: 12, max: 12});
+  equal("AMRAP has no range", movements.repRange("AMRAP"), null);
 
   const press = {r: "8-10", bw: 0};
   const target = (ex, pairs) => {
@@ -193,6 +193,36 @@ section("Removing a custom exercise takes its sets with it");
   state.customNames = {custom_only: "only move"};
   swaps.removeCustom("custom_only");
   equal("a session left with nothing is dropped", state.sessions["2026-09-02"], undefined);
+}
+
+section("Rest comes from the movement, not its place in the list");
+{
+  const {restFor} = movements;
+  const rest = (block, day, name) =>
+    movements.workoutFor(block, day).ex.find(e => e.n === name).rest;
+
+  equal("a heavy five gets the long rest", rest("C", "chest", "Flat DB Bench Press"), 180);
+  equal("the day's lead compound gets two minutes", rest("A", "chest", "Flat DB Bench Press"), 120);
+  equal("an isolation raise gets one minute", rest("A", "arms", "DB Lateral Raise"), 60);
+  equal("calves are isolation wherever they sit", rest("A", "legs", "Standing DB Calf Raise"), 60);
+
+  equal("the same move as a 3-set accessory rests 90s",
+    rest("A", "legs", "Bulgarian Split Squat"), 90);
+  equal("and as a 4-set lead rests 120s",
+    rest("C", "legs", "Bulgarian Split Squat"), 120);
+
+  equal("an AMRAP lead is still a lead", rest("A", "chest", "Pull-ups"), 120);
+  equal("an AMRAP finisher is not", rest("A", "chest", "Push-ups to Failure"), 90);
+
+  const slot = movements.findExercise("hip_thrust");
+  equal("restFor reads the prescription, not the program", restFor(slot), 120);
+  equal("dropping it to three sets drops the rest",
+    restFor({id: slot.id, s: 3, r: slot.r}), 90);
+
+  const positional = movements.workoutFor("C", "chest").ex
+    .map((e, i) => e.rest === (i < 2 ? 120 : 60));
+  check("the old positional rule no longer describes the day",
+    positional.some(same => !same));
 }
 
 section("Backup import merges rather than overwrites");

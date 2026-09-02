@@ -60,7 +60,16 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 **The Progress tab** opens with a 26-week consistency grid, one square per day, shaded by how much you logged.
 **The core finisher is supersets, so you alternate**: first move, second move, first move, second move. The badge says `alternate the two moves`, the set rows read `R1` / `R2` rather than `1` / `2`, and the first move's card says `straight into <partner>` instead of quoting a rest. Doing both rounds of one move and then both of the other is straight sets, which is fine training but slower and not what the rest timings assume.
 
-**Rest timer** starts itself when you enter reps and picks its own length: 120s between sets of the day's first two heavy compounds, 60s between sets of everything else, 90s moving to the next exercise, 15s walking to the other half of a superset, 45s between superset rounds, 60s leaving one superset for the next.
+**Rest timer** starts itself when you enter reps and picks its own length from what the movement is and what the prescription asks of it, not from where it sits in the list:
+
+| | |
+|---|---|
+| compound, top of the rep range 6 or under | 180s |
+| compound prescribed 4+ sets | 120s |
+| compound prescribed 3 sets | 90s |
+| isolation and core | 60s |
+
+So Bulgarian Split Squat rests 90s as a 3×10 accessory in Week A and 120s as a 4×8 lead in Week C. A 4×AMRAP of pull-ups is a lead and gets 120s; a 3×AMRAP of push-ups is a finisher and gets 90s. Moving to the next exercise is always 90s. Inside the core finisher: 15s walking to the other half of a superset, 45s between rounds, 60s leaving one superset for the next.
 
 The session buttons mark which of the three you have already logged in the current week. **Tabs** — Log is the working screen. History lists past sessions with per-exercise numbers and total volume. Progress charts estimated 1RM per lift over time.
 
@@ -87,7 +96,7 @@ Static files, ES modules, no build step.
 | `src/program.js` | the nine workouts |
 | `src/howto.js` | 92 movement write-ups |
 | `src/taxonomy.js` | movement patterns, load conventions, per-side table |
-| `src/movements.js` | derives rest times and load factors onto the program |
+| `src/movements.js` | derives rest times and load factors onto the program, and parses rep ranges |
 | `src/constants.js` | every tunable number |
 | `src/state.js` | shared state and a subscribe/notify pair |
 | `src/storage.js` | localStorage read and write |
@@ -108,7 +117,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 194 assertions, no dependencies.
+Three suites, 205 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

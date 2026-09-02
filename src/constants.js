@@ -12,16 +12,19 @@ export const LEGACY_DAY_KEYS = {mon: "chest", wed: "legs", fri: "arms"};
 export const SESSIONS_KEY = "overload.v1";
 export const CUSTOM_KEY = "overload.custom.v1";
 
-export const HEAVY_COMPOUND_SLOTS = 2;
-
 export const REST = {
-  heavy: 120,
-  accessory: 60,
+  heavy: 180,
+  lead: 120,
+  accessory: 90,
+  isolation: 60,
   betweenMoves: 90,
   supersetWalk: 15,
   supersetRound: 45,
   betweenSupersets: 60
 };
+
+export const HEAVY_REP_CEILING = 6;
+export const LEAD_SET_COUNT = 4;
 
 export const DEFAULT_REST = 90;
 export const TIMER_TICK_MS = 250;

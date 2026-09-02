@@ -151,3 +151,8 @@ export const PATTERNS = {
   "Core rotation":["russian_twist","woodchop","pallof_press","db_side_bend"],
   "Carries":["suitcase_carry","farmer_carry"]
 };
+
+export const COMPOUND = [
+  "Horizontal press", "Vertical press", "Vertical pull", "Horizontal pull",
+  "Squat pattern", "Hip hinge", "Carries"
+];

@@ -1,4 +1,4 @@
-import {findExercise, allExercises, workoutFor} from "./movements.js";
+import {findExercise, allExercises, workoutFor, repRange} from "./movements.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
         EFFORT_STEPS, STALL_EXPOSURES} from "./constants.js";
 
@@ -77,13 +77,6 @@ export function sessionVolume(session, block, day){
       if(set && set.r) volume += num(set.w) * num(set.r) * reach;
   }
   return Math.round(volume);
-}
-
-export function repRange(reps){
-  const span = /(\d+)\s*-\s*(\d+)/.exec(reps);
-  if(span) return {min: +span[1], max: +span[2]};
-  const single = /^(\d+)/.exec(reps);
-  return single ? {min: +single[1], max: +single[1]} : null;
 }
 
 export function suggestTarget(exercise, prior){
