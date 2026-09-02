@@ -4,8 +4,12 @@ import {render} from "./render.js";
 import {mountSheet} from "./sheet.js";
 import {mountTimer} from "./timer.js";
 import {mountSaveState} from "./savestate.js";
+import {loadSoundPreference, unlockAudio} from "./sound.js";
 
 const el = id => document.getElementById(id);
+
+loadSoundPreference();
+document.addEventListener("pointerdown", unlockAudio);
 
 mountSaveState(el("status"));
 mountTimer(el("timer"), el("clock"));

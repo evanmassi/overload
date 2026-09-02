@@ -382,6 +382,97 @@ section("Save state is a dot, not a shifting line");
   state.view = "log";
 }
 
+section("Sound is optional, remembered and testable");
+{
+  const sound = await import("../src/sound.js");
+  fresh();
+
+  check("with no Web Audio the state says so", sound.audioState() === "unsupported");
+  check("unlocking a browser without it fails quietly", sound.unlockAudio() === false);
+  check("a beep with no context is a no-op, not a throw", sound.beepGo() === false);
+
+  check("sound defaults to on", sound.soundOn() === true);
+  sound.setSoundOn(false);
+  check("turning it off sticks", sound.soundOn() === false);
+  check("and it stops beeping", sound.beepCountdown() === false);
+  check("the preference is written to storage",
+    localStorage.getItem("overload.sound.v1") === "off");
+  check("and it survives a reload", sound.loadSoundPreference() === false);
+
+  sound.setSoundOn(true);
+  check("turning it back on sticks", sound.soundOn() === true);
+
+  state.view = "history";
+  render();
+  const row = els.main.find("soundrow")[0];
+  check("the history tab carries a sound row", !!row);
+  const buttons = row.find("btn");
+  check("it offers a toggle and a test", buttons.length === 2, buttons.length);
+  check("the toggle reads its current state",
+    buttons[0].textContent === "Sound on", buttons[0].textContent);
+
+  buttons[0].fire("click");
+  check("tapping it flips the label", buttons[0].textContent === "Sound off", buttons[0].textContent);
+  buttons[0].fire("click");
+
+  buttons[1].fire("click");
+  check("the test button reports what happened",
+    row.find("sound-result")[0].textContent.length > 0,
+    row.find("sound-result")[0].textContent);
+
+  state.view = "log";
+  render();
+}
+
+section("The countdown beeps once a second, then once at zero");
+{
+  const played = [];
+  window.AudioContext = function(){
+    this.state = "running";
+    this.currentTime = 0;
+    this.destination = {};
+    this.resume = () => Promise.resolve();
+    this.createGain = () => ({
+      connect(){},
+      gain: {setValueAtTime(){}, exponentialRampToValueAtTime(){}}
+    });
+    this.createOscillator = () => {
+      const osc = {
+        type: "",
+        connect(){},
+        stop(){},
+        frequency: {setValueAtTime(hz){ osc.hz = hz; }},
+        start(){ played.push(osc.hz); }
+      };
+      return osc;
+    };
+  };
+
+  const sound = await import("../src/sound.js");
+  const {start, stop} = await import("../src/timer.js");
+  const {BEEP_COUNTDOWN, BEEP_GO} = await import("../src/constants.js");
+
+  check("a real context unlocks", sound.unlockAudio() === true);
+  check("and reports itself running", sound.audioState() === "running", sound.audioState());
+
+  played.length = 0;
+  check("a go beep plays", sound.beepGo() === true);
+  equal("at the go pitch", played, [BEEP_GO.freq]);
+
+  played.length = 0;
+  sound.setSoundOn(false);
+  check("muted, nothing plays", sound.beepCountdown() === false);
+  equal("and no tone reaches the context", played, []);
+  sound.setSoundOn(true);
+
+  played.length = 0;
+  start(1);
+  await new Promise(done => setTimeout(done, 1400));
+  stop();
+  equal("one second of rest beeps once then goes",
+    played, [BEEP_COUNTDOWN.freq, BEEP_GO.freq]);
+}
+
 section("A superset reads as an alternating pair");
 {
   fresh();

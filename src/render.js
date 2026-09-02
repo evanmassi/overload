@@ -11,6 +11,7 @@ import {loadDate, setBlockIndex, setDay, setsFor, queueSave, deleteSession, prev
 import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer, setIdleRest} from "./timer.js";
 import {exportSessions, importSessions, onBackupStatus} from "./backup.js";
+import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
 
 const el = id => document.getElementById(id);
 
@@ -398,6 +399,47 @@ function backupControls(){
   return box;
 }
 
+function soundControls(){
+  const box = document.createElement("div");
+  box.className = "soundrow";
+
+  const toggle = document.createElement("button");
+  toggle.className = "btn";
+  const paint = () => {
+    toggle.textContent = soundOn() ? "Sound on" : "Sound off";
+    toggle.classList.toggle("on", soundOn());
+    toggle.setAttribute("aria-pressed", String(soundOn()));
+  };
+  toggle.addEventListener("click", () => { setSoundOn(!soundOn()); paint(); });
+  paint();
+
+  const note = document.createElement("p");
+  note.className = "sound-result";
+
+  const test = document.createElement("button");
+  test.className = "btn";
+  test.textContent = "Test sound";
+  test.addEventListener("click", () => {
+    const played = testTone();
+    const state = audioState();
+    note.textContent = played
+      ? "Played. Heard nothing? Check the ring/silent switch."
+      : state === "unsupported"
+        ? "This browser has no Web Audio."
+        : "Blocked by the browser. Tap once more.";
+  });
+
+  box.append(toggle, test, note);
+  return box;
+}
+
+function soundNote(){
+  const note = document.createElement("p");
+  note.className = "sound-note";
+  note.textContent = "Three short beeps in the last seconds, one long one when the rest is up. iOS suspends audio when the screen locks, so keep the app in front.";
+  return note;
+}
+
 function backupNote(){
   const note = document.createElement("p");
   note.className = "backup-note";
@@ -409,7 +451,7 @@ function renderHistory(main){
   const dates = Object.keys(state.sessions).sort().reverse();
   if(!dates.length){
     main.innerHTML = `<p class="empty">Nothing logged yet. Fill in a set on the Log tab and it shows up here.</p>`;
-    main.append(backupControls(), backupNote());
+    main.append(soundControls(), soundNote(), backupControls(), backupNote());
     return;
   }
 
@@ -474,7 +516,7 @@ function renderHistory(main){
     main.appendChild(card);
   });
 
-  main.append(backupControls(), backupNote());
+  main.append(soundControls(), soundNote(), backupControls(), backupNote());
 }
 
 function renderProgress(main){

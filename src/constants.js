@@ -11,6 +11,7 @@ export const LEGACY_DAY_KEYS = {mon: "chest", wed: "legs", fri: "arms"};
 
 export const SESSIONS_KEY = "overload.v1";
 export const CUSTOM_KEY = "overload.custom.v1";
+export const SOUND_KEY = "overload.sound.v1";
 
 export const REST = {
   heavy: 180,
@@ -32,6 +33,8 @@ export const TIMER_RESET_DELAY_MS = 3000;
 export const WARN_COUNTDOWN_SECONDS = 10;
 export const FINAL_COUNTDOWN_SECONDS = 3;
 export const VIBRATE_PATTERN = [200, 100, 200];
+export const BEEP_COUNTDOWN = {freq: 880, seconds: 0.09, volume: 0.22};
+export const BEEP_GO = {freq: 1320, seconds: 0.42, volume: 0.3};
 
 export const AUTOSAVE_DELAY_MS = 1200;
 export const CONFIRM_WINDOW_MS = 4000;

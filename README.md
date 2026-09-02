@@ -66,6 +66,15 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 
 Ten seconds is the "get ready" signal and three is the "go" one, so the picture and the sound say the same thing.
 
+**Beeps** ride along with the last tier: a short 880Hz tone at 3, 2 and 1, then a longer 1320Hz one when the rest is up. **Sound on** and **Test sound** live on the History tab, and the setting is remembered.
+
+The caveats are iOS ones, and the reason the visual tiers exist rather than relying on sound:
+
+- Web Audio needs a real tap to start, so the context unlocks on your first `pointerdown` of the session and resumes on later taps if iOS suspended it.
+- **The hardware silent switch mutes Web Audio**, AirPods or not, since it mutes by audio session category rather than by output route. Tap **Test sound** on your phone to find out what yours does.
+- **iOS suspends JS timers when the screen locks or you leave the app**, so a beep scheduled for the last seconds never fires if the phone is in your pocket. The clock itself is computed from an `endsAt` timestamp, so the reading is correct again the moment you come back; only the sound is lost.
+- `navigator.vibrate` does nothing on iOS Safari. The call is still there for Android, where it works.
+
 **After each exercise, say how it felt** — easy, medium or hard. Easy doubles next week's jump, medium takes the normal step, hard repeats the same numbers instead of pushing. That turns a fixed +5 rule into something that answers to the day you actually had.
 
 **A lift that has not improved in three sessions** gets flagged with a note to swap it or drop 10% and build back.
@@ -90,7 +99,7 @@ The session buttons mark which of the three you have already logged in the curre
 
 Everything is written to `localStorage` on the device, immediately, as you leave each field, plus a flush when you switch apps or close the tab. No account, no server, works with no signal.
 
-That means the log lives on one device. Use **Export backup** on the History tab to save a JSON file, and **Import backup** to merge it into another device. Import merges rather than overwrites: for any date present in both, the copy with more logged sets wins.
+The sound preference lives in `overload.sound.v1`; the log itself is untouched by it. That means the log lives on one device. Use **Export backup** on the History tab to save a JSON file, and **Import backup** to merge it into another device. Import merges rather than overwrites: for any date present in both, the copy with more logged sets wins.
 
 **Save state is a single dot in the header**, green when written and amber while writing. It was a line of text in the bottom bar, but the text changed width as it changed state, which shoved the countdown sideways on every autosave. Backup results (`merged 3`, `bad file`) print under the Export and Import buttons instead, where the action happened.
 
@@ -121,6 +130,7 @@ Static files, ES modules, no build step.
 | `src/sheet.js` | swap and how-to sheets |
 | `src/timer.js` | rest timer |
 | `src/savestate.js` | the header save dot |
+| `src/sound.js` | countdown beeps and the sound preference |
 | `src/backup.js` | JSON export and import |
 
 Nothing imports `render.js` except `main.js`. State changes call `notify()`, and `main.js` subscribes `render` to it. That keeps the view out of the logic and the module graph free of cycles.
@@ -131,7 +141,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 224 assertions, no dependencies.
+Three suites, 246 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
