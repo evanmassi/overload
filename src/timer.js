@@ -1,7 +1,7 @@
 import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, VIBRATE_PATTERN,
         FINAL_COUNTDOWN_SECONDS} from "./constants.js";
 
-const timer = {endsAt: 0, tick: null, seconds: DEFAULT_REST};
+const timer = {endsAt: 0, tick: null, seconds: DEFAULT_REST, idle: DEFAULT_REST};
 
 let button = null;
 let clock = null;
@@ -9,13 +9,18 @@ let clock = null;
 export function mountTimer(buttonEl, clockEl){
   button = buttonEl;
   clock = clockEl;
-  button.addEventListener("click", () => { timer.endsAt ? stop() : start(timer.seconds); });
+  button.addEventListener("click", () => { timer.endsAt ? stop() : start(timer.idle); });
   showIdle();
 }
 
 function showIdle(){
-  if(clock) clock.textContent = `${timer.seconds}s`;
+  if(clock) clock.textContent = `${timer.idle}s`;
   if(button) button.classList.remove("ending");
+}
+
+export function setIdleRest(seconds){
+  timer.idle = seconds || DEFAULT_REST;
+  if(!timer.endsAt) showIdle();
 }
 
 export function start(seconds){

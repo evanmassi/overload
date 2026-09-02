@@ -9,7 +9,7 @@ import {resolveSlot, exerciseName} from "./swaps.js";
 import {loadDate, setBlockIndex, setDay, setsFor, queueSave, deleteSession, previousSameWorkout,
         setEffort, markStarted} from "./session.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
-import {start as startTimer} from "./timer.js";
+import {start as startTimer, setIdleRest} from "./timer.js";
 import {exportSessions, importSessions, onBackupStatus} from "./backup.js";
 
 const el = id => document.getElementById(id);
@@ -628,8 +628,22 @@ function sparkline(values){
   return svg;
 }
 
+function nextRestSeconds(){
+  const plan = workoutFor(state.current.block, state.current.day);
+  if(!plan) return null;
+  for(const exercise of allExercises(plan).map(resolveSlot)){
+    const sets = state.current.entries[exercise.id] || [];
+    for(let i = 0; i < exercise.s; i++)
+      if(!(sets[i] && sets[i].r))
+        return i + 1 >= exercise.s ? exercise.restAfter : exercise.rest;
+  }
+  return null;
+}
+
 function updateFooter(){
   const current = state.current;
+  const pending = nextRestSeconds();
+  if(pending) setIdleRest(pending);
   const volume = sessionVolume(current, current.block, current.day);
   const count = loggedCount(current);
   updateRing(count, prescribedCount(current.block, current.day));

@@ -304,8 +304,11 @@ section("The countdown escalates in its last seconds");
   const {start, stop} = await import("../src/timer.js");
   const {FINAL_COUNTDOWN_SECONDS} = await import("../src/constants.js");
 
+  fresh();
+  render();
   stop();
-  check("an idle timer shows its length", els.clock.textContent === "90s", els.clock.textContent);
+  check("an idle timer shows the rest the next set will get",
+    els.clock.textContent === "120s", els.clock.textContent);
   check("and carries no state classes",
     !els.timer.classList.contains("running") && !els.timer.classList.contains("ending"));
 
@@ -325,6 +328,32 @@ section("The countdown escalates in its last seconds");
     !els.timer.classList.contains("ending") &&
     !els.timer.classList.contains("up"));
   check("and restores the idle reading", els.clock.textContent.endsWith("s"), els.clock.textContent);
+}
+
+section("The idle countdown tracks the next unlogged set");
+{
+  const {stop} = await import("../src/timer.js");
+  fresh();
+  render();
+  stop();
+  check("it opens on the lead lift's rest", els.clock.textContent === "120s", els.clock.textContent);
+
+  const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
+  rows.slice(0, 3).forEach(row => {
+    row.children[1].value = "50";
+    row.children[3].value = "10";
+    row.children[3].fire("change");
+  });
+  stop();
+  check("with one set left it shows the walk to the next move",
+    els.clock.textContent === "90s", els.clock.textContent);
+
+  rows[3].children[1].value = "50";
+  rows[3].children[3].value = "10";
+  rows[3].children[3].fire("change");
+  stop();
+  check("finishing the move shows the next move's rest",
+    els.clock.textContent === "120s", els.clock.textContent);
 }
 
 section("Save state is a dot, not a shifting line");

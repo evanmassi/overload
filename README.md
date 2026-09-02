@@ -53,6 +53,8 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 
 **The ring in the save bar** counts logged sets against the session total, and the footer shows how long you have been at it.
 
+**The idle countdown reads the rest your next set will actually get**, not a fixed default. It walks the session for the first set with no reps and shows what logging it would start, so before your first set of Week C chest it reads `180s`. Tapping it starts that length by hand.
+
 **The countdown sits in the header**, not the bottom bar, because the number keyboard covers the bottom of the screen the moment you tap a weight or reps box. The header is sticky, so it stays in view while you type. In the last 3 seconds the number grows and turns amber, then flips to a green `GO` when the rest is up, which is readable at arm's length with the phone on the floor.
 
 **After each exercise, say how it felt** — easy, medium or hard. Easy doubles next week's jump, medium takes the normal step, hard repeats the same numbers instead of pushing. That turns a fixed +5 rule into something that answers to the day you actually had.
@@ -120,7 +122,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 218 assertions, no dependencies.
+Three suites, 221 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
