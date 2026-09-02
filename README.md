@@ -58,7 +58,9 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 **A lift that has not improved in three sessions** gets flagged with a note to swap it or drop 10% and build back.
 
 **The Progress tab** opens with a 26-week consistency grid, one square per day, shaded by how much you logged.
-**Rest timer** starts itself when you enter reps and picks its own length: 120s between sets of the day's first two heavy compounds, 60s between sets of everything else, 90s moving to the next exercise, 15s between the two moves in a superset, 45s between superset rounds.
+**The core finisher is supersets, so you alternate**: first move, second move, first move, second move. The badge says `alternate the two moves`, the set rows read `R1` / `R2` rather than `1` / `2`, and the first move's card says `straight into <partner>` instead of quoting a rest. Doing both rounds of one move and then both of the other is straight sets, which is fine training but slower and not what the rest timings assume.
+
+**Rest timer** starts itself when you enter reps and picks its own length: 120s between sets of the day's first two heavy compounds, 60s between sets of everything else, 90s moving to the next exercise, 15s walking to the other half of a superset, 45s between superset rounds, 60s leaving one superset for the next.
 
 The session buttons mark which of the three you have already logged in the current week. **Tabs** — Log is the working screen. History lists past sessions with per-exercise numbers and total volume. Progress charts estimated 1RM per lift over time.
 
@@ -106,7 +108,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 185 assertions, no dependencies.
+Three suites, 194 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

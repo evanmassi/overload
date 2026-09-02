@@ -297,6 +297,36 @@ section("Expansion does not leak between sessions");
     els.main.find("ex-move")[0].classList.contains("done"));
 }
 
+section("A superset reads as an alternating pair");
+{
+  fresh();
+  render();
+  const badge = els.main.find("superset")[0];
+  check("the badge says to alternate", badge.innerHTML.includes("alternate"), badge.innerHTML);
+
+  const blocks = els.main.find("ex-move");
+  const first = blocks[8], second = blocks[9];
+  const firstMeta = first.find("meta")[0].innerHTML;
+  const secondMeta = second.find("meta")[0].innerHTML;
+  check("the first move points at its partner", /straight into \w/.test(firstMeta), firstMeta);
+  check("it counts rounds, not sets", firstMeta.includes("rounds"), firstMeta);
+  check("the second move states the round rest",
+    secondMeta.includes("rest 45s between rounds"), secondMeta);
+  check("no core move claims a 15s rest", !firstMeta.includes("rest 15s"), firstMeta);
+
+  const coreRows = first.find("set").filter(r => !r.classList.contains("head"));
+  equal("core rows are numbered by round",
+    coreRows.map(r => r.children[0].textContent), ["R1", "R2"]);
+  check("the core column header reads rd",
+    first.find("head")[0].innerHTML.includes("<div>rd</div>"), first.find("head")[0].innerHTML);
+
+  const mainRows = blocks[0].find("set").filter(r => !r.classList.contains("head"));
+  equal("main rows stay plain set numbers",
+    mainRows.map(r => r.children[0].textContent), ["1", "2", "3", "4"]);
+  check("a main move keeps its plain rest line",
+    blocks[0].find("meta")[0].innerHTML.includes("rest 120s"), blocks[0].find("meta")[0].innerHTML);
+}
+
 section("Effort is asked once per main move");
 {
   fresh();

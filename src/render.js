@@ -119,11 +119,11 @@ function isComplete(exercise){
   return done >= exercise.s;
 }
 
-function moveBlock(exercise, position, slot){
+function moveBlock(exercise, position, slot, partnerName){
   const move = document.createElement("div");
   move.className = "ex-move";
   move.id = "card-" + exercise.id;
-  fillCard(move, exercise, position, slot);
+  fillCard(move, exercise, position, slot, partnerName);
   if(isComplete(exercise) && !state.expanded.has(exercise.id)) move.classList.add("done");
   return move;
 }
@@ -141,16 +141,16 @@ function corePairCard(pair, index, slots){
   card.id = "card-core-" + index;
   const badge = document.createElement("div");
   badge.className = "superset";
-  badge.innerHTML = `<b>Superset ${index + 1}</b><span>2 rounds · 45s between rounds</span>`;
+  badge.innerHTML = `<b>Superset ${index + 1}</b><span>alternate the two moves</span>`;
   card.appendChild(badge);
   pair.forEach((exercise, i) => {
     if(i) card.appendChild(Object.assign(document.createElement("div"), {className: "rule"}));
-    card.appendChild(moveBlock(exercise, null, slots[i]));
+    card.appendChild(moveBlock(exercise, null, slots[i], i ? null : pair[1].n));
   });
   return card;
 }
 
-function fillCard(card, exercise, position, slot){
+function fillCard(card, exercise, position, slot, partnerName){
   slot = slot || exercise;
   const prior = priorSets(state.sessions, exercise.id, state.current.date);
   const unit = exercise.unit === "sec" ? "sec" : "reps";
@@ -192,7 +192,9 @@ function fillCard(card, exercise, position, slot){
   meta.className = "meta";
   if(exercise.per) meta.innerHTML += `<span class="tag side">per ${exercise.per}</span>`;
   meta.innerHTML += `<span class="tag">${LOAD_LABEL[exercise.load]}</span>`;
-  meta.innerHTML += `<span>${exercise.s} × ${exercise.r}${suffix}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
+  meta.innerHTML += exercise.core
+    ? `<span>${exercise.s} rounds × ${exercise.r}${suffix}</span><span class="dot">·</span><span>${partnerName ? "straight into " + partnerName : `rest ${exercise.rest}s between rounds`}</span>`
+    : `<span>${exercise.s} × ${exercise.r}${suffix}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
   card.appendChild(meta);
 
   const target = suggestTarget(exercise, prior);
@@ -216,7 +218,7 @@ function fillCard(card, exercise, position, slot){
 
   const columns = document.createElement("div");
   columns.className = "set head";
-  columns.innerHTML = `<div>#</div><div>weight (lbs)</div><div></div><div>${unit}</div><div></div><div></div>`;
+  columns.innerHTML = `<div>${exercise.core ? "rd" : "#"}</div><div>weight (lbs)</div><div></div><div>${unit}</div><div></div><div></div>`;
   sets.appendChild(columns);
 
   const refreshers = [];
@@ -245,7 +247,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
 
   const number = document.createElement("div");
   number.className = "set-n";
-  number.textContent = index + 1;
+  number.textContent = exercise.core ? "R" + (index + 1) : index + 1;
 
   const weight = document.createElement("input");
   weight.type = "text";
