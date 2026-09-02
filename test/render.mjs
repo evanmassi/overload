@@ -120,6 +120,7 @@ section("History and progress views render");
   state.sessions["2026-08-25"] = {
     date: "2026-08-25", day: "chest", block: "A", blockIndex: 0,
     notes: "shoulder felt fine",
+    startedAt: 1000000, lastLoggedAt: 1000000 + 64 * 60000,
     entries: {flat_db_press: [{w: "45", r: "10"}]}
   };
   state.sessions["2026-08-18"] = {
@@ -132,6 +133,14 @@ section("History and progress views render");
   check("a card per session", els.main.find("hist-day").length === 2, els.main.find("hist-day").length);
   check("notes show on the card", els.main.find("hist-notes").length === 1);
   check("backup controls render", els.main.find("backup").length === 1);
+
+  const withTime = els.main.find("hist-day").filter(c =>
+    c.find("hist-line").some(l => l.innerHTML.includes("first set to last")));
+  check("only the session with timestamps reports how long it took",
+    withTime.length === 1 && els.main.find("hist-day").length === 2, withTime.length);
+  check("reading as hours and minutes",
+    withTime[0].find("hist-line").some(l => l.innerHTML.includes("1h 04m")),
+    withTime[0].find("hist-line").map(l => l.innerHTML).join(" | "));
 
   state.view = "progress";
   render();

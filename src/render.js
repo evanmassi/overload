@@ -504,6 +504,14 @@ function renderHistory(main){
     total.innerHTML = `<span style="color:var(--faint)">volume</span><b>${sessionVolume(session, session.block, session.day).toLocaleString()} lb</b>`;
     card.appendChild(total);
 
+    const took = elapsedLabel(session.startedAt, session.lastLoggedAt);
+    if(took){
+      const time = document.createElement("div");
+      time.className = "hist-line";
+      time.innerHTML = `<span style="color:var(--faint)">first set to last</span><b>${took}</b>`;
+      card.appendChild(time);
+    }
+
     if(session.notes){
       const note = document.createElement("p");
       note.className = "hist-notes";

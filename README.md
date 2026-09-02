@@ -61,6 +61,8 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 
 **Time in the gym is measured first log to last log**, not first log to now. It used to count against the current clock, so opening a finished session hours later reported a three-hour workout. The consequence of the honest version is that the number only advances when you log something, so mid-rest it sits still.
 
+Each History card carries the same number as `first set to last`, which is the point: you can see whether the same session took 64 minutes or 81.
+
 **The idle countdown reads the rest your next set will actually get**, not a fixed default. It walks the session for the first set with no reps and shows what logging it would start, so before your first set of Week C chest it reads `180s`. Tapping it starts that length by hand.
 
 **The countdown sits in the header**, not the bottom bar, because the number keyboard covers the bottom of the screen the moment you tap a weight or reps box. The header is sticky, so it stays in view while you type. It escalates in three steps, readable at arm's length with the phone on the floor:
@@ -149,7 +151,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 261 assertions, no dependencies.
+Three suites, 263 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
