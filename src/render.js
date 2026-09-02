@@ -81,8 +81,6 @@ function renderLog(main){
   legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">▲</em> beat it</span><span><em class="same">=</em> matched</span>`;
   main.appendChild(legend);
 
-  main.appendChild(dotNav(plan));
-
   plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot), i + 1, slot)));
 
   if(plan.core){
@@ -103,21 +101,6 @@ function summaryFor(exercise){
     .join("  ");
 }
 
-function syncDots(){
-  const plan = workoutFor(state.current.block, state.current.day);
-  const nav = el("main").querySelector(".dotnav");
-  if(!plan || !nav || !nav.children) return;
-  const slots = plan.ex.map(resolveSlot);
-  slots.forEach((exercise, i) => {
-    const dot = nav.children[i];
-    if(dot) dot.classList.toggle("filled", isComplete(exercise));
-  });
-  (plan.core || []).forEach((pair, i) => {
-    const dot = nav.children[slots.length + i];
-    if(dot) dot.classList.toggle("filled", pair.map(resolveSlot).every(isComplete));
-  });
-}
-
 function syncCard(exercise){
   const card = el("main").querySelector("#card-" + exercise.id) ||
     document.getElementById("card-" + exercise.id);
@@ -126,7 +109,6 @@ function syncCard(exercise){
     const summary = card.querySelector(".ex-summary");
     if(summary) summary.textContent = summaryFor(exercise);
   }
-  syncDots();
 }
 
 function isComplete(exercise){
@@ -135,33 +117,6 @@ function isComplete(exercise){
   let done = 0;
   for(let i = 0; i < exercise.s; i++) if(sets[i] && sets[i].r) done++;
   return done >= exercise.s;
-}
-
-function jumpTo(id){
-  const card = document.getElementById(id);
-  if(card && card.scrollIntoView) card.scrollIntoView({behavior: "smooth", block: "start"});
-}
-
-function dotNav(plan){
-  const nav = document.createElement("div");
-  nav.className = "dotnav";
-  plan.ex.map(resolveSlot).forEach((exercise, i) => {
-    const dot = document.createElement("button");
-    dot.className = "dot" + (isComplete(exercise) ? " filled" : "");
-    dot.textContent = String(i + 1).padStart(2, "0");
-    dot.title = exercise.n;
-    dot.addEventListener("click", () => jumpTo("card-" + exercise.id));
-    nav.appendChild(dot);
-  });
-  (plan.core || []).forEach((pair, i) => {
-    const dot = document.createElement("button");
-    dot.className = "dot core" + (pair.map(resolveSlot).every(isComplete) ? " filled" : "");
-    dot.textContent = "S" + (i + 1);
-    dot.title = "Superset " + (i + 1);
-    dot.addEventListener("click", () => jumpTo("card-core-" + i));
-    nav.appendChild(dot);
-  });
-  return nav;
 }
 
 function exerciseCard(exercise, position, slot){

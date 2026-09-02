@@ -49,8 +49,6 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 
 **Tap the repeat icon** beside any set to fill it with what you did that set last time, then edit whatever changed.
 
-**A dot row under the header** jumps you to any exercise. Dots fill in as you finish each one.
-
 **A finished exercise collapses** to a one-line summary of what you lifted. Tap the chevron to open it again. The page shrinks as you work, so the remaining scroll is the remaining work.
 
 **The ring in the save bar** counts logged sets against the session total, and the footer shows how long you have been at it.
@@ -108,7 +106,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 168 assertions, no dependencies.
+Three suites, 178 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

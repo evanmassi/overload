@@ -137,13 +137,10 @@ section("History and progress views render");
   check("two data points draw a sparkline", els.main.find("prog")[0].children.some(c => c.tag === "svg"));
 }
 
-section("Dot nav, collapsing and the progress ring");
+section("Collapsing and the progress ring");
 {
   fresh();
   render();
-  const dots = els.main.find("dot");
-  check("a dot per main move plus one per superset", dots.length === 11, dots.length);
-  check("no dot is filled yet", dots.every(d => !d.classList.contains("filled")));
   check("the ring starts empty", els.ringtext.textContent === "0", els.ringtext.textContent);
 
   const card = els.main.find("ex")[0];
@@ -157,7 +154,6 @@ section("Dot nav, collapsing and the progress ring");
 
   check("finishing every set collapses the card", els.main.find("ex")[0].classList.contains("done"));
   check("its summary is populated", els.main.find("ex-summary")[0].textContent.includes("50"));
-  check("its dot fills in", els.main.find("dot")[0].classList.contains("filled"));
   check("the ring counts the logged sets", els.ringtext.textContent === "4", els.ringtext.textContent);
   check("the footer shows elapsed time", els.volnote.textContent.includes("just started"), els.volnote.textContent);
 
@@ -238,7 +234,6 @@ section("Logging updates the page without a re-render");
     row.children[3].fire("change");
   });
   check("a partly finished card stays open", !card.classList.contains("done"));
-  check("its dot is not filled yet", !els.main.find("dot")[0].classList.contains("filled"));
 
   const lastRow = rows[3];
   lastRow.children[1].value = "50";
@@ -250,8 +245,6 @@ section("Logging updates the page without a re-render");
   check("the summary fills in without a re-render",
     card.find("ex-summary")[0].textContent.includes("50"),
     card.find("ex-summary")[0].textContent);
-  check("the dot fills in without a re-render",
-    els.main.find("dot")[0].classList.contains("filled"));
   check("the ring updates", els.ringtext.textContent === "4", els.ringtext.textContent);
   check("the clock appears on the first logged set",
     els.volnote.textContent.includes("just started"), els.volnote.textContent);
