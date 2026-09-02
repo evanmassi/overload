@@ -119,12 +119,19 @@ function isComplete(exercise){
   return done >= exercise.s;
 }
 
+function moveBlock(exercise, position, slot){
+  const move = document.createElement("div");
+  move.className = "ex-move";
+  move.id = "card-" + exercise.id;
+  fillCard(move, exercise, position, slot);
+  if(isComplete(exercise) && !state.expanded.has(exercise.id)) move.classList.add("done");
+  return move;
+}
+
 function exerciseCard(exercise, position, slot){
   const card = document.createElement("section");
   card.className = "ex";
-  card.id = "card-" + exercise.id;
-  fillCard(card, exercise, position, slot);
-  if(isComplete(exercise) && !state.expanded.has(exercise.id)) card.classList.add("done");
+  card.appendChild(moveBlock(exercise, position, slot));
   return card;
 }
 
@@ -138,7 +145,7 @@ function corePairCard(pair, index, slots){
   card.appendChild(badge);
   pair.forEach((exercise, i) => {
     if(i) card.appendChild(Object.assign(document.createElement("div"), {className: "rule"}));
-    fillCard(card, exercise, null, slots[i]);
+    card.appendChild(moveBlock(exercise, null, slots[i]));
   });
   return card;
 }

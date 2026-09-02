@@ -49,7 +49,7 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 
 **Tap the repeat icon** beside a set to carry the set above it down: same weight, same reps, then edit whatever changed. On set 1 there is no row above, so it pulls set 1 from last session instead. The button stays dark until there is something to copy.
 
-**A finished exercise collapses** to a one-line summary of what you lifted. Tap the chevron to open it again. The page shrinks as you work, so the remaining scroll is the remaining work.
+**A finished exercise collapses** to a one-line summary of what you lifted, including each of the two moves inside a superset, which collapse on their own. Tap the chevron to open one again. The page shrinks as you work, so the remaining scroll is the remaining work.
 
 **The ring in the save bar** counts logged sets against the session total, and the footer shows how long you have been at it.
 
@@ -106,7 +106,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 181 assertions, no dependencies.
+Three suites, 185 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

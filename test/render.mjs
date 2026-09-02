@@ -143,7 +143,7 @@ section("Collapsing and the progress ring");
   render();
   check("the ring starts empty", els.ringtext.textContent === "0", els.ringtext.textContent);
 
-  const card = els.main.find("ex")[0];
+  const card = els.main.find("ex-move")[0];
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
   rows.forEach(row => {
     row.children[1].value = "50";
@@ -152,14 +152,28 @@ section("Collapsing and the progress ring");
   });
   render();
 
-  check("finishing every set collapses the card", els.main.find("ex")[0].classList.contains("done"));
+  check("finishing every set collapses the card", els.main.find("ex-move")[0].classList.contains("done"));
   check("its summary is populated", els.main.find("ex-summary")[0].textContent.includes("50"));
   check("the ring counts the logged sets", els.ringtext.textContent === "4", els.ringtext.textContent);
   check("the footer shows elapsed time", els.volnote.textContent.includes("just started"), els.volnote.textContent);
 
   els.main.find("ex-fold")[0].fire("click");
   render();
-  check("tapping the chevron expands it again", !els.main.find("ex")[0].classList.contains("done"));
+  check("tapping the chevron expands it again", !els.main.find("ex-move")[0].classList.contains("done"));
+
+  const blocks = els.main.find("ex-move");
+  check("a block per main move plus two per superset", blocks.length === 14, blocks.length);
+
+  const coreMove = blocks[8];
+  coreMove.find("set").filter(r => !r.classList.contains("head")).forEach(row => {
+    row.children[3].value = "12";
+    row.children[3].fire("change");
+  });
+  render();
+  const after = els.main.find("ex-move");
+  check("a finished superset move collapses too", after[8].classList.contains("done"));
+  check("its partner stays open", !after[9].classList.contains("done"));
+  check("its summary is populated", after[8].find("ex-summary")[0].textContent.includes("12"));
 }
 
 section("Carry-forward repeat button");
@@ -173,7 +187,7 @@ section("Carry-forward repeat button");
   setDay("chest");
   render();
 
-  const rows = els.main.find("ex")[0].find("set").filter(r => !r.classList.contains("head"));
+  const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
   const first = rows[0].children[4];
   const second = rows[1].children[4];
   check("a set with history offers repeat", first.disabled === false);
@@ -236,7 +250,7 @@ section("Logging updates the page without a re-render");
 {
   fresh();
   render();
-  const card = els.main.find("ex")[0];
+  const card = els.main.find("ex-move")[0];
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
 
   rows.slice(0, 3).forEach(row => {
@@ -265,7 +279,7 @@ section("Expansion does not leak between sessions");
 {
   fresh();
   render();
-  const card = els.main.find("ex")[0];
+  const card = els.main.find("ex-move")[0];
   card.find("set").filter(r => !r.classList.contains("head")).forEach(row => {
     row.children[1].value = "50";
     row.children[3].value = "10";
@@ -273,14 +287,14 @@ section("Expansion does not leak between sessions");
   });
   els.main.find("ex-fold")[0].fire("click");
   render();
-  check("the card is expanded on this session", !els.main.find("ex")[0].classList.contains("done"));
+  check("the card is expanded on this session", !els.main.find("ex-move")[0].classList.contains("done"));
 
   setDay("legs");
   render();
   setDay("chest");
   render();
   check("switching away and back collapses it again",
-    els.main.find("ex")[0].classList.contains("done"));
+    els.main.find("ex-move")[0].classList.contains("done"));
 }
 
 section("Effort is asked once per main move");

@@ -421,11 +421,11 @@ button{cursor:pointer;border:none;background:none}
   display:flex;align-items:center;justify-content:center;
 }
 .ex-fold::before{content:"";width:7px;height:7px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:rotate(45deg) translate(-2px,-2px)}
-.ex.done .ex-fold::before{transform:rotate(-135deg) translate(-2px,-2px)}
-.ex.done .ex-summary{display:block}
-.ex.done .meta,.ex.done .target,.ex.done .sets,.ex.done .effort,.ex.done .ex-cue,.ex.done .stall{display:none}
-.ex.done{opacity:.82}
-.ex.done .ex-name{font-size:15px}
+.ex-move.done .ex-fold::before{transform:rotate(-135deg) translate(-2px,-2px)}
+.ex-move.done .ex-summary{display:block}
+.ex-move.done .meta,.ex-move.done .target,.ex-move.done .sets,.ex-move.done .effort,.ex-move.done .ex-cue,.ex-move.done .stall{display:none}
+.ex-move.done{opacity:.82}
+.ex-move.done .ex-name{font-size:15px}
 
 .stall{
   margin:0 13px 11px;padding:8px 11px;border-radius:9px;
