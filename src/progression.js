@@ -14,7 +14,7 @@ export function score(set, isBodyweight){
     : num(set.w) * num(set.r);
 }
 
-export function estimatedMax(weight, reps){ return weight * (1 + reps / EPLEY_DIVISOR); }
+function estimatedMax(weight, reps){ return weight * (1 + reps / EPLEY_DIVISOR); }
 
 export function loggedCount(session){
   let n = 0;
@@ -26,6 +26,18 @@ export function loggedCount(session){
 export function prescribedCount(block, day){
   const plan = workoutFor(block, day);
   return allExercises(plan).reduce((total, exercise) => total + exercise.s, 0);
+}
+
+export function estimateFor(set, isBodyweight){
+  if(!set || !set.r) return 0;
+  return isBodyweight ? num(set.r) : estimatedMax(num(set.w), num(set.r));
+}
+
+export function bestEstimate(sets, isBodyweight){
+  const logged = (sets || []).filter(set => set && set.r);
+  if(!logged.length) return null;
+  return logged.reduce((best, set) =>
+    estimateFor(set, isBodyweight) > estimateFor(best, isBodyweight) ? set : best);
 }
 
 export function topSet(sets, isBodyweight){

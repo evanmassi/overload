@@ -2,8 +2,8 @@ import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, ICON_REPEAT,
         CONFIRM_WINDOW_MS, EFFORT_LEVELS} from "./constants.js";
 import {workoutFor, allExercises, findExercise} from "./movements.js";
 import {state, notify} from "./state.js";
-import {num, score, estimatedMax, loggedCount, priorSets, sessionVolume, suggestTarget,
-        prescribedCount, hasStalled} from "./progression.js";
+import {num, score, loggedCount, priorSets, sessionVolume, suggestTarget,
+        prescribedCount, hasStalled, bestEstimate, estimateFor} from "./progression.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
 import {resolveSlot, exerciseName} from "./swaps.js";
 import {loadDate, setBlockIndex, setDay, setsFor, queueSave, deleteSession, previousSameWorkout,
@@ -534,8 +534,8 @@ function renderProgress(main){
       if(!sets.length) continue;
       const exercise = findExercise(id);
       if(!exercise) continue;
-      const top = sets.reduce((best, set) => score(set, exercise.bw) > score(best, exercise.bw) ? set : best);
-      const value = exercise.bw ? num(top.r) : Math.round(estimatedMax(num(top.w), num(top.r)));
+      const top = bestEstimate(sets, exercise.bw);
+      const value = Math.round(estimateFor(top, exercise.bw));
       (byExercise[id] = byExercise[id] || {name: exercise.n, bw: exercise.bw, points: []})
         .points.push({date, value, top});
     }
@@ -565,13 +565,15 @@ function renderProgress(main){
     const entry = byExercise[id];
     const latest = entry.points[entry.points.length - 1];
     const best = entry.points.reduce((a, b) => b.value > a.value ? b : a);
-    const unit = entry.bw ? "reps" : "lb";
+    const qualifier = entry.bw ? "best reps" : "est. 1RM";
+    const sessions = `${entry.points.length} session${entry.points.length === 1 ? "" : "s"}`;
+    const history = entry.points.length > 1 ? `${sessions} · best ${best.value}` : sessions;
 
     const card = document.createElement("div");
     card.className = "prog";
     card.innerHTML = `<h3>${entry.name}</h3>
-      <div class="best">${latest.value} ${unit}</div>
-      <div class="meta">${entry.points.length} sessions · best ${best.value}</div>
+      <div class="best">${latest.value}<em>${qualifier}</em></div>
+      <div class="meta">${history}</div>
       <div class="meta" style="text-align:right">${latest.top.w ? latest.top.w + "×" : ""}${latest.top.r} on ${latest.date.slice(5)}</div>`;
     if(entry.points.length > 1) card.appendChild(sparkline(entry.points.map(p => p.value)));
     main.appendChild(card);

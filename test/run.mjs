@@ -225,6 +225,27 @@ section("Rest comes from the movement, not its place in the list");
     positional.some(same => !same));
 }
 
+section("The progress card reads the best estimate, not the biggest pile");
+{
+  const {bestEstimate, estimateFor} = progression;
+
+  const sets = [{w: "50", r: "20"}, {w: "65", r: "10"}];
+  equal("volume would pick the lighter, longer set",
+    sets.reduce((a, b) => progression.score(b, false) > progression.score(a, false) ? b : a),
+    {w: "50", r: "20"});
+  equal("the estimate picks the heavier one", bestEstimate(sets, false), {w: "65", r: "10"});
+  equal("65x10 estimates to 87", Math.round(estimateFor({w: "65", r: "10"}, false)), 87);
+  equal("50x20 only estimates to 83", Math.round(estimateFor({w: "50", r: "20"}, false)), 83);
+
+  equal("a bodyweight move is scored on reps",
+    bestEstimate([{w: "", r: "12"}, {w: "", r: "18"}], true), {w: "", r: "18"});
+  equal("and its value is the rep count",
+    estimateFor({w: "", r: "18"}, true), 18);
+
+  equal("no logged sets means no best", bestEstimate([{w: "50", r: ""}], false), null);
+  equal("an empty list too", bestEstimate([], false), null);
+}
+
 section("Backup import merges rather than overwrites");
 {
   reset();

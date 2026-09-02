@@ -145,6 +145,9 @@ section("History and progress views render");
   state.view = "progress";
   render();
   check("a progress card renders", els.main.find("prog").length === 1);
+  check("the number is labelled an estimate, not a weight",
+    els.main.find("prog")[0].innerHTML.includes("est. 1RM"),
+    els.main.find("prog")[0].innerHTML);
   check("two data points draw a sparkline", els.main.find("prog")[0].children.some(c => c.tag === "svg"));
 }
 

@@ -90,6 +90,10 @@ The caveats are iOS ones, and the reason the visual tiers exist rather than rely
 **A lift that has not improved in three sessions** gets flagged with a note to swap it or drop 10% and build back.
 
 **The Progress tab** opens with a 26-week consistency grid, one square per day, shaded by how much you logged.
+
+Below it, one card per lift. The big number is an **estimated one-rep max**, not a weight you lifted: Epley, `weight × (1 + reps/30)`, so 65×10 reads 87. The card labels it `EST. 1RM` for that reason. Bodyweight moves have no weight to extrapolate from, so they show best reps instead.
+
+The set behind the estimate is the one with the **highest estimate**, not the one with the most weight × reps. Those disagree: 50×20 is more total work than 65×10 but estimates to 83 against 87, so ranking by volume would report the lower number as your best.
 **The core finisher is supersets, so you alternate**: first move, second move, first move, second move. The badge says `alternate the two moves`, the set rows read `R1` / `R2` rather than `1` / `2`, and the first move's card says `straight into <partner>` instead of quoting a rest. Doing both rounds of one move and then both of the other is straight sets, which is fine training but slower and not what the rest timings assume.
 
 **Rest timer** starts itself when you enter reps and picks its own length from what the movement is and what the prescription asks of it, not from where it sits in the list:
@@ -151,7 +155,7 @@ Nothing imports `render.js` except `main.js`. State changes call `notify()`, and
 node test/all.mjs
 ```
 
-Three suites, 263 assertions, no dependencies.
+Three suites, 272 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

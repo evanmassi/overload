@@ -260,8 +260,12 @@ button{cursor:pointer;border:none;background:none}
 }
 .prog h3{font-family:Lato,system-ui,-apple-system,sans-serif;font-size:14.5px;font-weight:600;margin:0;letter-spacing:-.01em}
 .prog .best{
-  font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;
-  font-variant-numeric:tabular-nums;text-align:right;
+  font-family:"IBM Plex Mono",monospace;font-size:16px;font-weight:600;
+  font-variant-numeric:tabular-nums;text-align:right;line-height:1.15;
+}
+.prog .best em{
+  display:block;font-style:normal;font-size:9.5px;font-weight:400;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
 }
 .prog .meta{font-size:11.5px;color:var(--faint);font-family:"IBM Plex Mono",monospace}
 .prog svg{grid-column:1/-1;width:100%;height:36px;margin-top:4px;overflow:visible}
