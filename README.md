@@ -105,7 +105,7 @@ The caveats are iOS ones, and the reason the visual tiers exist rather than rely
 
 **A lift that has not improved in three sessions** gets flagged with a note to swap it or drop 10% and build back.
 
-**The Progress tab** opens with a 26-week consistency grid, one square per day, shaded by how much you logged.
+**The Progress tab** opens with a 26-week consistency grid: 182 squares, one per day, seven rows deep and reading left to right by week. A day you logged nothing stays the background grey. A day you logged something is shaded by how much — up to 10 sets, up to 20, then anything above — so a light week and a heavy one look different at a glance. Each square names its date and set count on hover.
 
 Below it, one card per lift. The big number is an **estimated one-rep max**, not a weight you lifted: Epley, `weight × (1 + reps/30)`, so 65×10 reads 87. The card labels it `EST. 1RM` for that reason. Bodyweight moves have no weight to extrapolate from, so they show best reps instead.
 
@@ -180,7 +180,7 @@ node test/all.mjs
 
 Three suites, 318 assertions, no dependencies.
 
-- `modules.mjs` loads every module against a DOM stub and fails on a dead export.
+- `modules.mjs` loads every module against a DOM stub, fails on a dead export, and fails on any class the renderers emit that has no rule in `style.css`. That last check exists because a stylesheet edit once deleted the consistency grid's rules along with the ones it meant to remove, and every DOM test still passed while the grid rendered invisible.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
 - `render.mjs` boots the real views against a fake DOM and asserts what renders, including the sheet's hidden state.
 

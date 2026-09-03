@@ -75,4 +75,27 @@ for(const file in exportsByFile){
 }
 if(!dead) console.log("  none");
 
+console.log("\nRendered classes with no rule in style.css:");
+const css = fs.readFileSync(path.join(dir, "..", "style.css"), "utf8");
+const rendered = new Set();
+const collect = (text, pattern, split) => {
+  for(const match of text.matchAll(pattern))
+    (split ? match[1].split(/\s+/) : [match[1]]).forEach(name => name && rendered.add(name));
+};
+for(const file of files.concat(["../index.html"])){
+  const text = fs.readFileSync(path.join(dir, file), "utf8");
+  collect(text, /className\s*[=:]\s*"([^"]+)"/g, true);
+  collect(text, /class="([^"$]+)"/g, true);
+  collect(text, /classList\.(?:add|toggle)\("([^"]+)"/g, false);
+}
+
+let unstyled = 0;
+for(const name of [...rendered].sort()){
+  if(new RegExp("\\." + name + "[^a-zA-Z0-9_-]").test(css)) continue;
+  console.log("  ." + name);
+  unstyled++;
+  failed++;
+}
+if(!unstyled) console.log("  none");
+
 process.exit(failed ? 1 : 0);

@@ -87,7 +87,7 @@ function consistencyGrid(){
 
   const caption = document.createElement("p");
   caption.className = "grid-note";
-  caption.textContent = trained + " sessions in the last " + weeks + " weeks";
+  caption.textContent = `${trained} session${trained === 1 ? "" : "s"} in the last ${weeks} weeks`;
 
   wrap.append(grid, caption);
   return wrap;
