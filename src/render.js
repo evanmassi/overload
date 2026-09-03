@@ -226,11 +226,8 @@ function fillCard(card, exercise, position, slot, partnerName){
 
   if(prior){
     const foot = document.createElement("p");
-    foot.className = "ex-cue";
-    foot.style.paddingTop = "0";
-    const summary = prior.sets.filter(set => set && set.r)
-      .map(set => set.w ? `${set.w}×${set.r}${suffix}` : `${set.r}${suffix}`).join("  ");
-    foot.textContent = `${prior.date} — ${summary}`;
+    foot.className = "ex-cue prior";
+    foot.textContent = `${prior.date} — ${setSummary(prior.sets, suffix)}`;
     card.appendChild(foot);
   }
 }

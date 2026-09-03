@@ -216,6 +216,12 @@ section("Carry-forward repeat button");
   check("a set with history offers repeat", first.disabled === false);
   check("a set with none does not", second.disabled === true);
 
+  const cue = els.main.find("ex-move")[0].find("prior")[0];
+  check("the card footer dates last time's work",
+    cue && cue.textContent.startsWith("2026-08-25"), cue && cue.textContent);
+  check("and uses the same shorthand as history",
+    cue && cue.textContent.includes("45×9"), cue && cue.textContent);
+
   first.fire("click");
   equal("set 1 fills in last time's numbers",
     state.current.entries.flat_db_press[0], {w: "45", r: "9"});
