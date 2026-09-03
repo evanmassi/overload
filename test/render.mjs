@@ -507,6 +507,71 @@ section("A history card groups, collapses and marks");
   render();
 }
 
+section("A logged session cannot be relabelled by one stray tap");
+{
+  const {loggedCount} = await import("../src/progression.js");
+  fresh();
+  render();
+
+  const dayButton = i => els.main.find("sessions")[0].children[i];
+  check("nothing logged, so switching is immediate", (() => {
+    dayButton(2).fire("click");
+    return state.current.day === "arms";
+  })(), state.current.day);
+
+  const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
+  rows[0].children[1].value = "40";
+  rows[0].children[3].value = "10";
+  rows[0].children[3].fire("change");
+  check("a set is logged", loggedCount(state.current) === 1);
+
+  const legs = dayButton(1);
+  legs.fire("click");
+  check("the first tap does not switch", state.current.day === "arms", state.current.day);
+  check("it asks instead", legs.innerHTML.includes("sure?"), legs.innerHTML);
+  check("and marks itself", legs.classList.contains("armed"));
+
+  legs.fire("click");
+  check("the second tap switches", state.current.day === "legs", state.current.day);
+  check("and keeps what was logged", loggedCount(state.current) === 1);
+
+  render();
+  const weeks = els.main.find("blockset")[0];
+  weeks.children[2].fire("click");
+  check("the week buttons ask too", weeks.children[2].textContent === "sure?", weeks.children[2].textContent);
+  check("and do not switch on the first tap", state.current.block === "A", state.current.block);
+}
+
+section("History shows lifts the session plan does not contain");
+{
+  fresh();
+  state.sessions["2026-09-02"] = {
+    date: "2026-09-02", day: "arms", block: "A", blockIndex: 0,
+    entries: {
+      hanging_leg_raise: [{w: "", r: "12"}, {w: "", r: "12"}],
+      goblet_squat: [{w: "95", r: "10"}, {w: "95", r: "10"}]
+    }
+  };
+  state.view = "history";
+  render();
+  const card = els.main.find("hist-day")[0];
+
+  check("a lift the plan does contain renders normally",
+    card.find("hist-line").some(l => l.innerHTML.includes("Hanging Leg Raise")));
+  const strays = card.find("hist-stray");
+  check("a lift it does not is still shown", strays.length === 1, strays.length);
+  check("named", strays[0] && strays[0].innerHTML.includes("DB Goblet Squat"), strays[0] && strays[0].innerHTML);
+  check("with its sets", strays[0] && strays[0].innerHTML.includes("2 × 95×10"), strays[0] && strays[0].innerHTML);
+  check("under its own label",
+    card.find("hist-sub").some(l => l.textContent === "Not in this session"));
+  check("and the totals still count it",
+    card.find("hist-foot")[0].innerHTML.includes("4 sets"),
+    card.find("hist-foot")[0].innerHTML);
+
+  state.view = "log";
+  render();
+}
+
 section("Sound is optional, remembered and testable");
 {
   const sound = await import("../src/sound.js");

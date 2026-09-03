@@ -1,5 +1,6 @@
 import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, ICON_REPEAT,
-        EFFORT_LEVELS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT} from "./constants.js";
+        EFFORT_LEVELS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT,
+        CONFIRM_WINDOW_MS} from "./constants.js";
 import {workoutFor, allExercises} from "./movements.js";
 import {state, notify} from "./state.js";
 import {score, loggedCount, priorSets, sessionVolume, suggestTarget,
@@ -14,6 +15,22 @@ import {renderProgress} from "./progress.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer, setIdleRest} from "./timer.js";
 const el = id => document.getElementById(id);
+
+function confirmRelabel(button, run){
+  return () => {
+    if(!loggedCount(state.current) || button.dataset.armed){ run(); return; }
+    const original = button.innerHTML;
+    button.dataset.armed = "1";
+    button.classList.add("armed");
+    button.innerHTML = "<span>sure?</span>";
+    setTimeout(() => {
+      if(!button.dataset.armed) return;
+      delete button.dataset.armed;
+      button.classList.remove("armed");
+      button.innerHTML = original;
+    }, CONFIRM_WINDOW_MS);
+  };
+}
 
 function toggleExpanded(id){
   state.expanded.has(id) ? state.expanded.delete(id) : state.expanded.add(id);
@@ -49,7 +66,11 @@ function renderLog(main){
     button.textContent = letter;
     button.title = `Week ${letter}`;
     button.setAttribute("aria-pressed", String(letter === current.block));
-    button.addEventListener("click", () => { setBlockIndex(start + i); queueSave(); notify(); });
+    button.addEventListener("click", confirmRelabel(button, () => {
+      setBlockIndex(start + i);
+      queueSave();
+      notify();
+    }));
     blocks.appendChild(button);
   });
   bar.append(date, blocks);
@@ -63,7 +84,11 @@ function renderLog(main){
     const isDone = done.has(day) && day !== current.day;
     button.innerHTML = `<span>${DAYS[day].short}</span><small class="${isDone ? "done" : ""}">${isDone ? "done" : ""}</small>`;
     button.setAttribute("aria-pressed", String(day === current.day));
-    button.addEventListener("click", () => { setDay(day); queueSave(); notify(); });
+    button.addEventListener("click", confirmRelabel(button, () => {
+      setDay(day);
+      queueSave();
+      notify();
+    }));
     days.appendChild(button);
   });
   main.appendChild(days);

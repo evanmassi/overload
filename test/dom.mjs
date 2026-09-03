@@ -27,7 +27,7 @@ class FakeNode {
     };
   }
   get innerHTML(){ return this._html + this.children.map(c => c.outerHTML).join(""); }
-  set innerHTML(v){ this._html = String(v); this.children = []; }
+  set innerHTML(v){ this._html = String(v); this._text = ""; this.children = []; }
   get textContent(){ return this._text || this._html.replace(/<[^>]*>/g, ""); }
   set textContent(v){ this._text = String(v); }
   get outerHTML(){

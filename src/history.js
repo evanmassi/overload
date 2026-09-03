@@ -1,5 +1,5 @@
 import {CONFIRM_WINDOW_MS, ICON_SWAP} from "./constants.js";
-import {workoutFor} from "./movements.js";
+import {workoutFor, allExercises, findExercise} from "./movements.js";
 import {state, notify} from "./state.js";
 import {loggedCount, sessionVolume} from "./progression.js";
 import {exerciseName} from "./swaps.js";
@@ -83,6 +83,26 @@ export function renderHistory(main){
         group.className = "hist-super";
         lines.forEach(line => group.appendChild(line));
         card.appendChild(group);
+      });
+    }
+
+    const planned = new Set(allExercises(plan)
+      .map(slot => (session.swaps && session.swaps[slot.id]) || slot.id));
+    const strays = Object.keys(session.entries || {})
+      .filter(id => !planned.has(id))
+      .filter(id => session.entries[id].some(set => set && set.r));
+
+    if(strays.length){
+      const label = document.createElement("p");
+      label.className = "hist-sub";
+      label.textContent = "Not in this session";
+      card.appendChild(label);
+      strays.forEach(id => {
+        const known = findExercise(id);
+        const line = document.createElement("div");
+        line.className = "hist-line hist-stray";
+        line.innerHTML = `<span>${exerciseName(id)}</span><b>${setSummary(session.entries[id], known ? unitSuffix(known) : "")}</b>`;
+        card.appendChild(line);
       });
     }
 

@@ -260,6 +260,7 @@ button{cursor:pointer;border:none;background:none}
 }
 .hist-super .hist-line{border-top:none}
 .hist-super .hist-line + .hist-line{border-top:1px dashed var(--line)}
+.hist-stray span{color:var(--flat)}
 .hist-swap{
   display:inline-flex;vertical-align:-2px;margin-left:5px;color:var(--accent);
 }
@@ -312,6 +313,7 @@ button{cursor:pointer;border:none;background:none}
 }
 .eyebrow b{color:var(--accent);font-weight:600}
 .blockset.sessions small.done{color:var(--accent)}
+.blockset button.armed{background:var(--flat-soft);border-color:var(--flat);color:var(--flat)}
 .backup,.soundrow{
   display:flex;flex-wrap:wrap;gap:8px;padding:14px 0 4px;
 }

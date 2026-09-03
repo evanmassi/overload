@@ -123,6 +123,10 @@ The set behind the estimate is the one with the **highest estimate**, not the on
 
 So Bulgarian Split Squat rests 90s as a 3×10 accessory in Week A and 120s as a 4×8 lead in Week C. A 4×AMRAP of pull-ups is a lead and gets 120s; a 3×AMRAP of push-ups is a finisher and gets 90s. Moving to the next exercise is always 90s. Inside the core finisher: 15s walking to the other half of a superset, 45s between rounds, 60s leaving one superset for the next.
 
+**Switching session or week after you have logged something asks first.** The buttons only relabel the day, they never move your sets, so a stray tap used to file a legs workout under arms with the squats still attached. The mislabel is close to invisible: the log's grey placeholders find history by movement rather than by session, so the legs cards still showed last time's numbers, and only the one lift in both sessions (Hanging Leg Raise) gave it away. A second tap still relabels, which is how you correct a session that went in wrong.
+
+**History shows lifts the session plan does not contain**, under a `Not in this session` heading. It used to render only what the plan listed and silently drop the rest, so a mislabelled session showed one lift while the footer counted 39 sets and 33,880 lb of work that was nowhere on the card.
+
 The session buttons mark which of the three you have already logged in the current week. **Tabs** — Log is the working screen. History lists past sessions with per-exercise numbers and total volume. Progress charts estimated 1RM per lift over time.
 
 ## Storage
@@ -174,7 +178,7 @@ Nothing imports `render.js` except `main.js`, and `render.js` is the only thing 
 node test/all.mjs
 ```
 
-Three suites, 303 assertions, no dependencies.
+Three suites, 318 assertions, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub and fails on a dead export.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
