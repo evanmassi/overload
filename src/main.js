@@ -24,6 +24,7 @@ el("tabs").addEventListener("click", event => {
 
 document.addEventListener("visibilitychange", () => {
   if(document.visibilityState === "hidden") flushNow();
+  else unlockAudio();
 });
 window.addEventListener("pagehide", flushNow);
 

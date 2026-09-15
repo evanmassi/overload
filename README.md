@@ -92,13 +92,13 @@ Each History card carries the same number as `first set to last`, which is the p
 
 Ten seconds is the "get ready" signal and three is the "go" one, so the picture and the sound say the same thing.
 
-**Beeps** ride along with the last tier: a short 880Hz tone at 3, 2 and 1, then a longer 1320Hz one when the rest is up. **Sound on** and **Test sound** live on the History tab, and the setting is remembered.
+**Beeps** ride along with the last tier: a short 880Hz square-wave blip at 3, 2 and 1, then a rising three-note one (880, 1100, 1320Hz) when the rest is up. They are square waves at full gain because a phone speaker barely reproduces a quiet sine. **Sound on** and **Test sound** live on the History tab, and the setting is remembered.
 
 The caveats are iOS ones, and the reason the visual tiers exist rather than relying on sound:
 
-- Web Audio needs a real tap to start, so the context unlocks on your first `pointerdown` of the session and resumes on later taps if iOS suspended it.
+- Web Audio needs a real tap to start, so the context unlocks on your first `pointerdown` of the session. Locking the phone, switching apps or starting music afterwards puts Safari's context into a non-standard `interrupted` state, so the app resumes it on every later tap, every timer start and every return to the foreground, and a beep that finds the context asleep plays as soon as it wakes.
 - **The hardware silent switch mutes Web Audio**, AirPods or not, since it mutes by audio session category rather than by output route. Tap **Test sound** on your phone to find out what yours does.
-- **iOS suspends JS timers when the screen locks or you leave the app**, so a beep scheduled for the last seconds never fires if the phone is in your pocket. The clock itself is computed from an `endsAt` timestamp, so the reading is correct again the moment you come back; only the sound is lost. If the rest ended entirely while you were away, the timer notices the gap between ticks and resets quietly rather than announcing a `GO` for a rest that finished two minutes ago.
+- **iOS suspends JS timers when the screen locks or you leave the app**, so a beep scheduled for the last seconds never fires if the phone is in your pocket. A screen wake lock keeps the phone from locking itself while a rest runs, which covers the common case; switching apps still pauses everything. The clock itself is computed from an `endsAt` timestamp, so the reading is correct again the moment you come back. If the rest ended while you were away, the timer shows `GO` either way and beeps only if it ended within the last ten seconds, rather than announcing a rest that finished two minutes ago.
 - `navigator.vibrate` does nothing on iOS Safari. The call is still there for Android, where it works.
 
 **After each exercise, say how it felt** — easy, medium or hard. Easy doubles next week's jump, medium takes the normal step, hard repeats the same numbers instead of pushing. That turns a fixed +5 rule into something that answers to the day you actually had.

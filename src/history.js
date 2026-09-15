@@ -200,6 +200,6 @@ function soundControls(){
 function soundNote(){
   const note = document.createElement("p");
   note.className = "sound-note";
-  note.textContent = "Three short beeps in the last seconds, one long one when the rest is up. iOS suspends audio when the screen locks, so keep the app in front.";
+  note.textContent = "Three short beeps in the last seconds, a rising three-note one when the rest is up. The screen stays awake while a rest runs. Switching apps pauses the clock; come back and it shows GO.";
   return note;
 }

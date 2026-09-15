@@ -640,14 +640,15 @@ section("The countdown beeps once a second, then once at zero");
 
   const sound = await import("../src/sound.js");
   const {start, stop} = await import("../src/timer.js");
-  const {BEEP_COUNTDOWN, BEEP_GO} = await import("../src/constants.js");
+  const {BEEP_COUNTDOWN, BEEP_GO, RESUME_GO_GRACE_MS} = await import("../src/constants.js");
+  const goPitches = BEEP_GO.pulses.map(p => p.freq);
 
   check("a real context unlocks", sound.unlockAudio() === true);
   check("and reports itself running", sound.audioState() === "running", sound.audioState());
 
   played.length = 0;
   check("a go beep plays", sound.beepGo() === true);
-  equal("at the go pitch", played, [BEEP_GO.freq]);
+  equal("at the go pitches", played, goPitches);
 
   played.length = 0;
   sound.setSoundOn(false);
@@ -660,19 +661,28 @@ section("The countdown beeps once a second, then once at zero");
   await new Promise(done => setTimeout(done, 1400));
   stop();
   equal("one second of rest beeps once then goes",
-    played, [BEEP_COUNTDOWN.freq, BEEP_GO.freq]);
+    played, [BEEP_COUNTDOWN.pulses[0].freq, ...goPitches]);
+
+  const realNow = Date.now;
+  const comeBackAfter = async ms => {
+    Date.now = () => realNow() + ms;
+    await new Promise(done => setTimeout(done, 400));
+    Date.now = realNow;
+  };
 
   played.length = 0;
   start(5);
   equal("a fresh five-second rest is silent to begin with", played, []);
-  const frozenUntil = Date.now() + 5600;
-  while(Date.now() < frozenUntil);
-  await new Promise(done => setTimeout(done, 400));
-  equal("a rest that ended while the app was frozen makes no sound", played, []);
-  check("and it does not flash a stale go",
-    !els.timer.classList.contains("up"), els.timer._class);
-  check("it just falls back to the idle reading",
-    els.clock.textContent.endsWith("s"), els.clock.textContent);
+  await comeBackAfter(60000);
+  equal("a rest that ended long before you came back makes no sound", played, []);
+  check("but it still shows go", els.timer.classList.contains("up"), els.timer._class);
+  stop();
+
+  played.length = 0;
+  start(5);
+  await comeBackAfter(5000 + RESUME_GO_GRACE_MS - 1000);
+  equal("a rest that ended just before you came back goes", played, goPitches);
+  check("and shows go", els.timer.classList.contains("up"), els.timer._class);
   stop();
 }
 
