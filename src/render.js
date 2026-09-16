@@ -97,7 +97,7 @@ function renderLog(main){
   const remaining = DAY_KEYS.length - done.size;
   const head = document.createElement("div");
   head.className = "dayhead";
-  head.innerHTML = `<p class="eyebrow"><b>Week ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)} · ${remaining > 0 ? `${remaining} left this week` : "week complete"}</p><h2>${plan.focus}</h2><p>${plan.cue}</p>`;
+  head.innerHTML = `<p class="eyebrow"><b>Week ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)} · ${remaining > 0 ? `${remaining} left this week` : "week complete"}</p><h2 data-text="${plan.focus}">${plan.focus}</h2><p>${plan.cue}</p>`;
   main.appendChild(head);
 
   const legend = document.createElement("div");
@@ -376,7 +376,7 @@ function notesCard(){
   const box = document.createElement("div");
   box.className = "notes";
   const label = document.createElement("label");
-  label.textContent = "Session notes";
+  label.textContent = "Notes";
   label.setAttribute("for", "notes");
   const area = document.createElement("textarea");
   area.id = "notes";
