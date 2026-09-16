@@ -95,7 +95,7 @@ button{cursor:pointer;border:none;background:none}
 }
 .blockset{display:flex;gap:3px;background:rgba(0,0,0,.4);padding:3px;border-radius:3px}
 .blockset button{
-  width:36px;padding:8px 0;border-radius:2px;font-family:var(--display);
+  position:relative;width:36px;padding:8px 0;border-radius:2px;font-family:var(--display);
   font-weight:900;font-size:14px;color:var(--muted);line-height:1;
 }
 .blockset button[aria-pressed="true"]{background:rgba(90,208,242,.1);color:var(--accent);box-shadow:inset 0 0 0 1px rgba(90,208,242,.35)}
@@ -179,7 +179,7 @@ button{cursor:pointer;border:none;background:none}
   font-variant-numeric:tabular-nums;letter-spacing:-.01em;
 }
 .set input::placeholder{color:var(--faint);font-weight:400;font-size:17px}
-.set input:focus{border-color:var(--accent);background:var(--surface);box-shadow:var(--glow)}
+.set input:focus{border-color:var(--accent)}
 .set input.filled{border-color:var(--accent);background:var(--surface);color:var(--accent)}
 .x{text-align:center;color:var(--faint);font-size:12px}
 .delta{
@@ -442,7 +442,7 @@ button{cursor:pointer;border:none;background:none}
   border:1px solid var(--line);border-radius:3px;padding:9px;
   font-family:var(--sans);font-size:14px;line-height:1.4;
 }
-.notes textarea:focus{border-color:var(--accent);background:var(--surface)}
+.notes textarea:focus{border-color:var(--accent)}
 .hist-notes{
   font-size:12.5px;color:var(--muted);font-style:italic;padding:7px 0 0;
   margin:6px 0 0;border-top:1px dashed var(--line);
@@ -591,8 +591,15 @@ button{cursor:pointer;border:none;background:none}
 .ex-move.done .ex-num{opacity:.5}
 .section-label::before,.eyebrow::before{content:"// ";color:var(--faint)}
 
-.topbar::after,.savebar::after,.sheet-panel::after,.timer.running::before,.timer.ending::before{
+.topbar::after,.savebar::after,.sheet-panel::after,.timer.running::before,.timer.ending::before,
+.ex-num::after,.superset b::after,.hist-day .chip.live::after,.notes label::after,
+.blockset button[aria-pressed="true"]::after{
   content:"";position:absolute;inset:0;pointer-events:none;
   background:var(--scanlines);mix-blend-mode:multiply;
+}
+.set input:focus,.notes textarea:focus,.sheet-custom input:focus{
+  background:var(--scanlines),rgba(90,208,242,.07);
+  box-shadow:var(--glow),inset 0 0 14px rgba(90,208,242,.14);
+  outline:none;
 }
 .timer.up,.timer.ending{text-shadow:0 0 8px rgba(255,255,255,.5)}
