@@ -33,13 +33,13 @@ Because of the A/B/C rotation, "last time" for most lifts is a full cycle ago. L
 
 Session volume accounts for both: a walking lunge holding two 40s for 12 per leg counts 40 × 2 dumbbells × 12 reps × 2 legs.
 
-**Tap an exercise name** for a how-to: 3-4 numbered steps and the one thing people get wrong, for all 92 movements. It ships in the page, so it opens instantly with no signal. A YouTube search link sits at the bottom of the sheet for when you want to see it moving.
+**Tap an exercise name** for a how-to: 3-4 numbered steps and the one thing people get wrong, for all 97 movements. It ships in the page, so it opens instantly with no signal. A YouTube search link sits at the bottom of the sheet for when you want to see it moving.
 
 The write-ups are plain-language descriptions of standard technique, not a trainer's instruction. For the fussier moves (Copenhagen plank, Z-press, ab wheel) watch a video the first time and use the steps as a reminder afterwards.
 
-**Swap any exercise** with the `swap` button on its card. You get moves that train the same pattern first, then everything else in the program, then a free-text box for anything not in it. A swap applies to that session only; the next cycle prescribes the original again. History follows the movement, not the slot, so a substitute is compared against the last time you did *that* move.
+**Swap any exercise** with the `swap` button on its card. You get moves that train the same pattern first, then everything else, then a free-text box for anything not in it. The list includes five moves the program never prescribes on its own: lateral (archer), wide and spiderman push-ups, weighted shoulder circles, and the DB twisting lunge. They are there to be swapped in when you want them, and they carry history like any other move. A swap applies to that session only; the next cycle prescribes the original again. History follows the movement, not the slot, so a substitute is compared against the last time you did *that* move.
 
-Exercises you type yourself are saved and listed under **Your exercises** at the top of the swap sheet, with rename and remove. Names are matched loosely, so `lateral push ups`, `Lateral Push-Ups` and `lateral pushups` are all the same exercise and keep one shared history; typing the name of a move already in the program resolves to that move rather than creating a duplicate. Removing a custom exercise also deletes its logged sets, and says how many before it does.
+Exercises you type yourself are saved and listed under **Your exercises** at the top of the swap sheet, with rename and remove. Names are matched loosely, so `sledgehammer slams`, `Sledgehammer Slams` and `sledgehammer slam` are all the same exercise and keep one shared history; typing the name of a move the app already knows resolves to that move rather than creating a duplicate. That includes common nicknames, so `lateral push ups` finds the archer push-up and `arm circles` finds the shoulder circles. Removing a custom exercise also deletes its logged sets, and says how many before it does.
 
 **The target line** on each card reads `GO FOR 50×8 · ADD WEIGHT`. It suggests more weight once you have topped the prescribed rep range on every set, and one more rep otherwise.
 
@@ -150,7 +150,8 @@ Static files, ES modules, no build step.
 | | |
 |---|---|
 | `src/program.js` | the nine workouts |
-| `src/howto.js` | 92 movement write-ups |
+| `src/extras.js` | moves the program never prescribes but the swap sheet offers |
+| `src/howto.js` | 97 movement write-ups |
 | `src/taxonomy.js` | movement patterns, load conventions, per-side table |
 | `src/movements.js` | derives rest times and load factors onto the program, and parses rep ranges |
 | `src/constants.js` | every tunable number |

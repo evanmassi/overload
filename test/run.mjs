@@ -1,7 +1,7 @@
 import {
-  section, check, equal, report, reset, logged, setsOf, everyMovement, clearStorage,
-  state, hydrate, constants, movements, progression, rotation, swaps, backup,
-  HOWTO, PATTERNS, LOAD, PER
+  section, check, equal, report, reset, logged, setsOf, everyMovement, prescribedMovements,
+  clearStorage, state, hydrate, constants, movements, progression, rotation, swaps, backup,
+  HOWTO, PATTERNS, LOAD, PER, EXTRAS
 } from "./harness.mjs";
 
 const {BLOCKS, DAY_KEYS, IMPLEMENTS_PER_LOAD} = constants;
@@ -15,7 +15,13 @@ section("Program data");
 {
   const moves = everyMovement();
   equal("three week blocks", Object.keys(movements.PROGRAM), BLOCKS);
-  check("92 distinct movements", moves.size === 92, moves.size);
+  check("97 distinct movements", moves.size === 97, moves.size);
+
+  const prescribed = prescribedMovements();
+  check("9 sessions prescribe 92 of them", prescribed.size === 92, prescribed.size);
+
+  const leaked = EXTRAS.filter(e => prescribed.has(e.id));
+  equal("extras are swappable but never prescribed", leaked.map(e => e.id), []);
 
   const untagged = [...moves.keys()].filter(id => !movements.PATTERN_OF[id]);
   equal("every movement belongs to a pattern", untagged, []);
@@ -139,19 +145,24 @@ section("Session volume counts implements and sides");
 section("Custom exercises keep one identity");
 {
   reset();
-  const first = swaps.customIdFor("lateral push ups");
-  equal("a new name mints a custom id", first, "custom_lateral_push_ups");
+  const first = swaps.customIdFor("sledgehammer slams");
+  equal("a new name mints a custom id", first, "custom_sledgehammer_slams");
 
-  state.customNames = {custom_lateral_push_ups: "lateral push ups"};
-  for(const variant of ["lateral push ups", "Lateral Push Ups", "lateral pushups", "lateral push-ups", "Lateral Push-Ups!"])
+  state.customNames = {custom_sledgehammer_slams: "sledgehammer slams"};
+  for(const variant of ["sledgehammer slams", "Sledgehammer Slams", "sledgehammer slam", "sledge-hammer slams", "Sledgehammer Slams!"])
     equal(`"${variant}" resolves to the same exercise`, swaps.customIdFor(variant), first);
 
-  equal("a genuinely different name does not", swaps.customIdFor("lateral raises"), "custom_lateral_raises");
+  equal("a genuinely different name does not", swaps.customIdFor("tyre flips"), "custom_tyre_flips");
 
   state.customNames = {};
   equal("typing a program move's name resolves to that move", swaps.customIdFor("Face Pull"), "face_pull");
   equal("punctuation variance still resolves", swaps.customIdFor("bench dips"), "bench_dip");
   equal("empty input yields nothing", swaps.customIdFor("   "), null);
+
+  equal("a nickname resolves to the move it names", swaps.customIdFor("lateral push ups"), "archer_pushup");
+  equal("so does a nickname for a move you described", swaps.customIdFor("weighted shoulder rotations"), "shoulder_circles");
+  equal("a custom name you already own beats a nickname",
+    (state.customNames = {custom_arm_circles: "arm circles"}, swaps.customIdFor("arm circles")), "custom_arm_circles");
 }
 
 section("Swapping keeps history with the movement");

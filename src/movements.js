@@ -1,4 +1,5 @@
 import {PROGRAM} from "./program.js";
+import {EXTRAS} from "./extras.js";
 import {LOAD, PER, PATTERNS, COMPOUND} from "./taxonomy.js";
 import {BLOCKS, DAY_KEYS, REST, IMPLEMENTS_PER_LOAD,
         HEAVY_REP_CEILING, LEAD_SET_COUNT} from "./constants.js";
@@ -33,6 +34,13 @@ export function allExercises(plan){
   return plan.ex.concat((plan.core || []).flat());
 }
 
+function tagLoadAndSides(exercise){
+  exercise.load = LOAD_OF[exercise.id] || (exercise.bw ? "bw" : "single");
+  exercise.per = PER_OF[exercise.id] || null;
+  exercise.sides = exercise.per ? 2 : 1;
+  exercise.implements = IMPLEMENTS_PER_LOAD[exercise.load];
+}
+
 for(const block of BLOCKS) for(const day of DAY_KEYS){
   const plan = PROGRAM[block][day];
   plan.ex.forEach(e => {
@@ -44,17 +52,19 @@ for(const block of BLOCKS) for(const day of DAY_KEYS){
     e.rest = i ? REST.supersetRound : REST.supersetWalk;
     e.restAfter = i ? REST.betweenSupersets : REST.supersetWalk;
   }));
-  allExercises(plan).forEach(e => {
-    e.load = LOAD_OF[e.id] || (e.bw ? "bw" : "single");
-    e.per = PER_OF[e.id] || null;
-    e.sides = e.per ? 2 : 1;
-    e.implements = IMPLEMENTS_PER_LOAD[e.load];
-  });
+  allExercises(plan).forEach(tagLoadAndSides);
 }
+
+EXTRAS.forEach(e => {
+  e.rest = restFor(e);
+  e.restAfter = REST.betweenMoves;
+  tagLoadAndSides(e);
+});
 
 const BY_ID = {};
 for(const block of BLOCKS) for(const day of DAY_KEYS)
   allExercises(PROGRAM[block][day]).forEach(e => { BY_ID[e.id] = e; });
+EXTRAS.forEach(e => { BY_ID[e.id] = e; });
 
 export function findExercise(id){ return BY_ID[id] || null; }
 
@@ -64,4 +74,4 @@ export function workoutFor(block, day){
   return (PROGRAM[block] && PROGRAM[block][day]) || null;
 }
 
-export {PROGRAM, PATTERNS};
+export {PROGRAM, PATTERNS, EXTRAS};

@@ -29,7 +29,8 @@ export const LOAD = {
     "db_shrug",
     "renegade_row",
     "farmer_carry",
-    "db_front_squat"
+    "db_front_squat",
+    "shoulder_circles"
   ],
   "single": [
     "goblet_squat",
@@ -48,7 +49,8 @@ export const LOAD = {
     "db_side_bend",
     "weighted_dead_bug",
     "suitcase_carry",
-    "weighted_leg_raise"
+    "weighted_leg_raise",
+    "twist_lunge"
   ],
   "bar": [
     "ez_curl",
@@ -99,7 +101,10 @@ export const LOAD = {
     "hanging_leg_raise",
     "hanging_knee_twist",
     "toes_to_bar",
-    "oblique_knee_raise"
+    "oblique_knee_raise",
+    "archer_pushup",
+    "wide_pushup",
+    "spiderman_pushup"
   ]
 };
 
@@ -128,12 +133,15 @@ export const PER = {
     "oblique_knee_raise",
     "woodchop",
     "pallof_press",
-    "db_side_bend"
+    "db_side_bend",
+    "archer_pushup",
+    "spiderman_pushup",
+    "twist_lunge"
   ]
 };
 
 export const PATTERNS = {
-  "Horizontal press":["flat_db_press","incline_db_press","squeeze_press","pushup_burnout","feet_elev_pushup","diamond_pushup","close_grip_press"],
+  "Horizontal press":["flat_db_press","incline_db_press","squeeze_press","pushup_burnout","feet_elev_pushup","diamond_pushup","close_grip_press","archer_pushup","wide_pushup","spiderman_pushup"],
   "Chest isolation":["db_fly","incline_db_fly","cable_crossover","db_pullover"],
   "Vertical pull":["pullup","chinup","wide_pullup","lat_pulldown"],
   "Horizontal pull":["cs_db_row","single_arm_row","seated_row","renegade_row","inverted_row"],
@@ -141,15 +149,22 @@ export const PATTERNS = {
   "Hip hinge":["db_rdl","single_leg_rdl","db_good_morning","stiff_leg_dl","glute_bridge","hip_thrust","leg_curl"],
   "Calves":["standing_calf","seated_calf","single_leg_calf"],
   "Vertical press":["seated_db_press","standing_ohp","arnold_press","push_press"],
-  "Lateral delts":["lateral_raise","seated_lateral_raise","ez_upright_row"],
+  "Lateral delts":["lateral_raise","seated_lateral_raise","ez_upright_row","shoulder_circles"],
   "Rear delts":["rear_delt_fly","face_pull","rear_delt_raise"],
   "Biceps":["ez_curl","hammer_curl","cable_curl","incline_curl","concentration_curl","ez_21s","cross_hammer_curl"],
   "Triceps":["ez_skullcrusher","oh_tri_ext","bench_dip","ez_oh_ext","tri_kickback"],
   "Traps":["db_shrug"],
   "Core flexion":["hanging_knee_raise","hanging_leg_raise","bicycle_crunch","reverse_crunch","decline_situp","flutter_kicks","v_up","toes_to_bar","cable_crunch","weighted_leg_raise","hanging_knee_twist","oblique_knee_raise"],
   "Core bracing":["plank","side_plank","dead_bug","hollow_hold","shoulder_taps","ab_wheel","bird_dog","copenhagen","hollow_rock","side_plank_reach","weighted_dead_bug","plank_up_down","mountain_climber"],
-  "Core rotation":["russian_twist","woodchop","pallof_press","db_side_bend"],
+  "Core rotation":["russian_twist","woodchop","pallof_press","db_side_bend","twist_lunge"],
   "Carries":["suitcase_carry","farmer_carry"]
+};
+
+export const ALIASES = {
+  archer_pushup: ["lateral push-ups", "side-to-side push-ups"],
+  spiderman_pushup: ["spider-man push-ups"],
+  shoulder_circles: ["arm circles", "shoulder rotations", "weighted shoulder rotations"],
+  twist_lunge: ["standing plate twist", "lunge with twist", "lunge with torso rotation"]
 };
 
 export const COMPOUND = [

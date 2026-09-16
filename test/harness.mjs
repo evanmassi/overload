@@ -18,6 +18,7 @@ const swaps = await import("../src/swaps.js");
 const backup = await import("../src/backup.js");
 const {HOWTO} = await import("../src/howto.js");
 const {PATTERNS, LOAD, PER} = await import("../src/taxonomy.js");
+const {EXTRAS} = await import("../src/extras.js");
 
 export function reset(){
   clearStorage();
@@ -39,10 +40,16 @@ export function setsOf(pairs){
   return pairs.map(([w, r]) => ({w: String(w), r: String(r)}));
 }
 
-export function everyMovement(){
+export function prescribedMovements(){
   const seen = new Map();
   for(const block of constants.BLOCKS) for(const day of constants.DAY_KEYS)
     movements.allExercises(movements.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
+  return seen;
+}
+
+export function everyMovement(){
+  const seen = prescribedMovements();
+  EXTRAS.forEach(e => seen.set(e.id, e));
   return seen;
 }
 
@@ -71,4 +78,4 @@ export function report(){
   return failed === 0;
 }
 
-export {state, hydrate, constants, movements, progression, rotation, swaps, backup, HOWTO, PATTERNS, LOAD, PER};
+export {state, hydrate, constants, movements, progression, rotation, swaps, backup, HOWTO, PATTERNS, LOAD, PER, EXTRAS};
