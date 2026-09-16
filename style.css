@@ -133,7 +133,6 @@ button{cursor:pointer;border:none;background:none}
   96%{opacity:.7;clip-path:inset(35% 0 45% 0);transform:translateX(-2px)}
   97%,100%{opacity:0;clip-path:inset(0 0 100% 0);transform:none}
 }
-.dayhead p{margin:5px 0 0;color:var(--muted);font-size:13.5px}
 
 .ex{margin-bottom:10px}
 .ex-head{display:flex;flex-wrap:wrap;align-items:center;gap:0 9px;padding:0 0 8px calc(var(--tag-w) + 10px);min-height:var(--notch-h)}

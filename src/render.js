@@ -96,7 +96,7 @@ function renderLog(main){
   const plan = workoutFor(current.block, current.day);
   const head = document.createElement("div");
   head.className = "dayhead";
-  head.innerHTML = `<p class="eyebrow"><b>Week ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2><p>${plan.cue}</p>`;
+  head.innerHTML = `<p class="eyebrow"><b>Week ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2>`;
   main.appendChild(head);
 
   const legend = document.createElement("div");

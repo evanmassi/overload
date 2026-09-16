@@ -1,6 +1,6 @@
 export const PROGRAM = {
   A: {
-    chest: {focus:"Chest & Back", cue:"Volume week. Leave 1-2 reps in the tank on the first set.", ex:[
+    chest: {focus:"Chest & Back", ex:[
       {id:"flat_db_press", n:"Flat DB Bench Press", s:4, r:"8-10"},
       {id:"pullup", n:"Pull-ups", s:4, r:"AMRAP", bw:1},
       {id:"incline_db_press", n:"Incline DB Press", s:3, r:"10-12"},
@@ -17,7 +17,7 @@ export const PROGRAM = {
       [{id:"russian_twist", n:"DB Russian Twist", s:2, r:"20"},
        {id:"dead_bug", n:"Dead Bug", s:2, r:"12", bw:1}]
     ]},
-    legs: {focus:"Legs & Back", cue:"Hips and pulls. Brace the core on everything.", ex:[
+    legs: {focus:"Legs & Back", ex:[
       {id:"goblet_squat", n:"DB Goblet Squat", s:4, r:"10-12"},
       {id:"db_rdl", n:"DB Romanian Deadlift", s:4, r:"8-10"},
       {id:"bulgarian", n:"Bulgarian Split Squat", s:3, r:"10"},
@@ -34,7 +34,7 @@ export const PROGRAM = {
       [{id:"decline_situp", n:"Decline Sit-up w/ DB", s:2, r:"12"},
        {id:"flutter_kicks", n:"Flutter Kicks", s:2, r:"40", unit:"sec", bw:1}]
     ]},
-    arms: {focus:"Shoulders & Arms", cue:"Strict form beats heavy here. Chase the pump.", ex:[
+    arms: {focus:"Shoulders & Arms", ex:[
       {id:"seated_db_press", n:"Seated DB Shoulder Press", s:4, r:"8-10"},
       {id:"lateral_raise", n:"DB Lateral Raise", s:4, r:"12-15"},
       {id:"ez_curl", n:"EZ-Bar Curl", s:3, r:"10-12"},
@@ -53,7 +53,7 @@ export const PROGRAM = {
     ]}
   },
   B: {
-    chest: {focus:"Chest & Back", cue:"Incline lead. Different angle, same movements underneath.", ex:[
+    chest: {focus:"Chest & Back", ex:[
       {id:"incline_db_press", n:"Incline DB Press", s:4, r:"8-10"},
       {id:"chinup", n:"Chin-ups", s:4, r:"AMRAP", bw:1},
       {id:"squeeze_press", n:"DB Squeeze Press", s:3, r:"12"},
@@ -70,7 +70,7 @@ export const PROGRAM = {
       [{id:"db_side_bend", n:"DB Side Bend", s:2, r:"15"},
        {id:"hollow_rock", n:"Hollow Rock", s:2, r:"20", bw:1}]
     ]},
-    legs: {focus:"Legs & Back", cue:"Unilateral bias. Weaker side sets the reps.", ex:[
+    legs: {focus:"Legs & Back", ex:[
       {id:"db_front_squat", n:"DB Front Squat", s:4, r:"8-10"},
       {id:"single_leg_rdl", n:"Single-leg DB RDL", s:3, r:"10"},
       {id:"db_step_up", n:"DB Step-up", s:3, r:"10"},
@@ -87,7 +87,7 @@ export const PROGRAM = {
       [{id:"plank_up_down", n:"Plank Up-Downs", s:2, r:"12", bw:1},
        {id:"flutter_kicks", n:"Flutter Kicks", s:2, r:"40", unit:"sec", bw:1}]
     ]},
-    arms: {focus:"Shoulders & Arms", cue:"Standing press day. Glutes tight, ribs down.", ex:[
+    arms: {focus:"Shoulders & Arms", ex:[
       {id:"standing_ohp", n:"Standing DB Overhead Press", s:4, r:"8-10"},
       {id:"arnold_press", n:"DB Arnold Press", s:3, r:"10-12"},
       {id:"lateral_raise", n:"DB Lateral Raise", s:4, r:"15"},
@@ -106,7 +106,7 @@ export const PROGRAM = {
     ]}
   },
   C: {
-    chest: {focus:"Chest & Back", cue:"Heavy week. Lower reps, longer rest, real weight.", ex:[
+    chest: {focus:"Chest & Back", ex:[
       {id:"flat_db_press", n:"Flat DB Bench Press", s:5, r:"5-6"},
       {id:"wide_pullup", n:"Wide-grip Pull-ups", s:4, r:"6-8", bw:1},
       {id:"incline_db_press", n:"Incline DB Press", s:3, r:"8-10"},
@@ -123,7 +123,7 @@ export const PROGRAM = {
       [{id:"russian_twist", n:"DB Russian Twist", s:2, r:"24"},
        {id:"side_plank", n:"Side Plank", s:2, r:"40", unit:"sec", bw:1}]
     ]},
-    legs: {focus:"Legs & Back", cue:"Heavy single-leg. This is the one that hurts tomorrow.", ex:[
+    legs: {focus:"Legs & Back", ex:[
       {id:"bulgarian", n:"Bulgarian Split Squat", s:4, r:"8"},
       {id:"stiff_leg_dl", n:"DB Stiff-leg Deadlift", s:4, r:"10"},
       {id:"sumo_squat", n:"DB Sumo Squat", s:3, r:"12"},
@@ -140,7 +140,7 @@ export const PROGRAM = {
       [{id:"suitcase_carry", n:"Suitcase Carry", s:2, r:"45", unit:"sec"},
        {id:"dead_bug", n:"Dead Bug", s:2, r:"15", bw:1}]
     ]},
-    arms: {focus:"Shoulders & Arms", cue:"Explosive press, then burn the arms out.", ex:[
+    arms: {focus:"Shoulders & Arms", ex:[
       {id:"push_press", n:"DB Push Press", s:4, r:"6-8"},
       {id:"seated_lateral_raise", n:"Seated DB Lateral Raise", s:4, r:"15"},
       {id:"ez_upright_row", n:"EZ-Bar Upright Row", s:3, r:"12"},
