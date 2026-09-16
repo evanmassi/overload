@@ -55,10 +55,10 @@ section("The log view renders a full session");
   fresh();
   render();
   const cards = els.main.find("ex");
-  check("eight main cards plus three superset cards", cards.length === 11, cards.length);
-  check("each main card has a swap button", els.main.find("ex-swap").length === 14, els.main.find("ex-swap").length);
+  check("nine main cards plus three superset cards", cards.length === 12, cards.length);
+  check("each main card has a swap button", els.main.find("ex-swap").length === 15, els.main.find("ex-swap").length);
   const metas = els.main.find("meta");
-  check("every exercise states its load convention", metas.length === 14 && metas.every(m => /per dumbbell|one dumbbell|total w|stack|bodyweight/.test(m.innerHTML)), metas.length);
+  check("every exercise states its load convention", metas.length === 15 && metas.every(m => /per dumbbell|one dumbbell|total w|stack|bodyweight/.test(m.innerHTML)), metas.length);
   check("per-side moves are tagged", metas.some(m => m.innerHTML.includes("per leg")) || state.current.day !== "legs");
   check("the session tabs render", els.main.find("sessions").length === 1);
   check("a notes box renders", els.main.find("notes").length === 1);
@@ -180,9 +180,9 @@ section("Collapsing and the set bar");
 {
   fresh();
   render();
-  check("the set bar starts empty", els.tally.textContent === "0/38", els.tally.textContent);
+  check("the set bar starts empty", els.tally.textContent === "0/41", els.tally.textContent);
   check("and draws one tick per prescribed set",
-    els.setbar.children.length === 38, els.setbar.children.length);
+    els.setbar.children.length === 41, els.setbar.children.length);
   check("with none lit", els.setbar.children.every(t => !t.classList.contains("on")));
 
   const card = els.main.find("ex-move")[0];
@@ -196,11 +196,11 @@ section("Collapsing and the set bar");
 
   check("finishing every set collapses the card", els.main.find("ex-move")[0].classList.contains("done"));
   check("its summary is populated", els.main.find("ex-summary")[0].textContent.includes("50"));
-  check("the tally counts the logged sets", els.tally.textContent === "4/38", els.tally.textContent);
+  check("the tally counts the logged sets", els.tally.textContent === "4/41", els.tally.textContent);
   check("and four ticks light up",
     els.setbar.children.filter(t => t.classList.contains("on")).length === 4);
   check("the tally carries the count, not the note",
-    els.tally.textContent === "4/38" && !els.volnote.textContent.includes("sets"),
+    els.tally.textContent === "4/41" && !els.volnote.textContent.includes("sets"),
     els.volnote.textContent);
 
   els.main.find("ex-fold")[0].fire("click");
@@ -208,18 +208,18 @@ section("Collapsing and the set bar");
   check("tapping the chevron expands it again", !els.main.find("ex-move")[0].classList.contains("done"));
 
   const blocks = els.main.find("ex-move");
-  check("a block per main move plus two per superset", blocks.length === 14, blocks.length);
+  check("a block per main move plus two per superset", blocks.length === 15, blocks.length);
 
-  const coreMove = blocks[8];
+  const coreMove = blocks[9];
   coreMove.find("set").filter(r => !r.classList.contains("head")).forEach(row => {
     row.children[3].value = "12";
     row.children[3].fire("change");
   });
   render();
   const after = els.main.find("ex-move");
-  check("a finished superset move collapses too", after[8].classList.contains("done"));
-  check("its partner stays open", !after[9].classList.contains("done"));
-  check("its summary is populated", after[8].find("ex-summary")[0].textContent.includes("12"));
+  check("a finished superset move collapses too", after[9].classList.contains("done"));
+  check("its partner stays open", !after[10].classList.contains("done"));
+  check("its summary is populated", after[9].find("ex-summary")[0].textContent.includes("12"));
 }
 
 section("Carry-forward repeat button");
@@ -266,7 +266,7 @@ section("Effort buttons");
   fresh();
   render();
   const rows = els.main.find("effort");
-  check("every main move asks how it felt", rows.length === 8, rows.length);
+  check("every main move asks how it felt", rows.length === 9, rows.length);
 
   const buttons = rows[0].children.filter(c => c.tag === "button");
   equal("three levels", buttons.map(b => b.textContent), ["easy", "medium", "hard"]);
@@ -327,9 +327,9 @@ section("Logging updates the page without a re-render");
   check("the summary fills in without a re-render",
     card.find("ex-summary")[0].textContent.includes("50"),
     card.find("ex-summary")[0].textContent);
-  check("the tally updates", els.tally.textContent === "4/38", els.tally.textContent);
+  check("the tally updates", els.tally.textContent === "4/41", els.tally.textContent);
   check("the tally updates without a re-render",
-    els.tally.textContent === "4/38", els.tally.textContent);
+    els.tally.textContent === "4/41", els.tally.textContent);
 }
 
 section("Time in the gym is first log to last log");
@@ -808,7 +808,7 @@ section("A superset reads as an alternating pair");
   check("the badge says to alternate", badge.innerHTML.includes("alternate"), badge.innerHTML);
 
   const blocks = els.main.find("ex-move");
-  const first = blocks[8], second = blocks[9];
+  const first = blocks[9], second = blocks[10];
   const firstMeta = first.find("meta")[0].innerHTML;
   const secondMeta = second.find("meta")[0].innerHTML;
   check("the first move points at its partner", /straight into \w/.test(firstMeta), firstMeta);
@@ -834,7 +834,7 @@ section("Effort is asked once per main move");
 {
   fresh();
   render();
-  equal("eight prompts, not fourteen", els.main.find("effort").length, 8);
+  equal("nine prompts, not fifteen", els.main.find("effort").length, 9);
   const coreCards = els.main.find("core");
   check("no core superset asks", coreCards.every(c => c.find("effort").length === 0));
 }

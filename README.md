@@ -17,7 +17,7 @@ Three sessions, rotating through three weeks (A → B → C → A) so nothing re
 
 Sessions are identified by what they train, not by day of week. The week letter advances once all three sessions in it are logged, whenever that happens — miss a Wednesday and you do Legs on Thursday instead. Nothing gets skipped, and every lift keeps a fair comparison against its own last performance.
 
-Every session is 8 main moves (23-27 sets) plus a core finisher of 3 supersets run for 2 rounds each. Roughly 75 minutes including warmup.
+Every session is 8 or 9 main moves (23-30 sets) plus a core finisher of 3 supersets run for 2 rounds each. Roughly 75 minutes including warmup.
 
 Weekly set volume per muscle: chest 12.3, back 16.7, quads 10, hams 8, delts 13, bis 7, tris 7, calves 3.7.
 
@@ -73,11 +73,11 @@ Runs of identical sets collapse to a count, so `55×20 · 60×16 · 60×16 · 60
 
 **A finished exercise collapses** to a one-line summary of what you lifted, including each of the two moves inside a superset, which collapse on their own. Tap the chevron to open one again. The page shrinks as you work, so the remaining scroll is the remaining work.
 
-**A segmented bar spans the bottom of the screen**, one tick per prescribed set, filling left to right as you log. The tally beside it reads `12/38`, and the line under the volume carries your time and how the session compares to the last one:
+**A segmented bar spans the bottom of the screen**, one tick per prescribed set, filling left to right as you log. The tally beside it reads `12/41`, and the line under the volume carries your time and how the session compares to the last one:
 
 ```
 ████████████··························
-6,240 lb                          12/38
+6,240 lb                          12/41
 52 min · +1,180 vs 08-25
 ```
 

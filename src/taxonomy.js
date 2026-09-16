@@ -50,7 +50,8 @@ export const LOAD = {
     "weighted_dead_bug",
     "suitcase_carry",
     "weighted_leg_raise",
-    "twist_lunge"
+    "twist_lunge",
+    "back_extension"
   ],
   "bar": [
     "ez_curl",
@@ -146,7 +147,7 @@ export const PATTERNS = {
   "Vertical pull":["pullup","chinup","wide_pullup","lat_pulldown"],
   "Horizontal pull":["cs_db_row","single_arm_row","seated_row","renegade_row","inverted_row"],
   "Squat pattern":["goblet_squat","bulgarian","walking_lunge","db_front_squat","db_step_up","reverse_lunge","sumo_squat","lateral_lunge"],
-  "Hip hinge":["db_rdl","single_leg_rdl","db_good_morning","stiff_leg_dl","glute_bridge","hip_thrust","leg_curl"],
+  "Hip hinge":["db_rdl","single_leg_rdl","db_good_morning","stiff_leg_dl","glute_bridge","hip_thrust","leg_curl","back_extension"],
   "Calves":["standing_calf","seated_calf","single_leg_calf"],
   "Vertical press":["seated_db_press","standing_ohp","arnold_press","push_press"],
   "Lateral delts":["lateral_raise","seated_lateral_raise","ez_upright_row","shoulder_circles"],
@@ -164,7 +165,8 @@ export const ALIASES = {
   archer_pushup: ["lateral push-ups", "side-to-side push-ups"],
   spiderman_pushup: ["spider-man push-ups"],
   shoulder_circles: ["arm circles", "shoulder rotations", "weighted shoulder rotations"],
-  twist_lunge: ["standing plate twist", "lunge with twist", "lunge with torso rotation"]
+  twist_lunge: ["standing plate twist", "lunge with twist", "lunge with torso rotation"],
+  back_extension: ["hyperextension", "hyperextensions", "45 degree back extension", "roman chair back extension"]
 };
 
 export const COMPOUND = [

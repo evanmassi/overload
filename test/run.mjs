@@ -15,10 +15,10 @@ section("Program data");
 {
   const moves = everyMovement();
   equal("three week blocks", Object.keys(movements.PROGRAM), BLOCKS);
-  check("97 distinct movements", moves.size === 97, moves.size);
+  check("98 distinct movements", moves.size === 98, moves.size);
 
   const prescribed = prescribedMovements();
-  check("9 sessions prescribe 92 of them", prescribed.size === 92, prescribed.size);
+  check("9 sessions prescribe 93 of them", prescribed.size === 93, prescribed.size);
 
   const leaked = EXTRAS.filter(e => prescribed.has(e.id));
   equal("extras are swappable but never prescribed", leaked.map(e => e.id), []);
@@ -52,7 +52,7 @@ section("Program data");
 
   for(const block of BLOCKS) for(const day of DAY_KEYS){
     const plan = movements.workoutFor(block, day);
-    check(`${block}/${day} has 8 main moves`, plan.ex.length === 8, plan.ex.length);
+    check(`${block}/${day} has 8 or 9 main moves`, plan.ex.length === 8 || plan.ex.length === 9, plan.ex.length);
     check(`${block}/${day} has 3 core supersets of 2`, plan.core.length === 3 && plan.core.every(p => p.length === 2));
   }
 }
@@ -371,7 +371,7 @@ section("Prescribed set counts");
 {
   for(const block of BLOCKS) for(const day of DAY_KEYS){
     const total = prescribedCountFor(block, day);
-    check(`${block}/${day} prescribes 35-39 sets`, total >= 35 && total <= 39, total);
+    check(`${block}/${day} prescribes 35-42 sets`, total >= 35 && total <= 42, total);
   }
   equal("main work plus core makes up the total",
     prescribedCountFor("A", "chest"),

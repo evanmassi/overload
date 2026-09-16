@@ -8,7 +8,8 @@ export const PROGRAM = {
       {id:"db_fly", n:"Flat DB Flye", s:3, r:"12-15"},
       {id:"lat_pulldown", n:"Wide-grip Lat Pulldown", s:3, r:"10-12"},
       {id:"db_pullover", n:"DB Pullover", s:3, r:"12"},
-      {id:"pushup_burnout", n:"Push-ups to Failure", s:3, r:"AMRAP", bw:1}
+      {id:"pushup_burnout", n:"Push-ups to Failure", s:3, r:"AMRAP", bw:1},
+      {id:"db_shrug", n:"Heavy DB Shrug", s:3, r:"12-15"}
     ], core:[
       [{id:"hanging_knee_raise", n:"Hanging Knee Raise", s:2, r:"12", bw:1},
        {id:"plank", n:"Plank", s:2, r:"45", unit:"sec", bw:1}],
@@ -20,6 +21,7 @@ export const PROGRAM = {
     legs: {focus:"Legs & Back", ex:[
       {id:"goblet_squat", n:"DB Goblet Squat", s:4, r:"10-12"},
       {id:"db_rdl", n:"DB Romanian Deadlift", s:4, r:"8-10"},
+      {id:"back_extension", n:"Weighted Back Extension", s:3, r:"12"},
       {id:"bulgarian", n:"Bulgarian Split Squat", s:3, r:"10"},
       {id:"single_arm_row", n:"Single-arm DB Row", s:3, r:"10"},
       {id:"walking_lunge", n:"DB Walking Lunge", s:3, r:"12"},
@@ -61,7 +63,8 @@ export const PROGRAM = {
       {id:"cs_db_row", n:"Chest-Supported DB Row", s:3, r:"12"},
       {id:"cable_crossover", n:"Cable Crossover", s:3, r:"15"},
       {id:"db_pullover", n:"DB Pullover", s:3, r:"12"},
-      {id:"feet_elev_pushup", n:"Feet-Elevated Push-ups", s:3, r:"AMRAP", bw:1}
+      {id:"feet_elev_pushup", n:"Feet-Elevated Push-ups", s:3, r:"AMRAP", bw:1},
+      {id:"db_shrug", n:"Heavy DB Shrug", s:3, r:"12-15"}
     ], core:[
       [{id:"toes_to_bar", n:"Toes-to-Bar", s:2, r:"8", bw:1},
        {id:"copenhagen", n:"Copenhagen Plank", s:2, r:"20", unit:"sec", bw:1}],
@@ -73,6 +76,7 @@ export const PROGRAM = {
     legs: {focus:"Legs & Back", ex:[
       {id:"db_front_squat", n:"DB Front Squat", s:4, r:"8-10"},
       {id:"single_leg_rdl", n:"Single-leg DB RDL", s:3, r:"10"},
+      {id:"back_extension", n:"Weighted Back Extension", s:3, r:"12"},
       {id:"db_step_up", n:"DB Step-up", s:3, r:"10"},
       {id:"seated_row", n:"Seated Cable Row", s:4, r:"10-12"},
       {id:"reverse_lunge", n:"DB Reverse Lunge", s:3, r:"12"},
@@ -113,8 +117,8 @@ export const PROGRAM = {
       {id:"incline_db_fly", n:"Incline DB Flye", s:3, r:"12"},
       {id:"renegade_row", n:"Renegade Row", s:3, r:"8"},
       {id:"db_pullover", n:"DB Pullover", s:3, r:"12"},
-      {id:"db_shrug", n:"Heavy DB Shrug", s:3, r:"12-15"},
-      {id:"diamond_pushup", n:"Diamond Push-ups", s:3, r:"AMRAP", bw:1}
+      {id:"diamond_pushup", n:"Diamond Push-ups", s:3, r:"AMRAP", bw:1},
+      {id:"db_shrug", n:"Heavy DB Shrug", s:3, r:"12-15"}
     ], core:[
       [{id:"weighted_leg_raise", n:"Weighted Hanging Leg Raise", s:2, r:"10"},
        {id:"hollow_hold", n:"Hollow Body Hold", s:2, r:"40", unit:"sec", bw:1}],
@@ -126,6 +130,7 @@ export const PROGRAM = {
     legs: {focus:"Legs & Back", ex:[
       {id:"bulgarian", n:"Bulgarian Split Squat", s:4, r:"8"},
       {id:"stiff_leg_dl", n:"DB Stiff-leg Deadlift", s:4, r:"10"},
+      {id:"back_extension", n:"Weighted Back Extension", s:3, r:"12"},
       {id:"sumo_squat", n:"DB Sumo Squat", s:3, r:"12"},
       {id:"hip_thrust", n:"DB Hip Thrust", s:4, r:"8-10"},
       {id:"inverted_row", n:"Inverted Row", s:3, r:"AMRAP", bw:1},
