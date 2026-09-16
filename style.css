@@ -591,8 +591,8 @@ button{cursor:pointer;border:none;background:none}
 .ex-move.done .ex-num{opacity:.5}
 .section-label::before,.eyebrow::before{content:"// ";color:var(--faint)}
 
-body::after{
-  content:"";position:fixed;inset:0;z-index:90;pointer-events:none;
+.topbar::after,.savebar::after,.sheet-panel::after,.timer.running::before,.timer.ending::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
   background:var(--scanlines);mix-blend-mode:multiply;
 }
 .timer.up,.timer.ending{text-shadow:0 0 8px rgba(255,255,255,.5)}
