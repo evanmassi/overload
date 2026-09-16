@@ -1,4 +1,4 @@
-import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, ICON_REPEAT,
+import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, ICON_REPEAT, ICON_UP, ICON_SAME, ICON_DOWN,
         EFFORT_LEVELS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT,
         CONFIRM_WINDOW_MS} from "./constants.js";
 import {workoutFor, allExercises} from "./movements.js";
@@ -102,7 +102,7 @@ function renderLog(main){
 
   const legend = document.createElement("div");
   legend.className = "legend";
-  legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">▲</em> beat it</span><span><em class="same">=</em> matched</span>`;
+  legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">${ICON_UP}</em> beat it</span><span><em class="same">${ICON_SAME}</em> matched</span>`;
   main.appendChild(legend);
 
   plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot), i + 1, slot)));
@@ -297,9 +297,9 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
     if(!last || !last.r){ delta.className = "delta up"; delta.textContent = "new"; return; }
     const now = score(entered, exercise.bw);
     const then = score(last, exercise.bw);
-    if(now > then){ delta.className = "delta up"; delta.textContent = "▲"; }
-    else if(now === then){ delta.className = "delta same"; delta.textContent = "="; }
-    else { delta.className = "delta down"; delta.textContent = "▼"; }
+    if(now > then){ delta.className = "delta up"; delta.innerHTML = ICON_UP; }
+    else if(now === then){ delta.className = "delta same"; delta.innerHTML = ICON_SAME; }
+    else { delta.className = "delta down"; delta.innerHTML = ICON_DOWN; }
   };
 
   const commit = () => {

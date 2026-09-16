@@ -185,8 +185,10 @@ button{cursor:pointer;border:none;background:none}
 .x{text-align:center;color:var(--faint);font-size:12px}
 .delta{
   font-family:var(--mono);font-size:11px;font-weight:600;
-  text-align:center;padding:4px 0;border-radius:2px;letter-spacing:.02em;
+  display:flex;align-items:center;justify-content:center;min-height:22px;
+  padding:0;border-radius:2px;letter-spacing:.02em;
 }
+.delta svg,.legend em svg{display:block}
 .delta.up{background:var(--up-soft);color:var(--up)}
 .delta.same{background:var(--flat-soft);color:var(--flat)}
 .delta.down{color:var(--faint)}
@@ -343,7 +345,8 @@ button{cursor:pointer;border:none;background:none}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend em{
   font-style:normal;font-family:var(--mono);font-size:10.5px;font-weight:600;
-  padding:2px 6px;border-radius:2px;min-width:20px;text-align:center;
+  padding:2px 6px;border-radius:2px;min-width:20px;min-height:20px;text-align:center;
+  display:inline-flex;align-items:center;justify-content:center;
 }
 .legend em.up{background:var(--up-soft);color:var(--up)}
 .legend em.same{background:var(--flat-soft);color:var(--flat)}
