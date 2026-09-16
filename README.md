@@ -37,7 +37,7 @@ Session volume accounts for both: a walking lunge holding two 40s for 12 per leg
 
 The write-ups are plain-language descriptions of standard technique, not a trainer's instruction. For the fussier moves (Copenhagen plank, Z-press, ab wheel) watch a video the first time and use the steps as a reminder afterwards.
 
-**Swap any exercise** with the `swap` button on its card. You get moves that train the same pattern first, then everything else, then a free-text box for anything not in it. The list includes five moves the program never prescribes on its own: lateral (archer), wide and spiderman push-ups, weighted shoulder circles, and the DB twisting lunge. They are there to be swapped in when you want them, and they carry history like any other move. A swap applies to that session only; the next cycle prescribes the original again. History follows the movement, not the slot, so a substitute is compared against the last time you did *that* move.
+**Swap any exercise** with the `swap` button on its card. You get moves that train the same pattern first, then everything else, then a free-text box for anything not in it. The list includes five moves the program never prescribes on its own: lateral (archer), wide and spiderman push-ups, weighted shoulder circles, and the DB twisting lunge. They are there to be swapped in when you want them, and they carry history like any other move. A swap applies to that session only; the next cycle prescribes the original again. Moves the session already contains are left off the list, since two cards for one lift would share one set of boxes. History follows the movement, not the slot, so a substitute is compared against the last time you did *that* move.
 
 Exercises you type yourself are saved and listed under **Your exercises** at the top of the swap sheet, with rename and remove. Names are matched loosely, so `sledgehammer slams`, `Sledgehammer Slams` and `sledgehammer slam` are all the same exercise and keep one shared history; typing the name of a move the app already knows resolves to that move rather than creating a duplicate. That includes common nicknames, so `lateral push ups` finds the archer push-up and `arm circles` finds the shoulder circles. Removing a custom exercise also deletes its logged sets, and says how many before it does.
 
@@ -75,7 +75,7 @@ Runs of identical sets collapse to a count, so `55×20 · 60×16 · 60×16 · 60
 52 min · +1,180 vs 08-25
 ```
 
-**Time in the gym is measured first log to last log**, not first log to now. It used to count against the current clock, so opening a finished session hours later reported a three-hour workout. The consequence of the honest version is that the number only advances when you log something, so mid-rest it sits still.
+**Time in the gym is measured first log to last log**, not first log to now. It used to count against the current clock, so opening a finished session hours later reported a three-hour workout. The consequence of the honest version is that the number only advances when you log a new set, so mid-rest it sits still. Opening an old session from History to fix a number leaves its clock alone.
 
 Each History card carries the same number as `first set to last`, which is the point: you can see whether the same session took 64 minutes or 81.
 
@@ -107,7 +107,7 @@ The caveats are iOS ones, and the reason the visual tiers exist rather than rely
 
 **The Progress tab** opens with a 26-week consistency grid: 182 squares, one per day, seven rows deep and reading left to right by week. A day you logged nothing stays the background grey. A day you logged something is shaded by how much — up to 10 sets, up to 20, then anything above — so a light week and a heavy one look different at a glance. Each square names its date and set count on hover.
 
-Below it, one card per lift. The big number is an **estimated one-rep max**, not a weight you lifted: Epley, `weight × (1 + reps/30)`, so 65×10 reads 87. The card labels it `EST. 1RM` for that reason. Bodyweight moves have no weight to extrapolate from, so they show best reps instead.
+Below it, one card per lift. The big number is an **estimated one-rep max**, not a weight you lifted: Epley, `weight × (1 + reps/30)`, so 65×10 reads 87. The card labels it `EST. 1RM` for that reason. Bodyweight moves have no weight to extrapolate from, so they show best reps instead, and a set with added weight outranks a longer unweighted one the same way the Log tab scores it. Exercises you typed yourself get a card like any other.
 
 The set behind the estimate is the one with the **highest estimate**, not the one with the most weight × reps. Those disagree: 50×20 is more total work than 65×10 but estimates to 83 against 87, so ranking by volume would report the lower number as your best.
 **The core finisher is supersets, so you alternate**: first move, second move, first move, second move. The badge says `alternate the two moves`, the set rows read `R1` / `R2` rather than `1` / `2`, and the first move's card says `straight into <partner>` instead of quoting a rest. Doing both rounds of one move and then both of the other is straight sets, which is fine training but slower and not what the rest timings assume.

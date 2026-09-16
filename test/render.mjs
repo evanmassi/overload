@@ -16,7 +16,7 @@ const {mountSheet, openSwapSheet, openHowTo} = await import("../src/sheet.js");
 const {mountTimer} = await import("../src/timer.js");
 const {mountSaveState} = await import("../src/savestate.js");
 const {findExercise} = await import("../src/movements.js");
-const {loadDate, setDay} = await import("../src/session.js");
+const {loadDate, setDay, iso} = await import("../src/session.js");
 
 mountTimer(els.timer, els.clock);
 mountSaveState(els.status);
@@ -112,6 +112,12 @@ section("Sheets open and close");
   check("it offers a custom entry box", els.sheetbody.find("sheet-custom").length === 1);
   els.sheetback.fire("click");
   check("tapping the backdrop closes it", els.sheet.hidden === true);
+
+  openSwapSheet(findExercise("flat_db_press"));
+  const offered = els.sheetbody.find("sheet-item").map(item => item.innerHTML);
+  check("it never offers a move the session already has", !offered.some(html => html.includes(">Pull-ups<")));
+  check("but still lists the slot's own move", offered.some(html => html.includes(">Flat DB Bench Press<")));
+  els.sheetclose.fire("click");
 }
 
 section("History and progress views render");
@@ -249,6 +255,8 @@ section("Effort buttons");
   equal("three levels", buttons.map(b => b.textContent), ["easy", "medium", "hard"]);
   buttons[2].fire("click");
   equal("tapping one records it", state.current.effort.flat_db_press, "hard");
+  equal("and keeps it even before a set is logged",
+    (state.sessions[state.current.date] || {}).effort, {flat_db_press: "hard"});
 
   render();
   const again = els.main.find("effort")[0].children.filter(c => c.tag === "button");
@@ -320,11 +328,15 @@ section("Time in the gym is first log to last log");
     elapsedLabel(minutes(600), minutes(672)), "1h 12m");
 
   fresh();
+  loadDate(iso(new Date()));
   render();
-  const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
-  rows[0].children[1].value = "50";
-  rows[0].children[3].value = "10";
-  rows[0].children[3].fire("change");
+  const logSet = (row, w, r) => {
+    row.children[1].value = w;
+    row.children[3].value = r;
+    row.children[3].fire("change");
+  };
+  const setRows = () => els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
+  logSet(setRows()[0], "50", "10");
 
   check("logging stamps a start", !!state.current.startedAt);
   check("and a last-logged moment", !!state.current.lastLoggedAt);
@@ -333,6 +345,20 @@ section("Time in the gym is first log to last log");
   render();
   check("the footer shows the gap between them",
     els.volnote.textContent.includes("52 min"), els.volnote.textContent);
+
+  const stamped = state.current.lastLoggedAt;
+  state.current.lastLoggedAt = stamped - minutes(5);
+  setRows()[0].fire("blur");
+  setRows()[0].children[3].value = "11";
+  setRows()[0].children[3].fire("change");
+  check("re-touching or correcting a logged set does not move the clock",
+    state.current.lastLoggedAt === stamped - minutes(5));
+
+  fresh();
+  render();
+  logSet(setRows()[0], "50", "10");
+  check("a past session opened for a fix keeps no clock",
+    !state.current.startedAt && !state.current.lastLoggedAt);
 }
 
 section("Expansion does not leak between sessions");

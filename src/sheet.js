@@ -1,10 +1,10 @@
 import {PATTERNS} from "./taxonomy.js";
-import {PATTERN_OF} from "./movements.js";
+import {PATTERN_OF, workoutFor, allExercises} from "./movements.js";
 import {HOWTO} from "./howto.js";
 import {CONFIRM_WINDOW_MS} from "./constants.js";
 import {state, notify} from "./state.js";
 import {priorSets} from "./progression.js";
-import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor} from "./swaps.js";
+import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor, resolveSlot} from "./swaps.js";
 import {queueSave} from "./session.js";
 
 let sheet, title, body;
@@ -90,12 +90,21 @@ function armConfirm(button, prompt, act){
   });
 }
 
+function idsElsewhereInSession(slot){
+  const plan = workoutFor(state.current.block, state.current.day);
+  const taken = new Set(allExercises(plan).map(resolveSlot).map(exercise => exercise.id));
+  taken.delete(resolveSlot(slot).id);
+  return taken;
+}
+
 function pick(slot, id){
+  if(idsElsewhereInSession(slot).has(id)) return false;
   if(id === slot.id) delete state.current.swaps[slot.id];
   else state.current.swaps[slot.id] = id;
   queueSave();
   notify();
   closeSheet();
+  return true;
 }
 
 function movementRow(slot, id){
@@ -107,13 +116,15 @@ function movementRow(slot, id){
   return button;
 }
 
-function customRow(slot, id){
+function customRow(slot, id, taken){
   const row = document.createElement("div");
   row.className = "sheet-mine";
 
   const use = document.createElement("button");
   use.className = "pick" + (id === slot.id ? " current" : "");
   use.textContent = state.customNames[id];
+  use.disabled = taken.has(id);
+  if(use.disabled) use.title = "Already in this session";
   use.addEventListener("click", () => pick(slot, id));
 
   const last = priorSets(state.sessions, id, state.current.date);
@@ -146,18 +157,20 @@ export function openSwapSheet(slot){
   openSlot = slot;
   title.textContent = "Instead of " + slot.n;
   body.innerHTML = "";
+  const taken = idsElsewhereInSession(slot);
+  const offer = ids => ids.filter(id => !taken.has(id)).forEach(id => body.appendChild(movementRow(slot, id)));
 
   const mine = Object.keys(state.customNames)
     .sort((a, b) => state.customNames[a].localeCompare(state.customNames[b]));
   if(mine.length){
     group("Your exercises");
-    mine.forEach(id => body.appendChild(customRow(slot, id)));
+    mine.forEach(id => body.appendChild(customRow(slot, id, taken)));
   }
 
   const pattern = PATTERN_OF[slot.id];
   if(pattern){
     group("Same movement · " + pattern);
-    PATTERNS[pattern].forEach(id => body.appendChild(movementRow(slot, id)));
+    offer(PATTERNS[pattern]);
   }
 
   group("Type your own");
@@ -170,7 +183,10 @@ export function openSwapSheet(slot){
   use.textContent = "Use";
   const submit = () => {
     const id = registerCustom(input.value.trim());
-    if(id) pick(slot, id);
+    if(id && !pick(slot, id)){
+      input.value = "";
+      input.placeholder = "Already in this session";
+    }
   };
   use.addEventListener("click", submit);
   input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
@@ -180,7 +196,7 @@ export function openSwapSheet(slot){
   group("Everything else");
   Object.keys(PATTERNS).filter(p => p !== pattern).forEach(other => {
     group(other);
-    PATTERNS[other].forEach(id => body.appendChild(movementRow(slot, id)));
+    offer(PATTERNS[other]);
   });
 
   show();

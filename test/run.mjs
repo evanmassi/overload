@@ -252,6 +252,8 @@ section("The progress card reads the best estimate, not the biggest pile");
     bestEstimate([{w: "", r: "12"}, {w: "", r: "18"}], true), {w: "", r: "18"});
   equal("and its value is the rep count",
     estimateFor({w: "", r: "18"}, true), 18);
+  equal("added weight on a bodyweight move counts, as it does on the log",
+    bestEstimate([{w: "", r: "15"}, {w: "45", r: "8"}], true), {w: "45", r: "8"});
 
   equal("no logged sets means no best", bestEstimate([{w: "50", r: ""}], false), null);
   equal("an empty list too", bestEstimate([], false), null);

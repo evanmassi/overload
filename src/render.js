@@ -310,7 +310,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
     while(sets.length <= index) sets.push({w: "", r: ""});
     const hadReps = !!sets[index].r;
     sets[index] = {w: weight.value.trim(), r: reps.value.trim()};
-    if(sets[index].r) markLogged();
+    if(!hadReps && sets[index].r) markLogged();
     paint();
     syncCard(exercise);
     updateFooter();

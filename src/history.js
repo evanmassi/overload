@@ -17,10 +17,11 @@ function historyLine(session, slot){
   const line = document.createElement("div");
   line.className = "hist-line";
   const name = swapped ? exerciseName(id) : slot.n;
+  const done = (swapped && findExercise(id)) || slot;
   const mark = swapped
     ? `<i class="hist-swap" title="Swapped in for ${slot.n}" aria-label="Swapped in for ${slot.n}">${ICON_SWAP}</i>`
     : "";
-  line.innerHTML = `<span>${name}${mark}</span><b>${setSummary(sets, unitSuffix(slot))}</b>`;
+  line.innerHTML = `<span>${name}${mark}</span><b>${setSummary(sets, unitSuffix(done))}</b>`;
   return line;
 }
 

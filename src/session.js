@@ -27,7 +27,7 @@ export function loadDate(dateStr){
   current.date = dateStr;
   const saved = state.sessions[dateStr];
 
-  if(saved && loggedCount(saved)){
+  if(saved){
     setBlockIndex(blockIndexOf(saved));
     current.day = saved.day;
   } else {
@@ -50,6 +50,7 @@ export function loadDate(dateStr){
 }
 
 export function markLogged(){
+  if(state.current.date !== iso(new Date())) return;
   const now = Date.now();
   if(!state.current.startedAt) state.current.startedAt = now;
   state.current.lastLoggedAt = now;
@@ -95,18 +96,20 @@ function snapshot(){
   return snap;
 }
 
-function commitNow(){
+function stash(){
   const snap = snapshot();
-  if(loggedCount(snap)) state.sessions[snap.date] = snap;
+  if(loggedCount(snap) || snap.notes || snap.effort) state.sessions[snap.date] = snap;
   else delete state.sessions[snap.date];
+}
+
+function commitNow(){
+  stash();
   persistSessions();
   statusHandler("saved");
 }
 
 export function queueSave(){
-  const snap = snapshot();
-  if(loggedCount(snap)) state.sessions[snap.date] = snap;
-  else delete state.sessions[snap.date];
+  stash();
   statusHandler("saving");
   clearTimeout(saveTimer);
   saveTimer = setTimeout(commitNow, AUTOSAVE_DELAY_MS);

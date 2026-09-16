@@ -30,7 +30,7 @@ export function prescribedCount(block, day){
 
 export function estimateFor(set, isBodyweight){
   if(!set || !set.r) return 0;
-  return isBodyweight ? num(set.r) : estimatedMax(num(set.w), num(set.r));
+  return isBodyweight ? score(set, true) : estimatedMax(num(set.w), num(set.r));
 }
 
 export function bestEstimate(sets, isBodyweight){
