@@ -567,7 +567,6 @@ button{cursor:pointer;border:none;background:none}
 .ex,.hist-day,.prog,.notes{
   --tag-w:48px;--notch-h:30px;--cut:8px;position:relative;isolation:isolate;
 }
-.prog::before,.prog::after{clip-path:none}
 .ex::before,.ex::after,.hist-day::before,.hist-day::after,.prog::before,.prog::after,.notes::before,.notes::after{
   content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
 }
@@ -583,6 +582,8 @@ button{cursor:pointer;border:none;background:none}
     calc(var(--tag-w) - var(--cut) + .5px) calc(var(--notch-h) + 1px),
     calc(var(--tag-w) + 1px) calc(var(--notch-h) - var(--cut) + .5px));
 }
+.prog::before{clip-path:none}
+.prog::after{clip-path:none;inset:1px}
 .ex-num,.superset b,.hist-day .chip.live,.notes label{
   position:absolute;top:0;left:0;z-index:1;margin:0;border:none;border-radius:0;
   width:var(--tag-w);height:var(--notch-h);padding:0 0 0 1px;
