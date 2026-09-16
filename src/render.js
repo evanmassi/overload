@@ -9,7 +9,7 @@ import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
 import {resolveSlot} from "./swaps.js";
 import {loadDate, setBlockIndex, setDay, setsFor, queueSave, previousSameWorkout,
         setEffort, markLogged} from "./session.js";
-import {setSummary, elapsedLabel, unitSuffix} from "./format.js";
+import {setRuns, setSummary, elapsedLabel, unitSuffix} from "./format.js";
 import {renderHistory} from "./history.js";
 import {renderProgress} from "./progress.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
@@ -119,7 +119,11 @@ function renderLog(main){
 }
 
 function summaryFor(exercise){
-  return setSummary(state.current.entries[exercise.id], unitSuffix(exercise));
+  const chips = setRuns(state.current.entries[exercise.id], unitSuffix(exercise))
+    .map(run => `<b>${run.count > 1 ? `<i>${run.count}×</i>` : ""}${run.part}</b>`);
+  const effort = (state.current.effort || {})[exercise.id];
+  if(effort) chips.push(`<em>${effort}</em>`);
+  return chips.join("");
 }
 
 function syncCard(exercise){
@@ -128,7 +132,7 @@ function syncCard(exercise){
   if(card && card.classList){
     card.classList.toggle("done", isComplete(exercise) && !state.expanded.has(exercise.id));
     const summary = card.querySelector(".ex-summary");
-    if(summary) summary.textContent = summaryFor(exercise);
+    if(summary) summary.innerHTML = summaryFor(exercise);
   }
 }
 
@@ -184,14 +188,8 @@ function fillCard(card, exercise, position, slot, partnerName){
 
   const summary = document.createElement("span");
   summary.className = "ex-summary";
-  summary.textContent = summaryFor(exercise);
+  summary.innerHTML = summaryFor(exercise);
   head.appendChild(summary);
-
-  const fold = document.createElement("button");
-  fold.className = "ex-fold";
-  fold.setAttribute("aria-label", "Show or hide sets");
-  fold.addEventListener("click", () => { toggleExpanded(exercise.id); notify(); });
-  head.appendChild(fold);
 
   const swap = document.createElement("button");
   swap.className = "ex-swap";
@@ -207,6 +205,12 @@ function fillCard(card, exercise, position, slot, partnerName){
   });
   head.appendChild(swap);
   if(exercise.swappedFrom) card.classList.add("ex-swapped");
+
+  const fold = document.createElement("button");
+  fold.className = "ex-fold";
+  fold.setAttribute("aria-label", "Show or hide sets");
+  fold.addEventListener("click", () => { toggleExpanded(exercise.id); notify(); });
+  head.appendChild(fold);
   card.appendChild(head);
 
   const meta = document.createElement("div");

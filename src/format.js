@@ -1,4 +1,4 @@
-export function setSummary(sets, suffix){
+export function setRuns(sets, suffix){
   const parts = (sets || []).filter(set => set && set.r)
     .map(set => set.w ? `${set.w}×${set.r}${suffix}` : `${set.r}${suffix}`);
 
@@ -8,7 +8,11 @@ export function setSummary(sets, suffix){
     if(last && last.part === part) last.count++;
     else runs.push({part, count: 1});
   }
-  return runs.map(run => run.count > 1 ? `${run.count} × ${run.part}` : run.part)
+  return runs;
+}
+
+export function setSummary(sets, suffix){
+  return setRuns(sets, suffix).map(run => run.count > 1 ? `${run.count} × ${run.part}` : run.part)
     .join(" · ");
 }
 
