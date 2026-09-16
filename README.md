@@ -45,23 +45,29 @@ Exercises you type yourself are saved and listed under **Your exercises** at the
 
 **Session notes** at the bottom of the log. They show on the History tab.
 
-**A history card** reads as three things, not one flat list:
+**The History tab** is organised around the comparison that matters: the same workout, last time. A filter row at the top (All / Chest / Legs / Arms) narrows the list to one workout, so consecutive cards are direct progressive-overload comparisons. Sessions group under `Cycle N` headers, and each card starts collapsed to one row:
 
 ```
-Chest & Back              A   2026-09-01   delete
-Flat DB Bench Press        65×10 · 65×10 · 65×9
-Incline DB Press                    3 × 50×12
-Cable Crossover ⇄                   3 × 30×15
+// CYCLE 2
+Chest & Back                  A   09-01
+9,680 lb   16 sets   1h 04m
+```
+
+Tap the row to open the exercise lines, and tap it again to close them. Each line carries a marker against the previous time that movement was logged, wherever it was logged: the same up / matched / down glyphs as the Log tab, or `new` for a first exposure. It compares top set to top set, using weight × reps for loaded moves and reps for bodyweight ones, so the log reads as a trend without opening Progress.
+
+```
+Flat DB Bench Press        65×10 · 65×10 · 65×9   ▲
+Incline DB Press                    3 × 50×12   ●
+Cable Crossover ⇄                   3 × 30×15   new
 CORE FINISHER
-│ Hanging Knee Raise                   2 × 12
-│ Plank                               2 × 45s
-────────────────────────────────────────────
-9,680 lb          16 sets            1h 04m
+│ Hanging Knee Raise                   2 × 12   ●
+│ Plank                               2 × 45s   ▲
+                                    edit  delete
 ```
 
-Runs of identical sets collapse to a count, so `55×20 · 60×16 · 60×16 · 60×16` becomes `55×20 · 3 × 60×16`. Only consecutive sets fold together and the order never moves, so the shape of the session still reads: a warmup set, a working run, a drop at the end. A run that is broken and resumed stays broken, because going back down and back up is the part worth seeing. Core moves sit under their own label with each superset bracketed, which replaces the `◦` that used to mark them one at a time and never showed which two went together. A swapped move carries the same glyph as the Log tab's swap button, and says what it replaced. Session totals live in a footer strip rather than pretending to be two more exercises.
+Runs of identical sets collapse to a count, so `55×20 · 60×16 · 60×16 · 60×16` becomes `55×20 · 3 × 60×16`. Only consecutive sets fold together and the order never moves, so the shape of the session still reads: a warmup set, a working run, a drop at the end. A run that is broken and resumed stays broken, because going back down and back up is the part worth seeing. Core moves sit under their own label with each superset bracketed. A swapped move carries the same glyph as the Log tab's swap button, and says what it replaced.
 
-**Fixing a mistake**: tap any card on the History tab to open that session in the Log tab, where every field is editable. `delete` on a history card removes the session; it asks once before it does.
+**Fixing a mistake**: open a card on the History tab and tap `edit` to load that session in the Log tab, where every field is editable. `delete` removes the session; it asks once before it does.
 
 **Tap the repeat icon** beside a set to carry the set above it down: same weight, same reps, then edit whatever changed. On set 1 there is no row above, so it pulls set 1 from last session instead. The button stays dark until there is something to copy.
 
@@ -77,7 +83,7 @@ Runs of identical sets collapse to a count, so `55×20 · 60×16 · 60×16 · 60
 
 **Time in the gym is measured first log to last log**, not first log to now. It used to count against the current clock, so opening a finished session hours later reported a three-hour workout. The consequence of the honest version is that the number only advances when you log a new set, so mid-rest it sits still. Opening an old session from History to fix a number leaves its clock alone.
 
-Each History card carries the same number as `first set to last`, which is the point: you can see whether the same session took 64 minutes or 81.
+Each History row carries the same number as `first set to last`, which is the point: you can see whether the same session took 64 minutes or 81.
 
 **The idle countdown reads the rest your next set will actually get**, not a fixed default. It walks the session for the first set with no reps and shows what logging it would start, so before your first set of Week C chest it reads `180s`. Tapping it starts that length by hand.
 

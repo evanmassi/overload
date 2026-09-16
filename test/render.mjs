@@ -39,7 +39,15 @@ function fresh(){
   state.sessions = {};
   state.customNames = {};
   state.view = "log";
+  state.historyDay = null;
+  state.historyOpen = new Set();
   loadDate("2026-09-01");
+}
+
+function openHistoryCard(index){
+  els.main.find("hist-row")[index].fire("click");
+  render();
+  return els.main.find("hist-day")[index];
 }
 
 section("The log view renders a full session");
@@ -137,7 +145,16 @@ section("History and progress views render");
   state.view = "history";
   render();
   check("a card per session", els.main.find("hist-day").length === 2, els.main.find("hist-day").length);
-  check("notes show on the card", els.main.find("hist-notes").length === 1);
+  check("cards start collapsed", els.main.find("hist-body").length === 0, els.main.find("hist-body").length);
+  check("and carry no exercise lines yet", els.main.find("hist-line").length === 0);
+  openHistoryCard(0);
+  check("tapping a row opens it", els.main.find("hist-body").length === 1, els.main.find("hist-body").length);
+  check("notes show on the open card", els.main.find("hist-notes").length === 1);
+  check("the open card offers edit and delete",
+    els.main.find("hist-actions")[0].children.map(b => b.textContent).join() === "edit,delete",
+    els.main.find("hist-actions")[0].children.map(b => b.textContent).join());
+  openHistoryCard(0);
+  check("tapping again closes it", els.main.find("hist-body").length === 0);
   check("backup controls render", els.main.find("backup").length === 1);
 
   const feet = els.main.find("hist-foot");
@@ -486,7 +503,7 @@ section("A history card groups, collapses and marks");
   };
   state.view = "history";
   render();
-  const card = els.main.find("hist-day")[0];
+  const card = openHistoryCard(0);
   const rowFor = name => card.find("hist-line").find(l => l.innerHTML.includes(name));
 
   check("identical sets collapse to a count",
@@ -580,7 +597,7 @@ section("History shows lifts the session plan does not contain");
   };
   state.view = "history";
   render();
-  const card = els.main.find("hist-day")[0];
+  const card = openHistoryCard(0);
 
   check("a lift the plan does contain renders normally",
     card.find("hist-line").some(l => l.innerHTML.includes("Hanging Leg Raise")));
@@ -593,6 +610,77 @@ section("History shows lifts the session plan does not contain");
   check("and the totals still count it",
     card.find("hist-foot")[0].innerHTML.includes("4 sets"),
     card.find("hist-foot")[0].innerHTML);
+
+  state.view = "log";
+  render();
+}
+
+section("History filters by workout, groups by cycle and marks deltas");
+{
+  fresh();
+  const chest = (date, blockIndex, weight) => ({
+    date, day: "chest", block: ["A", "B", "C"][blockIndex % 3], blockIndex,
+    entries: {incline_db_press: [{w: String(weight), r: "10"}], pullup: [{w: "", r: "8"}]}
+  });
+  state.sessions["2026-08-03"] = chest("2026-08-03", 0, 40);
+  state.sessions["2026-08-10"] = chest("2026-08-10", 1, 45);
+  state.sessions["2026-08-24"] = chest("2026-08-24", 3, 45);
+  state.sessions["2026-08-26"] = {
+    date: "2026-08-26", day: "legs", block: "A", blockIndex: 3,
+    entries: {goblet_squat: [{w: "80", r: "10"}]}
+  };
+  state.view = "history";
+  render();
+
+  const filter = els.main.find("hist-filter")[0];
+  check("a filter row offers all three workouts plus all",
+    filter.children.map(b => b.textContent).join() === "All,Chest,Legs,Arms",
+    filter.children.map(b => b.textContent).join());
+  check("all is pressed by default", filter.children[0].getAttribute("aria-pressed") === "true");
+  check("every session shows unfiltered", els.main.find("hist-day").length === 4, els.main.find("hist-day").length);
+
+  const cycles = els.main.find("hist-cycle");
+  check("sessions group under cycle headers",
+    cycles.map(c => c.textContent).join() === "Cycle 2,Cycle 1", cycles.map(c => c.textContent).join());
+  check("a header sits directly above its first session",
+    els.main.children[1].classList.contains("hist-cycle") && els.main.children[2].classList.contains("hist-day"));
+
+  filter.children[2].fire("click");
+  render();
+  check("filtering to legs leaves one card", els.main.find("hist-day").length === 1, els.main.find("hist-day").length);
+  check("and marks that chip pressed",
+    els.main.find("hist-filter")[0].children[2].getAttribute("aria-pressed") === "true");
+
+  els.main.find("hist-filter")[0].children[3].fire("click");
+  render();
+  check("a workout with no sessions says so",
+    els.main.find("empty").length === 1 && els.main.find("empty")[0].textContent.includes("Shoulders & Arms"),
+    els.main.find("empty").map(e => e.textContent).join());
+  check("and keeps the filter row so you can leave", els.main.find("hist-filter").length === 1);
+
+  els.main.find("hist-filter")[0].children[1].fire("click");
+  render();
+  check("chest shows three cards in date order",
+    els.main.find("hist-day").length === 3, els.main.find("hist-day").length);
+
+  const deltaOf = (card, name) => {
+    const line = card.find("hist-line").find(l => l.innerHTML.includes(name));
+    const hit = line && line.innerHTML.match(/hist-delta ([a-z]+)/);
+    return hit && hit[1];
+  };
+  const newest = openHistoryCard(0);
+  check("matching last time marks same", deltaOf(newest, "Incline DB Press") === "same", deltaOf(newest, "Incline DB Press"));
+  check("bodyweight reps compare too", deltaOf(newest, "Pull-ups") === "same", deltaOf(newest, "Pull-ups"));
+  const middle = openHistoryCard(1);
+  check("beating last time marks up", deltaOf(middle, "Incline DB Press") === "up", deltaOf(middle, "Incline DB Press"));
+  const oldest = openHistoryCard(2);
+  check("the first exposure reads new",
+    oldest.find("hist-line")[0].innerHTML.includes(">new<"), oldest.find("hist-line")[0].innerHTML);
+
+  const actions = newest.find("hist-actions")[0];
+  actions.children[0].fire("click");
+  check("edit opens that date on the log tab",
+    state.view === "log" && state.current.date === "2026-08-24", state.view + " " + state.current.date);
 
   state.view = "log";
   render();

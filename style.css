@@ -276,12 +276,15 @@ button{cursor:pointer;border:none;background:none}
 .backup-result:empty,.sound-result:empty{display:none}
 .btn.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
 
-.hist-day{--tag-w:40px;padding:0 13px 12px;margin-bottom:9px}
-.hist-top{display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap;padding-left:calc(var(--tag-w) - 3px);min-height:var(--notch-h)}
+.hist-day{--tag-w:40px;padding:0 13px 0;margin-bottom:7px}
+.hist-row{cursor:pointer;padding-bottom:10px}
+.hist-row:active{background:var(--surface-2)}
+.hist-top{display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap;padding-left:calc(var(--tag-w) - 3px);min-height:var(--notch-h)}
 .hist-top h3{font-family:var(--sans);font-size:14.5px;font-weight:600;margin:0;flex:1;letter-spacing:-.01em}
 .hist-top .chip{padding:3px 7px}
+.hist-body{padding:6px 0 12px;border-top:1px solid var(--line)}
 .hist-line{
-  display:flex;justify-content:space-between;gap:10px;font-size:13px;
+  display:flex;align-items:center;gap:10px;font-size:13px;
   padding:3px 0;border-top:1px dashed var(--line);
 }
 .hist-line:first-of-type{border-top:none}
@@ -300,14 +303,24 @@ button{cursor:pointer;border:none;background:none}
 }
 .hist-swap svg{width:12px;height:12px;display:block}
 .hist-foot{
-  display:flex;align-items:baseline;justify-content:space-between;gap:10px;
-  margin-top:9px;padding-top:8px;border-top:1px solid var(--line);
+  display:flex;align-items:baseline;gap:12px;
   font-family:var(--mono);font-variant-numeric:tabular-nums;
 }
 .hist-foot b{font-size:13.5px;font-weight:600}
 .hist-foot span{font-size:11.5px;color:var(--faint);letter-spacing:.03em}
 .hist-line span{color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hist-line b{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;font-size:12.5px}
+.hist-delta{
+  flex:none;width:22px;min-height:20px;display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-style:normal;font-size:9.5px;font-weight:600;letter-spacing:.04em;border-radius:2px;
+}
+.hist-delta svg{display:block}
+.hist-delta.up{background:var(--up-soft);color:var(--up)}
+.hist-delta.same{background:var(--flat-soft);color:var(--flat)}
+.hist-delta.down{color:var(--faint)}
+.hist-filter{margin:4px 0 6px}
+.hist-filter button{flex:1;width:auto;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.hist-cycle{margin-top:14px}
 
 .grid-wrap{margin-bottom:18px}
 .grid{
@@ -451,13 +464,12 @@ button{cursor:pointer;border:none;background:none}
   font-size:12.5px;color:var(--muted);font-style:italic;padding:7px 0 0;
   margin:6px 0 0;border-top:1px dashed var(--line);
 }
-.hist-top button{
+.hist-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:10px}
+.hist-actions button{
   font-family:var(--mono);font-size:10px;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--faint);padding:3px 6px;border-radius:2px;
+  text-transform:uppercase;color:var(--faint);padding:4px 8px;border-radius:2px;
   border:1px solid var(--line);
 }
-.hist-open{cursor:pointer}
-.hist-open:active{background:var(--surface-2)}
 
 .sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end}
 .sheet-back{position:absolute;inset:0;background:rgba(2,5,8,.7)}
