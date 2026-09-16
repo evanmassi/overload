@@ -1,8 +1,11 @@
-import {BEEP_COUNTDOWN, BEEP_GO, BEEP_PULSE_GAP_SECONDS, BEEP_RESUME_TIMEOUT_MS} from "./constants.js";
+import {BEEP_COUNTDOWN, BEEP_GO, BEEP_PULSE_GAP_SECONDS, FINAL_COUNTDOWN_SECONDS,
+        BEEP_LATE_TOLERANCE_SECONDS} from "./constants.js";
 import {loadSoundOn, saveSoundOn} from "./storage.js";
 
 let ctx = null;
 let on = true;
+let restEndsAt = 0;
+let placed = [];
 
 const AudioCtor = () =>
   typeof window === "undefined" ? null : (window.AudioContext || window.webkitAudioContext || null);
@@ -17,7 +20,8 @@ export function loadSoundPreference(){
 export function setSoundOn(value){
   on = !!value;
   saveSoundOn(on);
-  if(on) unlockAudio();
+  if(on){ if(unlockAudio() && restEndsAt) place(); }
+  else dropPlaced();
   return on;
 }
 
@@ -26,7 +30,13 @@ export function audioState(){
   return ctx ? ctx.state : "idle";
 }
 
+const running = () => !!ctx && ctx.state === "running";
 const needsResume = () => ctx.state !== "running" && ctx.state !== "closed";
+
+function onStateChange(){
+  if(running()){ if(restEndsAt) place(); }
+  else dropPlaced();
+}
 
 export function unlockAudio(){
   const Ctor = AudioCtor();
@@ -34,14 +44,16 @@ export function unlockAudio(){
   if(!ctx){
     try{ ctx = new Ctor(); }
     catch(e){ return false; }
+    ctx.onstatechange = onStateChange;
   }
   // PITFALL: Safari reports "interrupted", not "suspended", after a lock or another app's audio, and only resume() clears it.
   if(needsResume()) ctx.resume().catch(() => {});
-  return ctx.state === "running";
+  return running();
 }
 
-function schedule({wave, volume, pulses}){
-  let at = ctx.currentTime;
+function schedule({wave, volume, pulses}, startAt){
+  let at = startAt;
+  const nodes = [];
   for(const {freq, seconds} of pulses){
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -55,26 +67,42 @@ function schedule({wave, volume, pulses}){
     gain.connect(ctx.destination);
     osc.start(at);
     osc.stop(at + seconds + 0.02);
+    nodes.push(osc);
     at += seconds + BEEP_PULSE_GAP_SECONDS;
   }
+  return nodes;
 }
 
-function tone(spec){
-  if(unlockAudio()){
-    schedule(spec);
-    return true;
+function dropPlaced(){
+  placed.forEach(osc => { try{ osc.stop(); }catch(e){} });
+  placed = [];
+}
+
+function place(){
+  dropPlaced();
+  const untilEnd = (restEndsAt - Date.now()) / 1000;
+  for(let left = FINAL_COUNTDOWN_SECONDS; left >= 0; left--){
+    const offset = untilEnd - left;
+    if(offset < -BEEP_LATE_TOLERANCE_SECONDS) continue;
+    placed.push(...schedule(left ? BEEP_COUNTDOWN : BEEP_GO, ctx.currentTime + Math.max(0, offset)));
   }
-  if(!ctx || !needsResume()) return false;
-  const askedAt = Date.now();
-  ctx.resume()
-    .then(() => { if(Date.now() - askedAt <= BEEP_RESUME_TIMEOUT_MS) schedule(spec); })
-    .catch(() => {});
-  return false;
 }
 
-export function beepCountdown(){ return on ? tone(BEEP_COUNTDOWN) : false; }
-export function beepGo(){ return on ? tone(BEEP_GO) : false; }
+export function scheduleRest(endsAt){
+  restEndsAt = endsAt;
+  if(!on) return false;
+  if(!unlockAudio()) return false;
+  place();
+  return true;
+}
+
+export function cancelRest(){
+  restEndsAt = 0;
+  dropPlaced();
+}
 
 export function testTone(){
-  return tone(BEEP_GO);
+  if(!unlockAudio()) return false;
+  schedule(BEEP_GO, ctx.currentTime);
+  return true;
 }

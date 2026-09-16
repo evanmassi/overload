@@ -1,8 +1,8 @@
-import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, RESUME_GO_GRACE_MS, VIBRATE_PATTERN,
+import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, LIVE_FINISH_MS, VIBRATE_PATTERN,
         WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS} from "./constants.js";
-import {beepCountdown, beepGo, unlockAudio} from "./sound.js";
+import {scheduleRest, cancelRest} from "./sound.js";
 
-const timer = {endsAt: 0, tick: null, seconds: DEFAULT_REST, idle: DEFAULT_REST, beepedAt: 0};
+const timer = {endsAt: 0, tick: null, seconds: DEFAULT_REST, idle: DEFAULT_REST};
 const awake = {lock: null, requesting: false};
 
 let button = null;
@@ -16,6 +16,7 @@ export function mountTimer(buttonEl, clockEl){
     if(document.visibilityState !== "visible" || !timer.endsAt) return;
     holdScreen();
     tick();
+    if(timer.endsAt) scheduleRest(timer.endsAt);
   });
   showIdle();
 }
@@ -53,9 +54,8 @@ function releaseScreen(){
 export function start(seconds){
   timer.seconds = seconds || DEFAULT_REST;
   timer.endsAt = Date.now() + timer.seconds * 1000;
-  timer.beepedAt = 0;
   if(button){ button.classList.add("running"); button.classList.remove("warn", "ending", "up"); }
-  unlockAudio();
+  scheduleRest(timer.endsAt);
   holdScreen();
   clearInterval(timer.tick);
   timer.tick = setInterval(tick, TIMER_TICK_MS);
@@ -65,6 +65,7 @@ export function start(seconds){
 export function stop(){
   clearInterval(timer.tick);
   timer.endsAt = 0;
+  cancelRest();
   releaseScreen();
   if(button) button.classList.remove("running", "warn", "ending", "up");
   showIdle();
@@ -79,10 +80,6 @@ function tick(){
       left > FINAL_COUNTDOWN_SECONDS && left <= WARN_COUNTDOWN_SECONDS);
     button.classList.toggle("ending", left > 0 && left <= FINAL_COUNTDOWN_SECONDS);
   }
-  if(left > 0 && left <= FINAL_COUNTDOWN_SECONDS && timer.beepedAt !== left){
-    timer.beepedAt = left;
-    beepCountdown();
-  }
   if(left > 0) return;
 
   clearInterval(timer.tick);
@@ -91,12 +88,11 @@ function tick(){
   releaseScreen();
   if(button){ button.classList.remove("running", "warn", "ending"); button.classList.add("up"); }
   if(clock) clock.textContent = "go";
-  if(overdueMs <= RESUME_GO_GRACE_MS){
-    if(typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(VIBRATE_PATTERN);
-    beepGo();
-  }
+  if(overdueMs > LIVE_FINISH_MS) cancelRest();
+  else if(typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(VIBRATE_PATTERN);
   setTimeout(() => {
     if(timer.endsAt) return;
+    cancelRest();
     if(button) button.classList.remove("up");
     showIdle();
   }, TIMER_RESET_DELAY_MS);

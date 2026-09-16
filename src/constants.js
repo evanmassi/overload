@@ -30,12 +30,12 @@ export const LEAD_SET_COUNT = 4;
 export const DEFAULT_REST = 90;
 export const TIMER_TICK_MS = 250;
 export const TIMER_RESET_DELAY_MS = 3000;
-export const RESUME_GO_GRACE_MS = 10000;
+export const LIVE_FINISH_MS = 1000;
 export const WARN_COUNTDOWN_SECONDS = 10;
 export const FINAL_COUNTDOWN_SECONDS = 3;
 export const VIBRATE_PATTERN = [200, 100, 200];
 export const BEEP_PULSE_GAP_SECONDS = 0.06;
-export const BEEP_RESUME_TIMEOUT_MS = 1500;
+export const BEEP_LATE_TOLERANCE_SECONDS = 0.25;
 export const BEEP_COUNTDOWN = {wave: "square", volume: 1, pulses: [{freq: 880, seconds: 0.16}]};
 export const BEEP_GO = {wave: "square", volume: 1,
   pulses: [{freq: 880, seconds: 0.14}, {freq: 1100, seconds: 0.14}, {freq: 1320, seconds: 0.7}]};

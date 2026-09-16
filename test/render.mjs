@@ -693,12 +693,15 @@ section("Sound is optional, remembered and testable");
 
   check("with no Web Audio the state says so", sound.audioState() === "unsupported");
   check("unlocking a browser without it fails quietly", sound.unlockAudio() === false);
-  check("a beep with no context is a no-op, not a throw", sound.beepGo() === false);
+  check("a beep with no context is a no-op, not a throw", sound.testTone() === false);
+  check("and a rest cannot be scheduled", sound.scheduleRest(Date.now() + 5000) === false);
+  sound.cancelRest();
 
   check("sound defaults to on", sound.soundOn() === true);
   sound.setSoundOn(false);
   check("turning it off sticks", sound.soundOn() === false);
-  check("and it stops beeping", sound.beepCountdown() === false);
+  check("and a rest schedules nothing", sound.scheduleRest(Date.now() + 5000) === false);
+  sound.cancelRest();
   check("the preference is written to storage",
     localStorage.getItem("overload.sound.v1") === "off");
   check("and it survives a reload", sound.loadSoundPreference() === false);
@@ -728,13 +731,16 @@ section("Sound is optional, remembered and testable");
   render();
 }
 
-section("The countdown beeps once a second, then once at zero");
+section("Beeps are scheduled on the audio clock when a rest starts");
 {
-  const played = [];
+  const scheduled = [];
+  let context = null;
   window.AudioContext = function(){
+    context = this;
     this.state = "running";
     this.currentTime = 0;
     this.destination = {};
+    this.onstatechange = null;
     this.resume = () => Promise.resolve();
     this.createGain = () => ({
       connect(){},
@@ -744,9 +750,9 @@ section("The countdown beeps once a second, then once at zero");
       const osc = {
         type: "",
         connect(){},
-        stop(){},
+        stop(at){ if(at === undefined) osc.stopped = true; },
         frequency: {setValueAtTime(hz){ osc.hz = hz; }},
-        start(){ played.push(osc.hz); }
+        start(at){ osc.at = at; scheduled.push(osc); }
       };
       return osc;
     };
@@ -754,49 +760,84 @@ section("The countdown beeps once a second, then once at zero");
 
   const sound = await import("../src/sound.js");
   const {start, stop} = await import("../src/timer.js");
-  const {BEEP_COUNTDOWN, BEEP_GO, RESUME_GO_GRACE_MS} = await import("../src/constants.js");
+  const {BEEP_COUNTDOWN, BEEP_GO} = await import("../src/constants.js");
   const goPitches = BEEP_GO.pulses.map(p => p.freq);
+  const blip = BEEP_COUNTDOWN.pulses[0].freq;
+  const live = () => scheduled.filter(o => !o.stopped);
+  const pitches = () => live().map(o => o.hz);
+  const startsAt = () => live().map(o => Math.round(o.at * 10) / 10);
+  const reset = () => { scheduled.length = 0; };
 
   check("a real context unlocks", sound.unlockAudio() === true);
   check("and reports itself running", sound.audioState() === "running", sound.audioState());
 
-  played.length = 0;
-  check("a go beep plays", sound.beepGo() === true);
-  equal("at the go pitches", played, goPitches);
+  reset();
+  check("the test tone plays at once", sound.testTone() === true);
+  equal("at the go pitches", pitches(), goPitches);
+  equal("with no delay", startsAt().slice(0, 1), [0]);
 
-  played.length = 0;
-  sound.setSoundOn(false);
-  check("muted, nothing plays", sound.beepCountdown() === false);
-  equal("and no tone reaches the context", played, []);
-  sound.setSoundOn(true);
-
-  played.length = 0;
-  start(1);
-  await new Promise(done => setTimeout(done, 1400));
+  reset();
+  start(90);
+  equal("a ninety-second rest places three blips and a go", pitches(), [blip, blip, blip, ...goPitches]);
+  equal("at 87, 88, 89 and 90 on the audio clock", startsAt().slice(0, 4), [87, 88, 89, 90]);
   stop();
-  equal("one second of rest beeps once then goes",
-    played, [BEEP_COUNTDOWN.pulses[0].freq, ...goPitches]);
+  equal("stopping cancels every scheduled beep", live(), []);
+
+  reset();
+  start(1);
+  equal("a one-second rest gets the last blip and the go", pitches(), [blip, ...goPitches]);
+  equal("with the blip now and the go a second later", startsAt().slice(0, 2), [0, 1]);
+  stop();
 
   const realNow = Date.now;
-  const comeBackAfter = async ms => {
+  const comeBackAfter = ms => {
     Date.now = () => realNow() + ms;
-    await new Promise(done => setTimeout(done, 400));
+    document.visibilityState = "visible";
+    document.fire("visibilitychange");
     Date.now = realNow;
   };
 
-  played.length = 0;
+  reset();
   start(5);
-  equal("a fresh five-second rest is silent to begin with", played, []);
-  await comeBackAfter(60000);
-  equal("a rest that ended long before you came back makes no sound", played, []);
+  equal("a fresh rest schedules ahead and plays nothing yet", startsAt().slice(0, 1), [2]);
+  comeBackAfter(60000);
+  equal("a rest that ended while you were away schedules no sound", live(), []);
   check("but it still shows go", els.timer.classList.contains("up"), els.timer._class);
   stop();
 
-  played.length = 0;
+  reset();
   start(5);
-  await comeBackAfter(5000 + RESUME_GO_GRACE_MS - 1000);
-  equal("a rest that ended just before you came back goes", played, goPitches);
+  const placedAtStart = scheduled.length;
+  comeBackAfter(5000 + 800);
+  check("a rest that ended just before you came back adds no new sound",
+    scheduled.length === placedAtStart, scheduled.length - placedAtStart);
   check("and shows go", els.timer.classList.contains("up"), els.timer._class);
+  stop();
+
+  reset();
+  start(10);
+  comeBackAfter(7500);
+  equal("coming back with two and a half seconds left keeps only what remains",
+    pitches(), [blip, blip, ...goPitches]);
+  equal("placed on the audio clock from now", startsAt().slice(0, 3), [0.5, 1.5, 2.5]);
+  stop();
+
+  reset();
+  start(30);
+  context.state = "interrupted";
+  context.onstatechange();
+  equal("an interrupted context drops the plan so nothing plays late", live(), []);
+  context.state = "running";
+  context.onstatechange();
+  equal("and resuming places it again from the wall clock", pitches(), [blip, blip, blip, ...goPitches]);
+  stop();
+
+  reset();
+  sound.setSoundOn(false);
+  start(30);
+  equal("muted, a rest schedules nothing", live(), []);
+  sound.setSoundOn(true);
+  equal("unmuting mid-rest schedules what is left", pitches(), [blip, blip, blip, ...goPitches]);
   stop();
 }
 

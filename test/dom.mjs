@@ -76,7 +76,9 @@ export function installDom(){
     createElementNS: (ns, tag) => new FakeNode(tag),
     createTextNode: text => Object.assign(new FakeNode("#text"), {_text: String(text)}),
     querySelectorAll: () => [],
-    addEventListener: noop,
+    listeners: {},
+    addEventListener(type, fn){ (doc.listeners[type] = doc.listeners[type] || []).push(fn); },
+    fire(type){ (doc.listeners[type] || []).forEach(fn => fn()); },
     body: new FakeNode("body"),
     activeElement: null,
     visibilityState: "visible"
