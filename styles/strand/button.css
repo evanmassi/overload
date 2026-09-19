@@ -3,6 +3,7 @@
   font-family:var(--font-ui);cursor:pointer;user-select:none;-webkit-user-select:none;
   touch-action:manipulation;
   --pad:var(--pad-control);--hx:3px;--hy:3px;--lsh:0 0 0;
+  --s-steps:7;--s-steps-echo:5;--s-echo-gap:60ms;--s-echo-lag:55ms;
 }
 .sbtn[data-ghost]{--pad:var(--pad-control-quiet);--hx:2.5px;--hy:2.5px}
 .sbtn:disabled{opacity:.38;cursor:not-allowed}
@@ -26,6 +27,7 @@
   --lc:var(--warning-ink);--lgl:var(--warning-glow);
   --hg1:rgba(255,182,72,.5);--hg2:rgba(255,182,72,.26);--hgl:rgba(255,220,160,.9);
   --clock:600ms;--idle:6500ms;--s-press:372ms;--s-flash:510ms;--s-word-idle:8775ms;
+  --s-steps:9;--s-steps-echo:6;--s-echo-gap:80ms;--s-echo-lag:80ms;
   --s-flash-name:hud-face-flash;
 }
 .sbtn[data-tone="danger"]{
@@ -33,6 +35,7 @@
   --lc:var(--danger-ink);--lgl:var(--danger-glow);
   --hg1:rgba(255,93,93,.52);--hg2:rgba(255,93,93,.28);--hgl:rgba(255,180,180,.9);
   --clock:400ms;--idle:4300ms;--s-press:248ms;--s-flash:340ms;--s-word-idle:5805ms;
+  --s-steps:5;--s-steps-echo:4;--s-echo-lag:30ms;
   --s-flash-name:hud-face-flash-hard;
 }
 .sbtn[data-tone="secondary"]{
@@ -40,7 +43,12 @@
   --lc:var(--secondary-ink);--lgl:var(--secondary-glow);
   --hg1:rgba(159,201,208,.45);--hg2:rgba(159,201,208,.22);--hgl:rgba(214,236,240,.85);
   --clock:640ms;--idle:8600ms;--s-press:397ms;--s-flash:544ms;--s-word-idle:11610ms;
+  --s-steps:11;--s-steps-echo:7;--s-echo-gap:80ms;--s-echo-lag:100ms;
   --s-flash-name:hud-face-flash;
+}
+.sbtn.sbtn-icon{
+  --clock:360ms;--idle:4900ms;--s-press:240ms;--s-flash:300ms;--s-word-idle:6615ms;
+  --s-steps:6;--s-steps-echo:4;--s-echo-gap:60ms;--s-echo-lag:40ms;
 }
 
 .sbtn[data-state="held"]{animation:hud-hold-scale 150ms ease-out both}
@@ -121,7 +129,7 @@
   opacity:0;pointer-events:none;transition:opacity 220ms ease;
 }
 .sbtn[data-ghost] .sbtn-stripe{display:none}
-.sbtn[data-state="hover"] .sbtn-stripe{animation:hud-stripe-in 460ms var(--ease-settle) both,var(--stripe-drift) 5200ms linear infinite}
+.sbtn[data-state="hover"] .sbtn-stripe{animation:hud-stripe-in 460ms var(--ease-settle) both,var(--stripe-drift) var(--stripe-clock) linear infinite}
 
 .sbtn-halo{
   position:absolute;inset:0;border:2px solid var(--s-line);box-shadow:0 0 22px var(--s-line);
@@ -130,13 +138,13 @@
 .sbtn[data-fired] .sbtn-halo{animation:hud-halo calc(var(--clock) + 100ms) linear 0ms 1 both}
 
 .sbtn-hair{position:absolute;inset:0;border:1px solid var(--s-line);opacity:0;pointer-events:none}
-.sbtn[data-fired] .sbtn-hair{animation:hud-hairline var(--clock) steps(7,end) 0ms 1 both}
+.sbtn[data-fired] .sbtn-hair{animation:hud-hairline var(--clock) steps(var(--s-steps),end) 0ms 1 both}
 
 .sbtn-hair-echo{
   position:absolute;inset:0;border:1px solid var(--s-line);border-bottom-width:0;
   opacity:0;pointer-events:none;
 }
-.sbtn[data-fired] .sbtn-hair-echo{animation:hud-hairline-echo calc(var(--clock) + 60ms) steps(5,end) 55ms 1 both}
+.sbtn[data-fired] .sbtn-hair-echo{animation:hud-hairline-echo calc(var(--clock) + var(--s-echo-gap)) steps(var(--s-steps-echo),end) var(--s-echo-lag) 1 both}
 
 .sbtn-bracket{
   position:absolute;width:var(--bracket-arm);height:var(--bracket-arm);

@@ -60,10 +60,9 @@ button{cursor:pointer;border:none;background:none}
 .tab .sbtn-label,.tab .sbtn-word{text-align:center}
 
 .daybar{display:flex;align-items:center;gap:8px;padding:12px 0 4px}
-.date-input{
-  background:var(--surface);border:1px solid var(--line);border-radius:3px;
-  padding:7px 9px;font-family:var(--mono);font-size:13px;flex:1;min-width:0;
-}
+.daybar .sfield{flex:1;min-width:0;--f-pad:11px 10px 11px 12px}
+.date-input{font-variant-numeric:tabular-nums}
+.date-input::-webkit-calendar-picker-indicator{opacity:.6;cursor:pointer}
 .blockset{display:flex;gap:4px}
 .blockset .sbtn{--pad:12px 8px 12px 11px}
 .blockset .sbtn-label,.blockset .sbtn-word{text-align:center}
@@ -353,12 +352,11 @@ button{cursor:pointer;border:none;background:none}
 }
 
 .notes{padding:calc(var(--notch-h) + 8px) 13px 12px;margin:14px 0 4px}
+.notes .sfield{--f-pad:13px 14px 13px 16px}
 .notes textarea{
-  width:100%;min-height:64px;resize:vertical;background:var(--surface-2);
-  border:1px solid var(--line);border-radius:3px;padding:9px;
-  font-family:var(--sans);font-size:14px;line-height:1.4;
+  min-height:64px;resize:vertical;display:block;
+  font-size:var(--size-body);line-height:var(--leading-body);letter-spacing:normal;
 }
-.notes textarea:focus{border-color:var(--ui-accent)}
 .hist-notes{
   font-size:12.5px;color:var(--muted);font-style:italic;padding:7px 0 0;
   margin:6px 0 0;border-top:1px dashed var(--line);
@@ -407,10 +405,7 @@ button{cursor:pointer;border:none;background:none}
   color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap;
 }
 .sheet-custom{display:flex;gap:7px;padding:8px 8px 4px}
-.sheet-custom input{
-  flex:1;min-height:42px;background:var(--surface-2);border:1px solid var(--line);
-  border-radius:3px;padding:0 10px;font-size:15px;
-}
+.sheet-custom .sfield{flex:1;min-width:0;--f-pad:13px 12px 13px 15px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 .ex-summary{
@@ -493,8 +488,4 @@ button{cursor:pointer;border:none;background:none}
   background-size:100% 4px;opacity:.17;
   animation:hud-stripe-drift-a 5200ms linear infinite;
 }
-.notes textarea:focus,.sheet-custom input:focus{
-  background:var(--scanlines),rgba(90,208,242,.07);
-  box-shadow:var(--glow),inset 0 0 14px rgba(90,208,242,.14);
-  outline:none;
-}
+

@@ -42,7 +42,7 @@
   -webkit-mask-image:var(--stripe-mask);mask-image:var(--stripe-mask);
   opacity:0;pointer-events:none;transition:opacity 220ms ease;
 }
-.sfield[data-state="focus"] .sfield-wash{animation:hud-stripe-in 460ms var(--ease-settle) both,var(--stripe-drift) 5200ms linear infinite}
+.sfield[data-state="focus"] .sfield-wash{animation:hud-stripe-in 460ms var(--ease-settle) both,var(--stripe-drift) var(--stripe-clock) linear infinite}
 
 .sfield-input{
   position:relative;width:100%;box-sizing:border-box;

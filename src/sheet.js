@@ -7,6 +7,7 @@ import {priorSets} from "./progression.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor, resolveSlot} from "./swaps.js";
 import {queueSave} from "./session.js";
 import {strandButton} from "./strand/button.js";
+import {strandField} from "./strand/field.js";
 
 let sheet, title, body;
 let openSlot = null;
@@ -188,7 +189,7 @@ export function openSwapSheet(slot){
   };
   use.addEventListener("click", submit);
   input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
-  row.append(input, use);
+  row.append(strandField(input), use);
   body.appendChild(row);
 
   group("Everything else");

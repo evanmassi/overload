@@ -60,6 +60,7 @@ function renderLog(main){
   date.className = "date-input";
   date.value = current.date;
   date.addEventListener("change", () => { if(date.value) loadDate(date.value); });
+  const dateField = strandField(date);
 
   const blocks = document.createElement("div");
   blocks.className = "blockset";
@@ -77,7 +78,7 @@ function renderLog(main){
     }));
     blocks.appendChild(button);
   });
-  bar.append(date, blocks);
+  bar.append(dateField, blocks);
   main.appendChild(bar);
 
   const done = sessionsDoneIn(state.sessions, current.blockIndex);
@@ -406,7 +407,7 @@ function notesCard(){
   const save = () => { state.current.notes = area.value; queueSave(); };
   area.addEventListener("change", save);
   area.addEventListener("blur", save);
-  box.append(label, area);
+  box.append(label, strandField(area));
   return box;
 }
 
