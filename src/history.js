@@ -147,7 +147,11 @@ function filterBar(){
   bar.className = "blockset hist-filter";
   [null, ...DAY_KEYS].forEach(day => {
     const button = document.createElement("button");
-    button.textContent = day ? DAYS[day].short : "All";
+    strandButton(button, {
+      label: day ? DAYS[day].short : "All",
+      tone: "secondary", ghost: true, key: "filter:" + day
+    });
+    button.dataset.chosen = day === state.historyDay ? "on" : "off";
     button.setAttribute("aria-pressed", String(day === state.historyDay));
     button.addEventListener("click", () => { state.historyDay = day; notify(); });
     bar.appendChild(button);

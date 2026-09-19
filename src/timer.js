@@ -8,6 +8,8 @@ const awake = {lock: null, requesting: false};
 
 let button = null;
 
+const clockFace = seconds => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+
 function face(label, tone){
   if(!button) return;
   button.strandLabel(label);
@@ -27,7 +29,7 @@ export function mountTimer(buttonEl){
 }
 
 function showIdle(){
-  face(`rest ${timer.idle}s`, "primary");
+  face(clockFace(timer.idle), "primary");
 }
 
 export function setIdleRest(seconds){
@@ -76,8 +78,7 @@ export function stop(){
 function tick(){
   const now = Date.now();
   const left = Math.max(0, Math.round((timer.endsAt - now) / 1000));
-  face(`${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`,
-       left > 0 && left <= WARN_COUNTDOWN_SECONDS ? "warning" : "primary");
+  face(clockFace(left), left > 0 && left <= WARN_COUNTDOWN_SECONDS ? "warning" : "primary");
   if(left > 0) return;
 
   clearInterval(timer.tick);

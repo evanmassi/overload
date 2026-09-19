@@ -20,15 +20,13 @@ const el = id => document.getElementById(id);
 function confirmRelabel(button, run){
   return () => {
     if(!loggedCount(state.current) || button.dataset.armed){ run(); return; }
-    const original = button.innerHTML;
+    const original = button.dataset.label;
     button.dataset.armed = "1";
-    button.classList.add("armed");
-    button.innerHTML = "<span>sure?</span>";
+    button.strandLabel("sure?");
     setTimeout(() => {
       if(!button.dataset.armed) return;
       delete button.dataset.armed;
-      button.classList.remove("armed");
-      button.innerHTML = original;
+      button.strandLabel(original);
     }, CONFIRM_WINDOW_MS);
   };
 }
@@ -44,8 +42,11 @@ export function render(){
   else if(state.view === "history") renderHistory(main);
   else renderProgress(main);
   updateFooter();
-  document.querySelectorAll(".tab").forEach(tab =>
-    tab.setAttribute("aria-selected", String(tab.dataset.view === state.view)));
+  document.querySelectorAll(".tab").forEach(tab => {
+    const here = tab.dataset.view === state.view;
+    tab.setAttribute("aria-selected", String(here));
+    tab.dataset.chosen = here ? "on" : "off";
+  });
 }
 
 function renderLog(main){
@@ -64,8 +65,9 @@ function renderLog(main){
   const start = cycleStart(current.blockIndex);
   BLOCKS.forEach((letter, i) => {
     const button = document.createElement("button");
-    button.textContent = letter;
     button.title = `Week ${letter}`;
+    strandButton(button, {label: letter, tone: "secondary", ghost: true, key: "block:" + letter});
+    button.dataset.chosen = letter === current.block ? "on" : "off";
     button.setAttribute("aria-pressed", String(letter === current.block));
     button.addEventListener("click", confirmRelabel(button, () => {
       setBlockIndex(start + i);
@@ -83,7 +85,11 @@ function renderLog(main){
   DAY_KEYS.forEach(day => {
     const button = document.createElement("button");
     const isDone = done.has(day) && day !== current.day;
-    button.innerHTML = `<span>${DAYS[day].short}</span><small class="${isDone ? "done" : ""}">${isDone ? "done" : ""}</small>`;
+    strandButton(button, {
+      label: DAYS[day].short, meta: isDone ? "done" : "",
+      tone: "secondary", ghost: true, key: "day:" + day
+    });
+    button.dataset.chosen = day === current.day ? "on" : "off";
     button.setAttribute("aria-pressed", String(day === current.day));
     button.addEventListener("click", confirmRelabel(button, () => {
       setDay(day);

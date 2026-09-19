@@ -6,11 +6,14 @@ const HOLD_KEYS = new Set(["Enter", " "]);
 
 const recentFires = new Map();
 
-function layer(host, name){
+function make(name){
   const span = document.createElement("span");
   span.className = "sbtn-" + name;
-  host.appendChild(span);
   return span;
+}
+
+function layer(host, name){
+  return host.appendChild(make(name));
 }
 
 function brackets(host){
@@ -91,7 +94,12 @@ export function strandButton(el, options = {}){
     label.textContent = value;
     el.dataset.label = value;
   };
+  el.strandMeta = value => {
+    const mark = el.querySelector(".sbtn-meta") || label.parentNode.insertBefore(make("meta"), label.nextSibling);
+    mark.textContent = value || "";
+  };
   el.strandLabel(text);
+  if(options.meta !== undefined) el.strandMeta(options.meta);
   wire(el, key);
   return el;
 }

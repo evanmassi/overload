@@ -55,39 +55,21 @@ button{cursor:pointer;border:none;background:none}
   border:1px solid var(--line);color:var(--muted);letter-spacing:.04em;
 }
 .chip.live{background:var(--ui-accent-soft);border-color:transparent;color:var(--ui-accent)}
-.tabs{display:flex;gap:2px;padding:10px 14px 0;max-width:640px;margin:0 auto}
-.tab{
-  flex:1;padding:9px 4px 10px;border-radius:2px 2px 0 0;font-size:12px;font-weight:600;
-  color:var(--muted);border-bottom:1px solid transparent;text-align:center;
-  font-family:var(--display);letter-spacing:.18em;text-transform:uppercase;
-}
-.tab[aria-selected="true"]{color:var(--ui-accent);border-bottom-color:var(--ui-accent);background:rgba(90,208,242,.08);text-shadow:var(--glow)}
-.tab small{display:block;font-family:var(--mono);font-weight:400;font-size:10px;color:var(--faint);letter-spacing:.06em}
-.tab[aria-selected="true"] small{color:var(--ui-accent)}
+.tabs{display:flex;gap:4px;padding:10px 14px 0;max-width:640px;margin:0 auto}
+.tab{flex:1}
+.tab .sbtn-label,.tab .sbtn-word{text-align:center}
 
 .daybar{display:flex;align-items:center;gap:8px;padding:12px 0 4px}
 .date-input{
   background:var(--surface);border:1px solid var(--line);border-radius:3px;
   padding:7px 9px;font-family:var(--mono);font-size:13px;flex:1;min-width:0;
 }
-.blockset{display:flex;gap:3px;background:rgba(0,0,0,.4);padding:3px;border-radius:3px}
-.blockset button{
-  position:relative;width:36px;padding:8px 0;border-radius:2px;font-family:var(--display);
-  font-weight:900;font-size:14px;color:var(--muted);line-height:1;
-}
-.blockset button[aria-pressed="true"]{background:rgba(90,208,242,.1);color:var(--ui-accent);box-shadow:inset 0 0 0 1px rgba(90,208,242,.35)}
+.blockset{display:flex;gap:4px}
+.blockset .sbtn{--pad:12px 8px 12px 11px}
+.blockset .sbtn-label,.blockset .sbtn-word{text-align:center}
 .blockset.sessions{margin-top:8px}
-.blockset.sessions button{
-  position:relative;flex:1;width:auto;height:50px;padding:0;
-  font-size:15px;font-weight:700;letter-spacing:-.005em;line-height:1;
-  display:flex;align-items:center;justify-content:center;
-}
-.blockset.sessions small{
-  position:absolute;left:0;right:0;bottom:5px;text-align:center;
-  font-family:var(--mono);font-size:8.5px;font-weight:600;
-  letter-spacing:.12em;text-transform:uppercase;color:var(--ui-accent);line-height:1;
-  pointer-events:none;
-}
+.blockset.sessions .sbtn{flex:1;--pad:12px 8px 4px 10px}
+.blockset.sessions .sbtn-meta{padding:0 8px 10px 10px;text-align:center}
 
 .dayhead{padding:14px 0 6px}
 .eyebrow{
@@ -203,7 +185,8 @@ button{cursor:pointer;border:none;background:none}
   display:block;font-size:11px;color:var(--faint);letter-spacing:.03em;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.timer{flex:none;font-variant-numeric:tabular-nums}
+.timer{flex:none;font-variant-numeric:tabular-nums;--pad:var(--pad-control-quiet)}
+.timer .sbtn-label,.timer .sbtn-word{box-sizing:content-box;width:6ch;text-align:center}
 .backup-result,.sound-result{
   flex-basis:100%;text-align:center;
   font-family:var(--mono);font-size:11.5px;color:var(--ui-accent);
@@ -253,7 +236,7 @@ button{cursor:pointer;border:none;background:none}
 .hist-delta.same{background:var(--flat-soft);color:var(--flat)}
 .hist-delta.down{color:var(--faint)}
 .hist-filter{margin:4px 0 6px}
-.hist-filter button{flex:1;width:auto;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.hist-filter .sbtn{flex:1}
 .hist-cycle{margin-top:14px}
 
 .grid-wrap{margin-bottom:18px}
@@ -306,8 +289,6 @@ button{cursor:pointer;border:none;background:none}
   text-transform:uppercase;color:var(--ui-accent);margin:16px 0 8px;
 }
 .eyebrow b{color:var(--ui-accent);font-weight:600}
-.blockset.sessions small.done{color:var(--ui-accent)}
-.blockset button.armed{background:var(--flat-soft);border-color:var(--flat);color:var(--flat)}
 .backup,.soundrow{
   display:flex;flex-direction:column;align-items:stretch;gap:var(--gap-stack);padding:14px 0 4px;
 }
@@ -499,8 +480,7 @@ button{cursor:pointer;border:none;background:none}
 .section-label::before,.eyebrow::before{content:"// ";color:var(--faint)}
 
 .topbar::after,.savebar::after,.sheet-panel::after,
-.ex-num::after,.superset b::after,.hist-day .chip.live::after,.notes label::after,
-.blockset button[aria-pressed="true"]::after{
+.ex-num::after,.superset b::after,.hist-day .chip.live::after,.notes label::after{
   content:"";position:absolute;inset:0;pointer-events:none;
   background:var(--scanlines);mix-blend-mode:multiply;
 }

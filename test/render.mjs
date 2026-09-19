@@ -410,7 +410,7 @@ section("The countdown escalates in its last seconds");
   render();
   stop();
   check("an idle timer shows the rest the next set will get",
-    els.timer.dataset.label === "rest 120s", els.timer.dataset.label);
+    els.timer.dataset.label === "2:00", els.timer.dataset.label);
   check("and rests on the primary tone", els.timer.dataset.tone === "primary");
 
   start(90);
@@ -426,7 +426,7 @@ section("The countdown escalates in its last seconds");
 
   stop();
   check("stopping restores the idle reading",
-    els.timer.dataset.label === "rest 120s", els.timer.dataset.label);
+    els.timer.dataset.label === "2:00", els.timer.dataset.label);
   check("and the resting tone", els.timer.dataset.tone === "primary");
 }
 
@@ -437,7 +437,7 @@ section("The idle countdown tracks the next unlogged set");
   render();
   stop();
   check("it opens on the lead lift's rest",
-    els.timer.dataset.label === "rest 120s", els.timer.dataset.label);
+    els.timer.dataset.label === "2:00", els.timer.dataset.label);
 
   const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
   rows.slice(0, 3).forEach(row => {
@@ -447,14 +447,14 @@ section("The idle countdown tracks the next unlogged set");
   });
   stop();
   check("with one set left it shows the walk to the next move",
-    els.timer.dataset.label === "rest 90s", els.timer.dataset.label);
+    els.timer.dataset.label === "1:30", els.timer.dataset.label);
 
   rows[3].children[1].value = "50";
   rows[3].children[3].value = "10";
   rows[3].children[3].fire("change");
   stop();
   check("finishing the move shows the next move's rest",
-    els.timer.dataset.label === "rest 120s", els.timer.dataset.label);
+    els.timer.dataset.label === "2:00", els.timer.dataset.label);
 }
 
 section("Save state is a dot, not a shifting line");
@@ -564,7 +564,7 @@ section("A logged session cannot be relabelled by one stray tap");
   legs.fire("click");
   check("the first tap does not switch", state.current.day === "arms", state.current.day);
   check("it asks instead", legs.innerHTML.includes("sure?"), legs.innerHTML);
-  check("and marks itself", legs.classList.contains("armed"));
+  check("and marks itself", legs.dataset.armed === "1");
 
   legs.fire("click");
   check("the second tap switches", state.current.day === "legs", state.current.day);
@@ -573,7 +573,7 @@ section("A logged session cannot be relabelled by one stray tap");
   render();
   const weeks = els.main.find("blockset")[0];
   weeks.children[2].fire("click");
-  check("the week buttons ask too", weeks.children[2].textContent === "sure?", weeks.children[2].textContent);
+  check("the week buttons ask too", weeks.children[2].dataset.label === "sure?", weeks.children[2].dataset.label);
   check("and do not switch on the first tap", state.current.block === "A", state.current.block);
 }
 
@@ -626,8 +626,8 @@ section("History filters by workout, groups by cycle and marks deltas");
 
   const filter = els.main.find("hist-filter")[0];
   check("a filter row offers all three workouts plus all",
-    filter.children.map(b => b.textContent).join() === "All,Chest,Legs,Arms",
-    filter.children.map(b => b.textContent).join());
+    filter.children.map(b => b.dataset.label).join() === "All,Chest,Legs,Arms",
+    filter.children.map(b => b.dataset.label).join());
   check("all is pressed by default", filter.children[0].getAttribute("aria-pressed") === "true");
   check("every session shows unfiltered", els.main.find("hist-day").length === 4, els.main.find("hist-day").length);
 

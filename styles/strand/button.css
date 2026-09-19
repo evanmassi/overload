@@ -98,7 +98,10 @@
   background:var(--s-line);box-shadow:0 0 12px var(--lgl);
 }
 .sbtn[data-chosen="on"] .sbtn-fill{opacity:.14}
-.sbtn[data-chosen="on"] .sbtn-label{color:var(--ink-2)}
+.sbtn[data-ghost][data-chosen="on"]{--lgl:var(--hgl);--idle:var(--flicker-secondary)}
+.sbtn[data-ghost][data-chosen="on"] .sbtn-label{color:var(--ink-1);font-weight:var(--weight-control)}
+.sbtn[data-ghost][data-chosen="off"] .sbtn-label{color:var(--ink-3)}
+.sbtn[data-chosen="on"] .sbtn-label{color:var(--ink-2);font-weight:var(--weight-control)}
 .sbtn[data-chosen="off"] .sbtn-label{color:var(--ink-4)}
 .sbtn[data-ghost] .sbtn-frame{display:none}
 .sbtn[data-state="hover"] .sbtn-frame{animation:hud-lock-edge 240ms ease-out both}
@@ -177,6 +180,13 @@
 .sbtn[data-state="hover"] .sbtn-label{animation:hud-text-flicker var(--idle) linear infinite,hud-lock-label 260ms ease-out both}
 .sbtn[data-fired] .sbtn-label{animation:hud-text-flicker var(--idle) linear infinite,hud-lit calc(var(--clock) + 20ms) var(--ease-settle) 0ms 1 both}
 .sbtn[data-state="held"] .sbtn-label{animation:hud-text-flicker var(--idle) linear infinite,hud-label-hold 170ms ease-out both}
+
+.sbtn-meta{
+  position:relative;display:block;padding:0 10px 12px 16px;
+  font-size:var(--size-micro);letter-spacing:var(--track-meta);
+  text-transform:uppercase;color:var(--ink-4);line-height:1;
+}
+.sbtn-meta:empty{display:none}
 
 .sbtn-face{position:absolute;inset:1px;background:var(--s-line);opacity:0;pointer-events:none}
 .sbtn[data-ghost] .sbtn-face,.sbtn[data-tone="secondary"] .sbtn-face{display:none}
