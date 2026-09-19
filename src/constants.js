@@ -61,7 +61,6 @@ export const ICON_SWAP = '<svg viewBox="0 0 20 20" width="16" height="16" fill="
 export const ICON_UP = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11l5-5 5 5"/><path d="M5 16l5-5 5 5"/></svg>';
 export const ICON_SAME = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="5.5"/><circle cx="10" cy="10" r="1.4" fill="currentColor" stroke="none"/></svg>';
 export const ICON_DOWN = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l5 5 5-5"/><path d="M5 9l5 5 5-5"/></svg>';
-export const ICON_UNDO = '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h9a3.5 3.5 0 010 7H9"/><path d="M4 10l3.5-3.5M4 10l3.5 3.5"/></svg>';
 
 export const EFFORT_LEVELS = ["easy", "medium", "hard"];
 export const EFFORT_STEPS = {easy: 2, medium: 1, hard: 0};
@@ -69,4 +68,3 @@ export const STALL_EXPOSURES = 3;
 export const STALL_BACKOFF_PERCENT = 10;
 export const CONSISTENCY_WEEKS = 26;
 
-export const ICON_REPEAT = '<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 11a5.5 5.5 0 1 1-1.6-3.9"/><path d="M14.5 3.5v4h-4"/></svg>';

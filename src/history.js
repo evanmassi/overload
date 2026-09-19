@@ -8,6 +8,7 @@ import {loadDate, deleteSession} from "./session.js";
 import {setSummary, elapsedLabel, unitSuffix} from "./format.js";
 import {exportSessions, importSessions, onBackupStatus} from "./backup.js";
 import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
+import {strandButton} from "./strand/button.js";
 
 function deltaMark(date, id, sets, isBodyweight){
   const prior = priorSets(state.sessions, id, date);
@@ -47,15 +48,14 @@ function subLabel(text){
 
 function armedDelete(date){
   const remove = document.createElement("button");
-  remove.textContent = "delete";
   remove.addEventListener("click", event => {
     event.stopPropagation();
     if(remove.dataset.armed){ deleteSession(date); return; }
     remove.dataset.armed = "1";
-    remove.textContent = "sure?";
-    setTimeout(() => { delete remove.dataset.armed; remove.textContent = "delete"; }, CONFIRM_WINDOW_MS);
+    remove.strandLabel("sure?");
+    setTimeout(() => { delete remove.dataset.armed; remove.strandLabel("delete"); }, CONFIRM_WINDOW_MS);
   });
-  return remove;
+  return strandButton(remove, {label: "delete", tone: "danger", ghost: true, key: "hist-delete:" + date});
 }
 
 function sessionBody(date, session, plan){
@@ -100,8 +100,8 @@ function sessionBody(date, session, plan){
   const actions = document.createElement("div");
   actions.className = "hist-actions";
   const edit = document.createElement("button");
-  edit.textContent = "edit";
   edit.title = "Open this session on the Log tab";
+  strandButton(edit, {label: "edit", tone: "secondary", ghost: true, key: "hist-edit:" + date});
   edit.addEventListener("click", event => {
     event.stopPropagation();
     loadDate(date);
@@ -203,25 +203,24 @@ function backupControls(){
   box.className = "backup";
 
   const save = document.createElement("button");
-  save.className = "btn";
-  save.textContent = "Export backup";
   save.addEventListener("click", exportSessions);
+  strandButton(save, {label: "Export backup", tone: "primary"});
 
-  const load = document.createElement("label");
-  load.className = "btn";
-  load.textContent = "Import backup";
   const picker = document.createElement("input");
   picker.type = "file";
   picker.accept = "application/json,.json";
   picker.hidden = true;
   picker.addEventListener("change", importSessions);
-  load.appendChild(picker);
+
+  const load = document.createElement("button");
+  load.addEventListener("click", () => picker.click());
+  strandButton(load, {label: "Import backup", tone: "primary"});
 
   const result = document.createElement("span");
   result.className = "backup-result";
   onBackupStatus(text => { result.textContent = text; });
 
-  box.append(save, load, result);
+  box.append(save, load, picker, result);
   return box;
 }
 
@@ -237,21 +236,20 @@ function soundControls(){
   box.className = "soundrow";
 
   const toggle = document.createElement("button");
-  toggle.className = "btn";
   const paint = () => {
-    toggle.textContent = soundOn() ? "Sound on" : "Sound off";
-    toggle.classList.toggle("on", soundOn());
+    toggle.strandLabel(soundOn() ? "Sound on" : "Sound off");
+    toggle.dataset.chosen = soundOn() ? "on" : "off";
     toggle.setAttribute("aria-pressed", String(soundOn()));
   };
   toggle.addEventListener("click", () => { setSoundOn(!soundOn()); paint(); });
+  strandButton(toggle, {label: "Sound off", tone: "secondary"});
   paint();
 
   const note = document.createElement("p");
   note.className = "sound-result";
 
   const test = document.createElement("button");
-  test.className = "btn";
-  test.textContent = "Test sound";
+  strandButton(test, {label: "Test sound", tone: "primary"});
   test.addEventListener("click", () => {
     const played = testTone();
     const state = audioState();

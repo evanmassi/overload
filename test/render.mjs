@@ -79,7 +79,7 @@ section("Logging a set updates the view");
 
   check("the set is recorded on the current session", state.current.entries.flat_db_press[0].r === "10");
   check("volume reflects a pair of dumbbells", els.volume.textContent === "1,000 lb", els.volume.textContent);
-  check("the rest timer started", els.timer.classList.contains("running"));
+  check("the rest timer started", /^\d+:\d\d$/.test(els.timer.dataset.label), els.timer.dataset.label);
 }
 
 section("A prior session drives placeholders and a target");
@@ -151,8 +151,8 @@ section("History and progress views render");
   check("tapping a row opens it", els.main.find("hist-body").length === 1, els.main.find("hist-body").length);
   check("notes show on the open card", els.main.find("hist-notes").length === 1);
   check("the open card offers edit and delete",
-    els.main.find("hist-actions")[0].children.map(b => b.textContent).join() === "edit,delete",
-    els.main.find("hist-actions")[0].children.map(b => b.textContent).join());
+    els.main.find("hist-actions")[0].children.map(b => b.dataset.label).join() === "edit,delete",
+    els.main.find("hist-actions")[0].children.map(b => b.dataset.label).join());
   openHistoryCard(0);
   check("tapping again closes it", els.main.find("hist-body").length === 0);
   check("backup controls render", els.main.find("backup").length === 1);
@@ -269,7 +269,7 @@ section("Effort buttons");
   check("every main move asks how it felt", rows.length === 9, rows.length);
 
   const buttons = rows[0].children.filter(c => c.tag === "button");
-  equal("three levels", buttons.map(b => b.textContent), ["easy", "medium", "hard"]);
+  equal("three levels", buttons.map(b => b.dataset.label), ["easy", "medium", "hard"]);
   buttons[2].fire("click");
   equal("tapping one records it", state.current.effort.flat_db_press, "hard");
   equal("and keeps it even before a set is logged",
@@ -277,7 +277,8 @@ section("Effort buttons");
 
   render();
   const again = els.main.find("effort")[0].children.filter(c => c.tag === "button");
-  check("the chosen level is marked", again[2].classList.contains("on"));
+  check("the chosen level is marked", again[2].dataset.chosen === "on");
+  check("and the others are not", again.slice(0, 2).every(b => b.dataset.chosen === "off"));
   again[2].fire("click");
   equal("tapping it again clears it", state.current.effort.flat_db_press, undefined);
 }
@@ -403,40 +404,30 @@ section("Expansion does not leak between sessions");
 section("The countdown escalates in its last seconds");
 {
   const {start, stop} = await import("../src/timer.js");
-  const {WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS} = await import("../src/constants.js");
+  const {WARN_COUNTDOWN_SECONDS} = await import("../src/constants.js");
 
   fresh();
   render();
   stop();
   check("an idle timer shows the rest the next set will get",
-    els.clock.textContent === "120s", els.clock.textContent);
-  check("and carries no state classes",
-    !els.timer.classList.contains("running") && !els.timer.classList.contains("ending"));
+    els.timer.dataset.label === "rest 120s", els.timer.dataset.label);
+  check("and rests on the primary tone", els.timer.dataset.tone === "primary");
 
   start(90);
-  check("starting marks it running", els.timer.classList.contains("running"));
-  check("with plenty left it neither warns nor escalates",
-    !els.timer.classList.contains("warn") && !els.timer.classList.contains("ending"));
+  check("starting shows a countdown",
+    /^\d+:\d\d$/.test(els.timer.dataset.label), els.timer.dataset.label);
+  check("with plenty left it stays primary", els.timer.dataset.tone === "primary");
 
   start(WARN_COUNTDOWN_SECONDS);
-  check("inside ten seconds it warns", els.timer.classList.contains("warn"));
-  check("but does not yet escalate", !els.timer.classList.contains("ending"));
-
-  start(FINAL_COUNTDOWN_SECONDS);
-  check("inside the final seconds it escalates", els.timer.classList.contains("ending"));
-  check("and drops the warn tier", !els.timer.classList.contains("warn"));
+  check("inside the warn window it turns amber", els.timer.dataset.tone === "warning");
 
   start(WARN_COUNTDOWN_SECONDS + 30);
-  check("a fresh longer rest drops both tiers",
-    !els.timer.classList.contains("warn") && !els.timer.classList.contains("ending"));
+  check("a fresh longer rest drops back to primary", els.timer.dataset.tone === "primary");
 
   stop();
-  check("stopping clears every state class",
-    !els.timer.classList.contains("running") &&
-    !els.timer.classList.contains("warn") &&
-    !els.timer.classList.contains("ending") &&
-    !els.timer.classList.contains("up"));
-  check("and restores the idle reading", els.clock.textContent.endsWith("s"), els.clock.textContent);
+  check("stopping restores the idle reading",
+    els.timer.dataset.label === "rest 120s", els.timer.dataset.label);
+  check("and the resting tone", els.timer.dataset.tone === "primary");
 }
 
 section("The idle countdown tracks the next unlogged set");
@@ -445,7 +436,8 @@ section("The idle countdown tracks the next unlogged set");
   fresh();
   render();
   stop();
-  check("it opens on the lead lift's rest", els.clock.textContent === "120s", els.clock.textContent);
+  check("it opens on the lead lift's rest",
+    els.timer.dataset.label === "rest 120s", els.timer.dataset.label);
 
   const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
   rows.slice(0, 3).forEach(row => {
@@ -455,14 +447,14 @@ section("The idle countdown tracks the next unlogged set");
   });
   stop();
   check("with one set left it shows the walk to the next move",
-    els.clock.textContent === "90s", els.clock.textContent);
+    els.timer.dataset.label === "rest 90s", els.timer.dataset.label);
 
   rows[3].children[1].value = "50";
   rows[3].children[3].value = "10";
   rows[3].children[3].fire("change");
   stop();
   check("finishing the move shows the next move's rest",
-    els.clock.textContent === "120s", els.clock.textContent);
+    els.timer.dataset.label === "rest 120s", els.timer.dataset.label);
 }
 
 section("Save state is a dot, not a shifting line");
@@ -713,13 +705,13 @@ section("Sound is optional, remembered and testable");
   render();
   const row = els.main.find("soundrow")[0];
   check("the history tab carries a sound row", !!row);
-  const buttons = row.find("btn");
+  const buttons = row.find("sbtn");
   check("it offers a toggle and a test", buttons.length === 2, buttons.length);
   check("the toggle reads its current state",
-    buttons[0].textContent === "Sound on", buttons[0].textContent);
+    buttons[0].dataset.label === "Sound on", buttons[0].dataset.label);
 
   buttons[0].fire("click");
-  check("tapping it flips the label", buttons[0].textContent === "Sound off", buttons[0].textContent);
+  check("tapping it flips the label", buttons[0].dataset.label === "Sound off", buttons[0].dataset.label);
   buttons[0].fire("click");
 
   buttons[1].fire("click");
@@ -802,7 +794,7 @@ section("Beeps are scheduled on the audio clock when a rest starts");
   equal("a fresh rest schedules ahead and plays nothing yet", startsAt().slice(0, 1), [2]);
   comeBackAfter(60000);
   equal("a rest that ended while you were away schedules no sound", live(), []);
-  check("but it still shows go", els.timer.classList.contains("up"), els.timer._class);
+  check("but it still shows go", els.timer.dataset.label === "go", els.timer.dataset.label);
   stop();
 
   reset();
@@ -811,7 +803,7 @@ section("Beeps are scheduled on the audio clock when a rest starts");
   comeBackAfter(5000 + 800);
   check("a rest that ended just before you came back adds no new sound",
     scheduled.length === placedAtStart, scheduled.length - placedAtStart);
-  check("and shows go", els.timer.classList.contains("up"), els.timer._class);
+  check("and shows go", els.timer.dataset.label === "go", els.timer.dataset.label);
   stop();
 
   reset();

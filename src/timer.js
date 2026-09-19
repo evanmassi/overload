@@ -1,16 +1,21 @@
 import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, LIVE_FINISH_MS, VIBRATE_PATTERN,
-        WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS} from "./constants.js";
+        WARN_COUNTDOWN_SECONDS} from "./constants.js";
 import {scheduleRest, cancelRest} from "./sound.js";
+import {strandButton} from "./strand/button.js";
 
 const timer = {endsAt: 0, tick: null, seconds: DEFAULT_REST, idle: DEFAULT_REST};
 const awake = {lock: null, requesting: false};
 
 let button = null;
-let clock = null;
 
-export function mountTimer(buttonEl, clockEl){
-  button = buttonEl;
-  clock = clockEl;
+function face(label, tone){
+  if(!button) return;
+  button.strandLabel(label);
+  button.dataset.tone = tone;
+}
+
+export function mountTimer(buttonEl){
+  button = strandButton(buttonEl, {tone: "primary"});
   button.addEventListener("click", () => { timer.endsAt ? stop() : start(timer.idle); });
   document.addEventListener("visibilitychange", () => {
     if(document.visibilityState !== "visible" || !timer.endsAt) return;
@@ -22,8 +27,7 @@ export function mountTimer(buttonEl, clockEl){
 }
 
 function showIdle(){
-  if(clock) clock.textContent = `${timer.idle}s`;
-  if(button) button.classList.remove("warn", "ending");
+  face(`rest ${timer.idle}s`, "primary");
 }
 
 export function setIdleRest(seconds){
@@ -54,7 +58,6 @@ function releaseScreen(){
 export function start(seconds){
   timer.seconds = seconds || DEFAULT_REST;
   timer.endsAt = Date.now() + timer.seconds * 1000;
-  if(button){ button.classList.add("running"); button.classList.remove("warn", "ending", "up"); }
   scheduleRest(timer.endsAt);
   holdScreen();
   clearInterval(timer.tick);
@@ -67,33 +70,26 @@ export function stop(){
   timer.endsAt = 0;
   cancelRest();
   releaseScreen();
-  if(button) button.classList.remove("running", "warn", "ending", "up");
   showIdle();
 }
 
 function tick(){
   const now = Date.now();
   const left = Math.max(0, Math.round((timer.endsAt - now) / 1000));
-  if(clock) clock.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
-  if(button){
-    button.classList.toggle("warn",
-      left > FINAL_COUNTDOWN_SECONDS && left <= WARN_COUNTDOWN_SECONDS);
-    button.classList.toggle("ending", left > 0 && left <= FINAL_COUNTDOWN_SECONDS);
-  }
+  face(`${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`,
+       left > 0 && left <= WARN_COUNTDOWN_SECONDS ? "warning" : "primary");
   if(left > 0) return;
 
   clearInterval(timer.tick);
   const overdueMs = now - timer.endsAt;
   timer.endsAt = 0;
   releaseScreen();
-  if(button){ button.classList.remove("running", "warn", "ending"); button.classList.add("up"); }
-  if(clock) clock.textContent = "go";
+  face("go", "success");
   if(overdueMs > LIVE_FINISH_MS) cancelRest();
   else if(typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(VIBRATE_PATTERN);
   setTimeout(() => {
     if(timer.endsAt) return;
     cancelRest();
-    if(button) button.classList.remove("up");
     showIdle();
   }, TIMER_RESET_DELAY_MS);
 }

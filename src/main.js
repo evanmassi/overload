@@ -12,7 +12,7 @@ loadSoundPreference();
 document.addEventListener("pointerdown", unlockAudio);
 
 mountSaveState(el("status"));
-mountTimer(el("timer"), el("clock"));
+mountTimer(el("timer"));
 mountSheet(el("sheet"), el("sheettitle"), el("sheetbody"), el("sheetclose"), el("sheetback"));
 
 el("tabs").addEventListener("click", event => {

@@ -6,6 +6,7 @@ import {state, notify} from "./state.js";
 import {priorSets} from "./progression.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor, resolveSlot} from "./swaps.js";
 import {queueSave} from "./session.js";
+import {strandButton} from "./strand/button.js";
 
 let sheet, title, body;
 let openSlot = null;
@@ -14,6 +15,7 @@ export function mountSheet(sheetEl, titleEl, bodyEl, closeEl, backdropEl){
   sheet = sheetEl;
   title = titleEl;
   body = bodyEl;
+  strandButton(closeEl, {tone: "secondary", ghost: true});
   closeEl.addEventListener("click", closeSheet);
   backdropEl.addEventListener("click", closeSheet);
   document.addEventListener("keydown", e => { if(e.key === "Escape" && !sheet.hidden) closeSheet(); });
@@ -79,13 +81,11 @@ function armConfirm(button, prompt, act){
     event.stopPropagation();
     if(button.dataset.armed){ act(); return; }
     button.dataset.armed = "1";
-    const original = button.textContent;
-    button.textContent = prompt;
-    button.classList.add("armed");
+    const original = button.dataset.label;
+    button.strandLabel(prompt);
     setTimeout(() => {
       delete button.dataset.armed;
-      button.textContent = original;
-      button.classList.remove("armed");
+      button.strandLabel(original);
     }, CONFIRM_WINDOW_MS);
   });
 }
@@ -132,22 +132,20 @@ function customRow(slot, id, taken){
   when.textContent = last ? last.date.slice(5) : "";
 
   const rename = document.createElement("button");
-  rename.className = "mini";
-  rename.textContent = "rename";
+  strandButton(rename, {label: "rename", tone: "secondary", ghost: true, key: "rename:" + id});
   rename.addEventListener("click", () => {
     const next = prompt("Rename this exercise", state.customNames[id] || "");
     if(next !== null && renameCustom(id, next)){ notify(); openSwapSheet(openSlot); }
   });
 
   const drop = document.createElement("button");
-  drop.className = "mini";
+  strandButton(drop, {label: "remove", tone: "danger", ghost: true, key: "remove:" + id});
   const count = setsLoggedFor(id);
   armConfirm(drop, count ? `drop ${count} sets?` : "sure?", () => {
     removeCustom(id);
     notify();
     openSwapSheet(openSlot);
   });
-  drop.textContent = "remove";
 
   row.append(use, when, rename, drop);
   return row;
@@ -180,7 +178,7 @@ export function openSwapSheet(slot){
   input.type = "text";
   input.placeholder = "Exercise name";
   const use = document.createElement("button");
-  use.textContent = "Use";
+  strandButton(use, {label: "Use", tone: "primary"});
   const submit = () => {
     const id = registerCustom(input.value.trim());
     if(id && !pick(slot, id)){

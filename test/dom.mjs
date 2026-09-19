@@ -6,7 +6,11 @@ class FakeNode {
     this.children = [];
     this.attrs = {};
     this.dataset = {};
-    this.style = {};
+    this.style = {
+      setProperty(name, value){ this[name] = String(value); },
+      removeProperty(name){ delete this[name]; },
+      getPropertyValue(name){ return this[name] || ""; }
+    };
     this.listeners = {};
     this._class = "";
     this._html = "";
@@ -37,6 +41,11 @@ class FakeNode {
   append(...nodes){ nodes.forEach(n => this.children.push(n)); }
   remove(){}
   setAttribute(name, value){ this.attrs[name] = String(value); if(name === "id") this.id = String(value); }
+  removeAttribute(name){
+    delete this.attrs[name];
+    if(name.startsWith("data-"))
+      delete this.dataset[name.slice(5).replace(/-([a-z])/g, (m, c) => c.toUpperCase())];
+  }
   getAttribute(name){ return this.attrs[name]; }
   addEventListener(type, fn){ (this.listeners[type] = this.listeners[type] || []).push(fn); }
   fire(type, event){ (this.listeners[type] || []).forEach(fn => fn(event || {stopPropagation: noop})); }

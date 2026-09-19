@@ -1,4 +1,4 @@
-import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_SWAP, ICON_UNDO, ICON_REPEAT, ICON_UP, ICON_SAME, ICON_DOWN,
+import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_UP, ICON_SAME, ICON_DOWN,
         EFFORT_LEVELS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT,
         CONFIRM_WINDOW_MS} from "./constants.js";
 import {workoutFor, allExercises} from "./movements.js";
@@ -14,6 +14,7 @@ import {renderHistory} from "./history.js";
 import {renderProgress} from "./progress.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer, setIdleRest} from "./timer.js";
+import {strandButton, strandIconButton} from "./strand/button.js";
 const el = id => document.getElementById(id);
 
 function confirmRelabel(button, run){
@@ -193,8 +194,11 @@ function fillCard(card, exercise, position, slot, partnerName){
   const swap = document.createElement("button");
   swap.className = "ex-swap";
   swap.title = exercise.swappedFrom ? "Undo swap" : "Swap exercise";
-  swap.setAttribute("aria-label", swap.title);
-  swap.innerHTML = exercise.swappedFrom ? ICON_UNDO : ICON_SWAP;
+  strandIconButton(swap, {
+    icon: exercise.swappedFrom ? "undo" : "swap_horiz",
+    label: swap.title, tone: "primary", ghost: true, size: 30, glyph: 18,
+    key: "swap:" + exercise.id
+  });
   swap.addEventListener("click", () => {
     if(exercise.swappedFrom){
       delete state.current.swaps[exercise.swappedFrom];
@@ -207,7 +211,11 @@ function fillCard(card, exercise, position, slot, partnerName){
 
   const fold = document.createElement("button");
   fold.className = "ex-fold";
-  fold.setAttribute("aria-label", "Show or hide sets");
+  strandIconButton(fold, {
+    icon: isComplete(exercise) && !state.expanded.has(exercise.id) ? "expand_more" : "expand_less",
+    label: "Show or hide sets", tone: "secondary", ghost: true, size: 30, glyph: 18,
+    key: "fold:" + exercise.id
+  });
   fold.addEventListener("click", () => { toggleExpanded(exercise.id); notify(); });
   head.appendChild(fold);
   card.appendChild(head);
@@ -332,7 +340,10 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
 
   const repeat = document.createElement("button");
   repeat.className = "repeat";
-  repeat.innerHTML = ICON_REPEAT;
+  strandIconButton(repeat, {
+    icon: "replay", tone: "primary", ghost: true, size: 30, glyph: 18,
+    key: "repeat:" + exercise.id + ":" + index
+  });
 
   const refreshRepeat = () => {
     const source = carryFrom();
@@ -367,9 +378,9 @@ function effortRow(exercise){
   row.appendChild(label);
   EFFORT_LEVELS.forEach(level => {
     const button = document.createElement("button");
-    button.textContent = level;
-    button.className = chosen === level ? "on" : "";
     button.addEventListener("click", () => setEffort(exercise.id, level));
+    strandButton(button, {label: level, tone: "secondary", key: "effort:" + exercise.id + ":" + level});
+    button.dataset.chosen = chosen === level ? "on" : "off";
     row.appendChild(button);
   });
   return row;

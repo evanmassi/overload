@@ -110,12 +110,12 @@ function sparkline(values){
 
   const area = document.createElementNS(ns, "polygon");
   area.setAttribute("points", `0,36 ${path} 100,36`);
-  area.setAttribute("fill", "var(--accent-soft)");
+  area.setAttribute("fill", "var(--ui-accent-soft)");
 
   const line = document.createElementNS(ns, "polyline");
   line.setAttribute("points", path);
   line.setAttribute("fill", "none");
-  line.setAttribute("stroke", "var(--accent)");
+  line.setAttribute("stroke", "var(--ui-accent)");
   line.setAttribute("stroke-width", "1.5");
   line.setAttribute("stroke-linejoin", "round");
   line.setAttribute("vector-effect", "non-scaling-stroke");
@@ -124,7 +124,7 @@ function sparkline(values){
   dot.setAttribute("cx", points[points.length - 1][0]);
   dot.setAttribute("cy", points[points.length - 1][1]);
   dot.setAttribute("r", "2.5");
-  dot.setAttribute("fill", "var(--accent)");
+  dot.setAttribute("fill", "var(--ui-accent)");
   dot.setAttribute("vector-effect", "non-scaling-stroke");
 
   svg.append(area, line, dot);
