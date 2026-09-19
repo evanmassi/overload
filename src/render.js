@@ -455,7 +455,7 @@ function updateSetBar(groups, done, total){
     marks.forEach(() => bar.appendChild(Object.assign(document.createElement("i"), {className: "tick"})));
     bar.dataset.shape = shape;
   }
-  const lead = marks.lastIndexOf("on");
+  const lead = marks.indexOf("now");
   marks.forEach((mark, i) => {
     const tick = bar.children[i];
     tick.dataset.state = mark;
