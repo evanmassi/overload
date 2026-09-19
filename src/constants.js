@@ -57,10 +57,10 @@ export const LOAD_LABEL = {
 
 export const IMPLEMENTS_PER_LOAD = {pair: 2, single: 1, bar: 1, stack: 1, bw: 1};
 
-export const ICON_SWAP = '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h12M12 4l3 3-3 3"/><path d="M17 13H5m3-3-3 3 3 3"/></svg>';
-export const ICON_UP = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11l5-5 5 5"/><path d="M5 16l5-5 5 5"/></svg>';
-export const ICON_SAME = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="5.5"/><circle cx="10" cy="10" r="1.4" fill="currentColor" stroke="none"/></svg>';
-export const ICON_DOWN = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l5 5 5-5"/><path d="M5 9l5 5 5-5"/></svg>';
+export const ICON_SWAP = '<i class="icon">swap_horiz</i>';
+export const ICON_UP = '<i class="icon">keyboard_double_arrow_up</i>';
+export const ICON_SAME = '<i class="icon">radio_button_checked</i>';
+export const ICON_DOWN = '<i class="icon">keyboard_double_arrow_down</i>';
 
 export const EFFORT_LEVELS = ["easy", "medium", "hard"];
 export const EFFORT_STEPS = {easy: 2, medium: 1, hard: 0};

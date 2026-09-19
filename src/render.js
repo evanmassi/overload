@@ -111,7 +111,7 @@ function renderLog(main){
 
   const legend = document.createElement("div");
   legend.className = "legend";
-  legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">${ICON_UP}</em> beat it</span><span><em class="same">${ICON_SAME}</em> matched</span>`;
+  legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">${ICON_UP}</em> beat it</span><span><em class="same">${ICON_SAME}</em> matched</span><span><em class="down">${ICON_DOWN}</em> below</span>`;
   main.appendChild(legend);
 
   plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot), i + 1, slot)));

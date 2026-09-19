@@ -142,16 +142,20 @@ button{cursor:pointer;border:none;background:none}
   text-align:center;color:var(--ink-4);
   font-family:var(--font-ui);font-size:var(--size-meta);
 }
-.delta{
-  font-family:var(--font-ui);font-size:11px;font-weight:600;
-  display:flex;align-items:center;justify-content:center;min-height:22px;
-  padding:0;letter-spacing:.02em;
+.icon{
+  font-family:var(--font-icon);font-size:17px;font-style:normal;font-weight:400;
+  line-height:1;letter-spacing:normal;text-transform:none;
 }
-.delta svg,.legend em svg{display:block}
-.delta.up{background:var(--up-soft);color:var(--up)}
-.delta.same{background:var(--flat-soft);color:var(--flat)}
-.delta.down{color:var(--faint)}
-.delta.none{color:var(--faint);font-size:10px}
+.delta,.hist-delta,.legend em{
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--font-ui);font-style:normal;font-size:var(--size-micro);
+  font-weight:var(--weight-control);letter-spacing:var(--track-meta);
+}
+.delta{min-height:22px}
+.delta.up,.hist-delta.up,.legend em.up{color:var(--success);text-shadow:0 0 9px var(--success-glow-soft)}
+.delta.same,.hist-delta.same,.legend em.same{color:var(--warning);text-shadow:0 0 9px var(--warning-glow-soft)}
+.delta.down,.hist-delta.down,.legend em.down{color:var(--ink-4)}
+.delta.none{color:var(--ink-4)}
 
 .savebar{
   position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 82%,transparent);
@@ -222,9 +226,10 @@ button{cursor:pointer;border:none;background:none}
 .hist-super .hist-line + .hist-line{border-top:1px dashed var(--line)}
 .hist-stray span{color:var(--flat)}
 .hist-swap{
-  display:inline-flex;vertical-align:-2px;margin-left:5px;color:var(--ui-accent);
+  display:inline-flex;vertical-align:-4px;margin-left:5px;color:var(--accent);
+  text-shadow:0 0 8px var(--accent-glow-soft);
 }
-.hist-swap svg{width:12px;height:12px;display:block}
+.hist-swap .icon{font-size:15px}
 .hist-foot{
   display:flex;align-items:baseline;gap:12px;
   font-family:var(--font-ui);font-variant-numeric:tabular-nums;
@@ -233,14 +238,7 @@ button{cursor:pointer;border:none;background:none}
 .hist-foot span{font-size:11.5px;color:var(--faint);letter-spacing:.03em}
 .hist-line span{color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hist-line b{font-family:var(--font-ui);font-weight:500;font-variant-numeric:tabular-nums;font-size:12.5px}
-.hist-delta{
-  flex:none;width:22px;min-height:20px;display:inline-flex;align-items:center;justify-content:center;
-  font-family:var(--font-ui);font-style:normal;font-size:9.5px;font-weight:600;letter-spacing:.04em;
-}
-.hist-delta svg{display:block}
-.hist-delta.up{background:var(--up-soft);color:var(--up)}
-.hist-delta.same{background:var(--flat-soft);color:var(--flat)}
-.hist-delta.down{color:var(--faint)}
+.hist-delta{flex:none;width:22px;min-height:20px}
 .hist-filter{margin:4px 0 6px}
 .hist-filter .sbtn{flex:1}
 .hist-cycle{margin-top:14px}
@@ -280,17 +278,11 @@ button{cursor:pointer;border:none;background:none}
 }
 .legend{
   display:flex;flex-wrap:wrap;align-items:center;gap:7px 16px;padding:4px 0 14px;
-  font-size:11.5px;color:var(--muted);
+  font-family:var(--font-ui);font-size:var(--size-micro);
+  letter-spacing:var(--track-meta);text-transform:uppercase;color:var(--ink-4);
 }
-.legend span{display:inline-flex;align-items:center;gap:6px}
-.legend em{
-  font-style:normal;font-family:var(--font-ui);font-size:10.5px;font-weight:600;
-  padding:2px 6px;min-width:20px;min-height:20px;text-align:center;
-  display:inline-flex;align-items:center;justify-content:center;
-}
-.legend em.up{background:var(--up-soft);color:var(--up)}
-.legend em.same{background:var(--flat-soft);color:var(--flat)}
-.legend em.ghost{color:var(--faint);border:1px dashed var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend em.ghost{color:var(--ink-3);font-variant-numeric:tabular-nums}
 .section-label{
   font-family:var(--font-ui);font-size:11px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--ui-accent);margin:16px 0 8px;
