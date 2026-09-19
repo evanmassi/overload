@@ -1,0 +1,58 @@
+.sfield{
+  position:relative;display:block;
+  --f-line:var(--accent);--f-plate:var(--accent-deep);
+  --f-glow:var(--accent-glow);--f-glow-soft:var(--accent-glow-soft);
+  --f-pad:15px 16px 15px 18px;--f-size:var(--size-control);--f-track:.14em;
+  --f-clock:5900ms;--f-lag:0ms;
+}
+.sfield[data-tone="success"]{
+  --f-line:var(--success);--f-plate:var(--success-deep);
+  --f-glow:var(--success-glow);--f-glow-soft:var(--success-glow-soft);
+}
+.sfield[data-tone="warning"]{
+  --f-line:var(--warning);--f-plate:var(--warning-deep);
+  --f-glow:var(--warning-glow);--f-glow-soft:var(--warning-glow-soft);
+}
+.sfield[data-tone="danger"]{
+  --f-line:var(--danger);--f-plate:var(--danger-deep);
+  --f-glow:var(--danger-glow);--f-glow-soft:var(--danger-glow-soft);
+}
+
+.sfield-plate{
+  position:absolute;inset:0;border:var(--border) solid var(--f-plate);
+  background:color-mix(in oklab,var(--f-plate) 35%,transparent);
+  transform:translate(var(--offset-plate),var(--offset-plate));
+  opacity:.6;pointer-events:none;
+}
+.sfield-frame{
+  position:absolute;inset:0;border:var(--border) solid var(--f-line);
+  background:var(--bg-panel);pointer-events:none;opacity:.62;
+  --hg1:color-mix(in oklab,var(--f-line) 45%,transparent);
+  --hg2:color-mix(in oklab,var(--f-line) 22%,transparent);
+  transition:opacity 200ms ease,box-shadow 200ms ease;
+  animation:hud-flicker var(--f-clock) linear var(--f-lag) infinite;
+}
+.sfield[data-state="hover"] .sfield-frame{animation:hud-lock-edge var(--dur-hover-in) ease-out both}
+.sfield[data-state="focus"] .sfield-frame{opacity:1;box-shadow:0 0 16px var(--f-glow);animation:none}
+
+.sfield-wash{
+  position:absolute;inset:var(--border);color:var(--f-line);
+  background:repeating-linear-gradient(0deg,currentColor 0 1px,transparent 1px var(--stripe-pitch));
+  background-size:100% var(--stripe-pitch);
+  -webkit-mask-image:var(--stripe-mask);mask-image:var(--stripe-mask);
+  opacity:0;pointer-events:none;transition:opacity 220ms ease;
+}
+.sfield[data-state="focus"] .sfield-wash{animation:hud-stripe-in 460ms var(--ease-settle) both,var(--stripe-drift) 5200ms linear infinite}
+
+.sfield-input{
+  position:relative;width:100%;box-sizing:border-box;
+  appearance:none;-webkit-appearance:none;border-radius:var(--radius);
+  background:transparent;border:0;outline:none;
+  padding:var(--f-pad);
+  font-family:var(--font-ui);font-size:var(--f-size);
+  font-weight:var(--weight-control);letter-spacing:var(--f-track);
+  color:var(--ink-2);text-shadow:0 0 10px var(--f-glow);
+}
+.sfield-input::placeholder{
+  color:var(--ink-4);font-weight:var(--weight-quiet);font-size:.82em;text-shadow:none;
+}

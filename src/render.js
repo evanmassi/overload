@@ -15,6 +15,7 @@ import {renderProgress} from "./progress.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer, setIdleRest} from "./timer.js";
 import {strandButton, strandIconButton} from "./strand/button.js";
+import {strandField} from "./strand/field.js";
 const el = id => document.getElementById(id);
 
 function confirmRelabel(button, run){
@@ -287,7 +288,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
   const weight = document.createElement("input");
   weight.type = "text";
   weight.inputMode = "decimal";
-  weight.placeholder = last && last.w ? last.w : (exercise.bw ? "BW" : "wt");
+  weight.placeholder = last && last.w ? last.w : (exercise.bw ? "BW" : "WT");
   weight.value = (logged[index] && logged[index].w) || "";
   weight.setAttribute("aria-label", `${exercise.n} set ${index + 1} weight`);
 
@@ -298,7 +299,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
   const reps = document.createElement("input");
   reps.type = "text";
   reps.inputMode = "numeric";
-  reps.placeholder = last && last.r ? last.r : unit;
+  reps.placeholder = last && last.r ? last.r : unit.toUpperCase();
   reps.value = (logged[index] && logged[index].r) || "";
   reps.setAttribute("aria-label", `${exercise.n} set ${index + 1} ${unit}`);
 
@@ -371,7 +372,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
   refreshers.push(refreshRepeat);
   refreshRepeat();
   paint();
-  row.append(number, weight, times, reps, repeat, delta);
+  row.append(number, strandField(weight), times, strandField(reps), repeat, delta);
   return row;
 }
 

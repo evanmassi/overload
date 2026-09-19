@@ -12,35 +12,35 @@
   --lc:var(--accent-ink);--lgl:var(--accent-glow);
   --hg1:rgba(95,227,240,.5);--hg2:rgba(95,227,240,.26);--hgl:rgba(190,250,255,.85);
   --clock:520ms;--idle:5400ms;--s-press:322ms;--s-flash:442ms;--s-word-idle:7290ms;
-  --s-pitch:4px;--s-drift:hud-stripe-drift-a;--s-flash-name:hud-face-flash;
+  --s-flash-name:hud-face-flash;
 }
 .sbtn[data-tone="success"]{
   --s-line:var(--success);--s-plate:var(--success-deep);--s-mid:var(--success-mid);
   --lc:var(--success-ink);--lgl:var(--success-glow);
   --hg1:rgba(98,237,160,.5);--hg2:rgba(98,237,160,.26);--hgl:rgba(196,255,222,.88);
   --clock:480ms;--idle:5900ms;--s-press:298ms;--s-flash:408ms;--s-word-idle:7965ms;
-  --s-pitch:4px;--s-drift:hud-stripe-drift-c;--s-flash-name:hud-face-flash;
+  --s-flash-name:hud-face-flash;
 }
 .sbtn[data-tone="warning"]{
   --s-line:var(--warning);--s-plate:var(--warning-deep);--s-mid:var(--warning-mid);
   --lc:var(--warning-ink);--lgl:var(--warning-glow);
   --hg1:rgba(255,182,72,.5);--hg2:rgba(255,182,72,.26);--hgl:rgba(255,220,160,.9);
   --clock:600ms;--idle:6500ms;--s-press:372ms;--s-flash:510ms;--s-word-idle:8775ms;
-  --s-pitch:5px;--s-drift:hud-stripe-drift-b;--s-flash-name:hud-face-flash;
+  --s-flash-name:hud-face-flash;
 }
 .sbtn[data-tone="danger"]{
   --s-line:var(--danger);--s-plate:var(--danger-deep);--s-mid:var(--danger-mid);
   --lc:var(--danger-ink);--lgl:var(--danger-glow);
   --hg1:rgba(255,93,93,.52);--hg2:rgba(255,93,93,.28);--hgl:rgba(255,180,180,.9);
   --clock:400ms;--idle:4300ms;--s-press:248ms;--s-flash:340ms;--s-word-idle:5805ms;
-  --s-pitch:3px;--s-drift:hud-stripe-drift-c;--s-flash-name:hud-face-flash-hard;
+  --s-flash-name:hud-face-flash-hard;
 }
 .sbtn[data-tone="secondary"]{
   --s-line:var(--secondary);--s-plate:var(--secondary-mid);--s-mid:var(--secondary-mid);
   --lc:var(--secondary-ink);--lgl:var(--secondary-glow);
   --hg1:rgba(159,201,208,.45);--hg2:rgba(159,201,208,.22);--hgl:rgba(214,236,240,.85);
   --clock:640ms;--idle:8600ms;--s-press:397ms;--s-flash:544ms;--s-word-idle:11610ms;
-  --s-pitch:5px;--s-drift:hud-stripe-drift-b;--s-flash-name:hud-face-flash;
+  --s-flash-name:hud-face-flash;
 }
 
 .sbtn[data-state="held"]{animation:hud-hold-scale 150ms ease-out both}
@@ -70,7 +70,7 @@
   position:absolute;inset:-18px;
   background:radial-gradient(60% 60% at 50% 50%,var(--s-line),transparent 70%);
   filter:blur(14px);opacity:.34;pointer-events:none;
-  animation:hud-glow-drift calc(var(--idle) + 1100ms) linear infinite;
+  animation:hud-glow-drift calc(var(--idle) + 1100ms) linear var(--s-lag,0ms) infinite;
 }
 .sbtn[data-ghost] .sbtn-glow{filter:blur(18px);opacity:.15;animation-name:hud-glow-drift-soft}
 .sbtn[data-tone="secondary"] .sbtn-glow{display:none}
@@ -86,7 +86,7 @@
   position:absolute;inset:0;border:1px solid var(--s-line);background:var(--bg-panel);
   box-shadow:0 0 12px var(--hg1),inset 0 0 10px var(--hg2);
   opacity:.62;pointer-events:none;transition:opacity 240ms ease,box-shadow 240ms ease;
-  animation:hud-flicker var(--idle) linear infinite;
+  animation:hud-flicker var(--idle) linear var(--s-lag,0ms) infinite;
 }
 .sbtn[data-tone="secondary"] .sbtn-frame{
   border-color:color-mix(in oklab,var(--s-line) 42%,transparent);
@@ -114,14 +114,14 @@
 
 .sbtn-stripe{
   position:absolute;inset:1px;color:var(--s-line);
-  background:repeating-linear-gradient(0deg,currentColor 0 1px,transparent 1px var(--s-pitch));
-  background-size:100% var(--s-pitch);
-  -webkit-mask-image:linear-gradient(0deg,rgba(0,0,0,.5) 0 6%,#000 14% 28%,rgba(0,0,0,.26) 38%,#000 50% 63%,rgba(0,0,0,.18) 74%,#000 86% 93%,transparent 100%);
-  mask-image:linear-gradient(0deg,rgba(0,0,0,.5) 0 6%,#000 14% 28%,rgba(0,0,0,.26) 38%,#000 50% 63%,rgba(0,0,0,.18) 74%,#000 86% 93%,transparent 100%);
+  background:repeating-linear-gradient(0deg,currentColor 0 1px,transparent 1px var(--stripe-pitch));
+  background-size:100% var(--stripe-pitch);
+  -webkit-mask-image:var(--stripe-mask);
+  mask-image:var(--stripe-mask);
   opacity:0;pointer-events:none;transition:opacity 220ms ease;
 }
 .sbtn[data-ghost] .sbtn-stripe{display:none}
-.sbtn[data-state="hover"] .sbtn-stripe{animation:hud-stripe-in 460ms var(--ease-settle) both,var(--s-drift) 5200ms linear infinite}
+.sbtn[data-state="hover"] .sbtn-stripe{animation:hud-stripe-in 460ms var(--ease-settle) both,var(--stripe-drift) 5200ms linear infinite}
 
 .sbtn-halo{
   position:absolute;inset:0;border:2px solid var(--s-line);box-shadow:0 0 22px var(--s-line);
@@ -164,22 +164,22 @@
 .sbtn-word{
   position:absolute;inset:0;color:var(--s-mid);font-weight:var(--weight-control);
   transform:translate(var(--hx),var(--hy));pointer-events:none;
-  animation:hud-text-flicker var(--s-word-idle) linear 420ms infinite;
+  animation:hud-text-flicker var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite;
 }
 .sbtn[data-ghost] .sbtn-word{opacity:.72}
 .sbtn[data-tone="secondary"] .sbtn-word{display:none}
-.sbtn[data-fired] .sbtn-word{animation:hud-text-flicker var(--s-word-idle) linear 420ms infinite,hud-word-kick calc(var(--clock) + 90ms) var(--ease-settle) 0ms 1 both}
-.sbtn[data-state="held"] .sbtn-word{animation:hud-text-flicker var(--s-word-idle) linear 420ms infinite,hud-word-hold 170ms ease-out both}
+.sbtn[data-fired] .sbtn-word{animation:hud-text-flicker var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite,hud-word-kick calc(var(--clock) + 90ms) var(--ease-settle) 0ms 1 both}
+.sbtn[data-state="held"] .sbtn-word{animation:hud-text-flicker var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite,hud-word-hold 170ms ease-out both}
 
 .sbtn-label{
   position:relative;color:var(--lc);font-weight:var(--weight-control);
   text-shadow:0 0 10px var(--lgl);
-  animation:hud-text-flicker var(--idle) linear infinite;
+  animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite;
 }
 .sbtn[data-tone="secondary"] .sbtn-label{font-weight:var(--weight-quiet);text-shadow:none}
-.sbtn[data-state="hover"] .sbtn-label{animation:hud-text-flicker var(--idle) linear infinite,hud-lock-label 260ms ease-out both}
-.sbtn[data-fired] .sbtn-label{animation:hud-text-flicker var(--idle) linear infinite,hud-lit calc(var(--clock) + 20ms) var(--ease-settle) 0ms 1 both}
-.sbtn[data-state="held"] .sbtn-label{animation:hud-text-flicker var(--idle) linear infinite,hud-label-hold 170ms ease-out both}
+.sbtn[data-state="hover"] .sbtn-label{animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite,hud-lock-label 260ms ease-out both}
+.sbtn[data-fired] .sbtn-label{animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite,hud-lit calc(var(--clock) + 20ms) var(--ease-settle) 0ms 1 both}
+.sbtn[data-state="held"] .sbtn-label{animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite,hud-label-hold 170ms ease-out both}
 
 .sbtn-meta{
   position:relative;display:block;padding:0 10px 12px 16px;

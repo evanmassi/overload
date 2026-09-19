@@ -113,8 +113,8 @@ button{cursor:pointer;border:none;background:none}
 }
 .set.head{gap:7px}
 .set.head div{
-  font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;
-  text-transform:uppercase;color:var(--faint);text-align:center;white-space:nowrap;
+  font-family:var(--font-ui);font-size:var(--size-micro);letter-spacing:var(--track-meta);
+  text-transform:uppercase;color:var(--ink-4);text-align:center;white-space:nowrap;
 }
 .superset{
   display:flex;align-items:center;gap:8px;padding:0 13px 2px calc(var(--tag-w) + 10px);min-height:var(--notch-h);
@@ -131,20 +131,18 @@ button{cursor:pointer;border:none;background:none}
   text-align:center;font-variant-numeric:tabular-nums;
 }
 .set-n.done{color:var(--ui-accent);font-weight:600}
-.set input{
-  width:100%;min-height:48px;background:var(--surface-2);border:1px solid var(--line);
-  border-radius:3px;padding:0 6px;text-align:center;
-  font-family:var(--mono);font-size:20px;font-weight:600;
-  font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+.set .sfield{--f-pad:13px 6px 13px 6px;--f-size:20px}
+.set .sfield-input{
+  min-height:48px;text-align:center;text-indent:var(--f-track);
+  font-variant-numeric:tabular-nums;
 }
-.set input::placeholder{color:var(--faint);font-weight:400;font-size:17px}
-.set input:focus{border-color:var(--ui-accent)}
-.set input.filled{
-  border-color:color-mix(in srgb,var(--ui-accent) 45%,var(--line));color:var(--ui-accent);
-  background:var(--scanlines),rgba(90,208,242,.035);
-  box-shadow:inset 0 0 10px rgba(90,208,242,.1),inset 0 0 0 1px rgba(90,208,242,.06);
+.set .sfield:has(.sfield-input.filled) .sfield-frame{
+  opacity:1;box-shadow:0 0 12px var(--f-glow-soft);animation:none;
 }
-.x{text-align:center;color:var(--faint);font-size:12px}
+.x{
+  text-align:center;color:var(--ink-4);
+  font-family:var(--font-ui);font-size:var(--size-meta);
+}
 .delta{
   font-family:var(--mono);font-size:11px;font-weight:600;
   display:flex;align-items:center;justify-content:center;min-height:22px;
@@ -495,7 +493,7 @@ button{cursor:pointer;border:none;background:none}
   background-size:100% 4px;opacity:.17;
   animation:hud-stripe-drift-a 5200ms linear infinite;
 }
-.set input:focus,.notes textarea:focus,.sheet-custom input:focus{
+.notes textarea:focus,.sheet-custom input:focus{
   background:var(--scanlines),rgba(90,208,242,.07);
   box-shadow:var(--glow),inset 0 0 14px rgba(90,208,242,.14);
   outline:none;

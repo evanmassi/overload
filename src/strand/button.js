@@ -4,7 +4,11 @@ const LAYERS = ["side-l", "side-r", "plate", "glow", "bloom", "frame", "fill", "
 const CORNERS = ["tl", "tr", "bl", "br"];
 const HOLD_KEYS = new Set(["Enter", " "]);
 
+const PHASE_STEP_MS = 3646;
+
 const recentFires = new Map();
+
+let phase = 0;
 
 function make(name){
   const span = document.createElement("span");
@@ -83,6 +87,7 @@ export function strandButton(el, options = {}){
   el.type = "button";
   el.classList.add("sbtn");
   el.dataset.tone = tone;
+  el.style.setProperty("--s-lag", -(phase++ * PHASE_STEP_MS) + "ms");
   if(ghost) el.dataset.ghost = "";
   LAYERS.forEach(name => layer(el, name));
   brackets(el);

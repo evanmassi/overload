@@ -1,12 +1,12 @@
 /* Idle ------------------------------------------------------------------ */
-@keyframes hud-flicker{0%,100%{opacity:.62}46%{opacity:.64}48%{opacity:.42}50%{opacity:.66}53%{opacity:.52}56%{opacity:.62}}
-@keyframes hud-flicker-soft{0%,100%{opacity:.16}46%{opacity:.18}48%{opacity:.1}50%{opacity:.19}54%{opacity:.15}}
-@keyframes hud-glow-drift{0%,100%{opacity:.34}30%{opacity:.38}32%{opacity:.22}35%{opacity:.37}}
-@keyframes hud-glow-drift-soft{0%,100%{opacity:.14}30%{opacity:.16}32%{opacity:.08}35%{opacity:.16}}
-@keyframes hud-pin-flicker{0%,100%{opacity:.8}40%{opacity:.85}42%{opacity:.5}45%{opacity:.86}49%{opacity:.7}}
-@keyframes hud-pin-flicker-echo{0%,100%{opacity:.3}34%{opacity:.34}36%{opacity:.16}39%{opacity:.32}}
+@keyframes hud-flicker{0%,100%{opacity:.62}42%{opacity:.66}45%{opacity:.26}47%{opacity:.7}51%{opacity:.4}54%{opacity:.64}85%{opacity:.6}87%{opacity:.3}89%{opacity:.64}}
+@keyframes hud-flicker-soft{0%,100%{opacity:.16}42%{opacity:.19}45%{opacity:.07}47%{opacity:.21}51%{opacity:.11}54%{opacity:.18}85%{opacity:.17}87%{opacity:.08}89%{opacity:.19}}
+@keyframes hud-glow-drift{0%,100%{opacity:.34}18%{opacity:.4}20%{opacity:.14}23%{opacity:.42}61%{opacity:.38}63%{opacity:.16}66%{opacity:.4}}
+@keyframes hud-glow-drift-soft{0%,100%{opacity:.14}18%{opacity:.16}20%{opacity:.06}23%{opacity:.17}61%{opacity:.16}63%{opacity:.07}66%{opacity:.17}}
+@keyframes hud-pin-flicker{0%,100%{opacity:.8}42%{opacity:.85}45%{opacity:.34}47%{opacity:.9}51%{opacity:.52}54%{opacity:.83}85%{opacity:.77}87%{opacity:.39}89%{opacity:.83}}
+@keyframes hud-pin-flicker-echo{0%,100%{opacity:.3}18%{opacity:.35}20%{opacity:.12}23%{opacity:.37}61%{opacity:.34}63%{opacity:.14}66%{opacity:.35}}
 @keyframes hud-veil-edge{0%,100%{opacity:.62}48%{opacity:.66}50%{opacity:.48}53%{opacity:.64}}
-@keyframes hud-text-flicker{0%,100%{text-shadow:0 0 10px var(--lgl);opacity:.96}44%{text-shadow:0 0 12px var(--lgl);opacity:1}46%{text-shadow:0 0 5px var(--lgl);opacity:.85}49%{text-shadow:0 0 14px var(--lgl);opacity:1}53%{text-shadow:0 0 9px var(--lgl);opacity:.93}}
+@keyframes hud-text-flicker{0%,100%{text-shadow:0 0 10px var(--lgl);opacity:.94}40%{text-shadow:0 0 13px var(--lgl);opacity:1}43%{text-shadow:0 0 3px var(--lgl);opacity:.72}46%{text-shadow:0 0 17px var(--lgl);opacity:1}50%{text-shadow:0 0 6px var(--lgl);opacity:.84}54%{text-shadow:0 0 12px var(--lgl);opacity:.97}84%{text-shadow:0 0 11px var(--lgl);opacity:.95}86%{text-shadow:0 0 4px var(--lgl);opacity:.76}89%{text-shadow:0 0 14px var(--lgl);opacity:1}}
 
 /* Hover ----------------------------------------------------------------- */
 @keyframes hud-lock-edge{to{opacity:1;box-shadow:0 0 18px var(--hg1,rgba(95,227,240,.5)), inset 0 0 14px var(--hg2,rgba(95,227,240,.26))}}
