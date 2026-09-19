@@ -440,11 +440,6 @@ function updateSetBar(groups, done, total){
   if(bar.dataset.shape !== shape){
     bar.innerHTML = "";
     marks.forEach(() => bar.appendChild(Object.assign(document.createElement("i"), {className: "tick"})));
-    let at = 0;
-    groups.forEach(group => {
-      at += group.length;
-      if(at < marks.length) bar.children[at - 1].dataset.groupEnd = "";
-    });
     bar.dataset.shape = shape;
   }
   const lead = marks.lastIndexOf("on");

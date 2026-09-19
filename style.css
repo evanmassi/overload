@@ -167,7 +167,6 @@ button{cursor:pointer;border:none;background:none}
   flex:1;height:12px;background:rgba(231,234,238,.08);
   transition:background .18s ease,box-shadow .18s ease;
 }
-.tick[data-group-end]{margin-right:6px}
 .tick[data-state="now"]{background:color-mix(in oklab,var(--accent) 34%,transparent)}
 .tick[data-state="on"]{background:var(--accent);box-shadow:0 0 8px var(--accent-glow)}
 .tick[data-lead]{opacity:.75;animation:hud-blink 900ms steps(1,end) infinite}
