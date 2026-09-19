@@ -22,6 +22,10 @@ mountTimer(els.timer, els.clock);
 mountSaveState(els.status);
 mountSheet(els.sheet, els.sheettitle, els.sheetbody, els.sheetclose, els.sheetback);
 
+const cell = (row, i) => row.children[i].find("sfield-input")[0] || row.children[i];
+const wt = row => cell(row, 1);
+const rp = row => cell(row, 3);
+
 let passed = 0, failed = 0;
 const check = (label, cond, detail) => {
   if(cond){ passed++; console.log("  PASS  " + label); }
@@ -72,7 +76,8 @@ section("Logging a set updates the view");
   fresh();
   render();
   const firstSetRow = els.main.find("set").filter(r => !r.classList.contains("head"))[0];
-  const [, weight, , reps] = firstSetRow.children;
+  const weight = wt(firstSetRow);
+  const reps = rp(firstSetRow);
   weight.value = "50";
   reps.value = "10";
   reps.fire("change");
@@ -97,7 +102,7 @@ section("A prior session drives placeholders and a target");
   const band = els.main.find("target")[0];
   check("it asks for more weight after topping the range", band.innerHTML.includes("50×8"), band.innerHTML);
   const row = els.main.find("set").filter(r => !r.classList.contains("head"))[0];
-  check("last time's weight is the placeholder", row.children[1].attrs === undefined || row.children[1].placeholder === "45", row.children[1].placeholder);
+  check("last time's weight is the placeholder", wt(row).attrs === undefined || wt(row).placeholder === "45", wt(row).placeholder);
 }
 
 section("Sheets open and close");
@@ -183,14 +188,14 @@ section("Collapsing and the set bar");
   check("the set bar starts empty", els.tally.textContent === "0/41", els.tally.textContent);
   check("and draws one tick per prescribed set",
     els.setbar.children.length === 41, els.setbar.children.length);
-  check("with none lit", els.setbar.children.every(t => !t.classList.contains("on")));
+  check("with none lit", els.setbar.children.every(t => t.dataset.state !== "on"));
 
   const card = els.main.find("ex-move")[0];
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
   rows.forEach(row => {
-    row.children[1].value = "50";
-    row.children[3].value = "10";
-    row.children[3].fire("change");
+    wt(row).value = "50";
+    rp(row).value = "10";
+    rp(row).fire("change");
   });
   render();
 
@@ -198,7 +203,9 @@ section("Collapsing and the set bar");
   check("its summary is populated", els.main.find("ex-summary")[0].textContent.includes("50"));
   check("the tally counts the logged sets", els.tally.textContent === "4/41", els.tally.textContent);
   check("and four ticks light up",
-    els.setbar.children.filter(t => t.classList.contains("on")).length === 4);
+    els.setbar.children.filter(t => t.dataset.state === "on").length === 4);
+  check("the sets still to come on the move in hand read as pending",
+    els.setbar.children.filter(t => t.dataset.state === "now").length > 0);
   check("the tally carries the count, not the note",
     els.tally.textContent === "4/41" && !els.volnote.textContent.includes("sets"),
     els.volnote.textContent);
@@ -212,8 +219,8 @@ section("Collapsing and the set bar");
 
   const coreMove = blocks[9];
   coreMove.find("set").filter(r => !r.classList.contains("head")).forEach(row => {
-    row.children[3].value = "12";
-    row.children[3].fire("change");
+    rp(row).value = "12";
+    rp(row).fire("change");
   });
   render();
   const after = els.main.find("ex-move");
@@ -250,9 +257,9 @@ section("Carry-forward repeat button");
     state.current.entries.flat_db_press[0], {w: "45", r: "9"});
   check("filling set 1 wakes the button on set 2", second.disabled === false);
 
-  rows[1].children[1].value = "50";
-  rows[1].children[3].value = "8";
-  rows[1].children[3].fire("change");
+  wt(rows[1]).value = "50";
+  rp(rows[1]).value = "8";
+  rp(rows[1]).fire("change");
 
   rows[2].children[4].fire("click");
   equal("set 3 carries the set above it, not last session",
@@ -309,16 +316,16 @@ section("Logging updates the page without a re-render");
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
 
   rows.slice(0, 3).forEach(row => {
-    row.children[1].value = "50";
-    row.children[3].value = "10";
-    row.children[3].fire("change");
+    wt(row).value = "50";
+    rp(row).value = "10";
+    rp(row).fire("change");
   });
   check("a partly finished card stays open", !card.classList.contains("done"));
 
   const lastRow = rows[3];
-  lastRow.children[1].value = "50";
-  lastRow.children[3].value = "9";
-  lastRow.children[3].fire("change");
+  wt(lastRow).value = "50";
+  rp(lastRow).value = "9";
+  rp(lastRow).fire("change");
 
   check("finishing the last set collapses it there and then",
     card.classList.contains("done"));
@@ -349,9 +356,9 @@ section("Time in the gym is first log to last log");
   loadDate(iso(new Date()));
   render();
   const logSet = (row, w, r) => {
-    row.children[1].value = w;
-    row.children[3].value = r;
-    row.children[3].fire("change");
+    wt(row).value = w;
+    rp(row).value = r;
+    rp(row).fire("change");
   };
   const setRows = () => els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
   logSet(setRows()[0], "50", "10");
@@ -367,8 +374,8 @@ section("Time in the gym is first log to last log");
   const stamped = state.current.lastLoggedAt;
   state.current.lastLoggedAt = stamped - minutes(5);
   setRows()[0].fire("blur");
-  setRows()[0].children[3].value = "11";
-  setRows()[0].children[3].fire("change");
+  rp(setRows()[0]).value = "11";
+  rp(setRows()[0]).fire("change");
   check("re-touching or correcting a logged set does not move the clock",
     state.current.lastLoggedAt === stamped - minutes(5));
 
@@ -385,9 +392,9 @@ section("Expansion does not leak between sessions");
   render();
   const card = els.main.find("ex-move")[0];
   card.find("set").filter(r => !r.classList.contains("head")).forEach(row => {
-    row.children[1].value = "50";
-    row.children[3].value = "10";
-    row.children[3].fire("change");
+    wt(row).value = "50";
+    rp(row).value = "10";
+    rp(row).fire("change");
   });
   els.main.find("ex-fold")[0].fire("click");
   render();
@@ -441,17 +448,17 @@ section("The idle countdown tracks the next unlogged set");
 
   const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
   rows.slice(0, 3).forEach(row => {
-    row.children[1].value = "50";
-    row.children[3].value = "10";
-    row.children[3].fire("change");
+    wt(row).value = "50";
+    rp(row).value = "10";
+    rp(row).fire("change");
   });
   stop();
   check("with one set left it shows the walk to the next move",
     els.timer.dataset.label === "1:30", els.timer.dataset.label);
 
-  rows[3].children[1].value = "50";
-  rows[3].children[3].value = "10";
-  rows[3].children[3].fire("change");
+  wt(rows[3]).value = "50";
+  rp(rows[3]).value = "10";
+  rp(rows[3]).fire("change");
   stop();
   check("finishing the move shows the next move's rest",
     els.timer.dataset.label === "2:00", els.timer.dataset.label);
@@ -555,9 +562,9 @@ section("A logged session cannot be relabelled by one stray tap");
   })(), state.current.day);
 
   const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
-  rows[0].children[1].value = "40";
-  rows[0].children[3].value = "10";
-  rows[0].children[3].fire("change");
+  wt(rows[0]).value = "40";
+  rp(rows[0]).value = "10";
+  rp(rows[0]).fire("change");
   check("a set is logged", loggedCount(state.current) === 1);
 
   const legs = dayButton(1);

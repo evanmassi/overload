@@ -75,8 +75,15 @@ for(const file in exportsByFile){
 }
 if(!dead) console.log("  none");
 
-console.log("\nRendered classes with no rule in style.css:");
-const css = fs.readFileSync(path.join(dir, "..", "style.css"), "utf8");
+console.log("\nRendered classes with no rule in any stylesheet:");
+const sheets = [path.join(dir, "..", "style.css")];
+const collectSheets = at => fs.readdirSync(at, {withFileTypes: true}).forEach(entry => {
+  const full = path.join(at, entry.name);
+  if(entry.isDirectory()) collectSheets(full);
+  else if(entry.name.endsWith(".css")) sheets.push(full);
+});
+collectSheets(path.join(dir, "..", "styles"));
+const css = sheets.map(file => fs.readFileSync(file, "utf8")).join("\n");
 const rendered = new Set();
 const collect = (text, pattern, split) => {
   for(const match of text.matchAll(pattern))

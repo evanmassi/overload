@@ -4,6 +4,6 @@ export function strandPanel(el, options = {}){
   el.dataset.tone = tone;
   const plate = document.createElement("span");
   plate.className = "spanel-plate";
-  el.insertBefore(plate, el.firstChild);
+  el.appendChild(plate);
   return el;
 }

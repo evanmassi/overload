@@ -415,16 +415,45 @@ function notesCard(){
   return box;
 }
 
-function updateSetBar(done, total){
+function setBarGroups(){
+  const plan = workoutFor(state.current.block, state.current.day);
+  if(!plan) return [];
+  let reached = false;
+  return allExercises(plan).map(resolveSlot).map(exercise => {
+    const sets = state.current.entries[exercise.id] || [];
+    const marks = [];
+    for(let i = 0; i < exercise.s; i++) marks.push(sets[i] && sets[i].r ? "on" : "off");
+    const here = !reached && marks.includes("off");
+    if(here){
+      reached = true;
+      return marks.map(mark => mark === "off" ? "now" : mark);
+    }
+    return marks;
+  });
+}
+
+function updateSetBar(groups, done, total){
   const bar = el("setbar");
   if(!bar) return;
-  if(bar.children.length !== total){
+  const marks = groups.flat();
+  const shape = groups.map(group => group.length).join(",");
+  if(bar.dataset.shape !== shape){
     bar.innerHTML = "";
-    for(let i = 0; i < total; i++)
-      bar.appendChild(Object.assign(document.createElement("i"), {className: "tick"}));
+    marks.forEach(() => bar.appendChild(Object.assign(document.createElement("i"), {className: "tick"})));
+    let at = 0;
+    groups.forEach(group => {
+      at += group.length;
+      if(at < marks.length) bar.children[at - 1].dataset.groupEnd = "";
+    });
+    bar.dataset.shape = shape;
   }
-  for(let i = 0; i < total; i++)
-    if(bar.children[i]) bar.children[i].classList.toggle("on", i < done);
+  const lead = marks.lastIndexOf("on");
+  marks.forEach((mark, i) => {
+    const tick = bar.children[i];
+    tick.dataset.state = mark;
+    if(i === lead) tick.dataset.lead = "";
+    else tick.removeAttribute("data-lead");
+  });
   bar.setAttribute("aria-valuemax", String(total));
   bar.setAttribute("aria-valuenow", String(done));
   bar.setAttribute("aria-label", `${done} of ${total} sets logged`);
@@ -450,7 +479,7 @@ function updateFooter(){
   const total = prescribedCount(current.block, current.day);
   const count = loggedCount(current);
   const volume = sessionVolume(current, current.block, current.day);
-  updateSetBar(count, total);
+  updateSetBar(setBarGroups(), count, total);
 
   el("volume").textContent = volume ? `${volume.toLocaleString()} lb` : (count ? `${count} sets` : "0");
   el("tally").textContent = `${count}/${total}`;

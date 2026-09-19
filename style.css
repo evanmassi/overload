@@ -160,13 +160,17 @@ button{cursor:pointer;border:none;background:none}
   padding:0 calc(14px + env(safe-area-inset-right)) calc(9px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
 }
 .setbar{
-  display:flex;gap:2px;max-width:640px;margin:0 auto;padding:8px 0 9px;
+  display:flex;gap:2px;max-width:640px;margin:8px auto 9px;padding:3px;
+  border:1px solid var(--line-hairline);background:var(--bg-panel);
 }
 .tick{
-  flex:1;height:6px;background:var(--sunk);
-  transition:background .18s ease;
+  flex:1;height:12px;background:rgba(231,234,238,.08);
+  transition:background .18s ease,box-shadow .18s ease;
 }
-.tick.on{background:var(--ui-accent);box-shadow:var(--glow)}
+.tick[data-group-end]{margin-right:6px}
+.tick[data-state="now"]{background:color-mix(in oklab,var(--accent) 34%,transparent)}
+.tick[data-state="on"]{background:var(--accent);box-shadow:0 0 8px var(--accent-glow)}
+.tick[data-lead]{opacity:.75;animation:hud-blink 900ms steps(1,end) infinite}
 @media (prefers-reduced-motion:reduce){.tick{transition:none}}
 .savebar-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
 .tally{
