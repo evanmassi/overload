@@ -1,0 +1,54 @@
+:root {
+  /* ground */
+  --bg-page: #101215;
+  --bg-stage: #0a0c0f;
+  --bg-panel: rgba(10, 14, 18, 0.72);
+  --line-hairline: rgba(231, 234, 238, 0.1);
+  --line-control: rgba(231, 234, 238, 0.3);
+  --scanline-ground: rgba(255, 255, 255, 0.035);
+
+  /* ink */
+  --ink-1: #f3f5f7;
+  --ink-2: #e7eaee;
+  --ink-3: rgba(231, 234, 238, 0.68);
+  --ink-4: rgba(231, 234, 238, 0.62);
+
+  /* accent — primary / cyan */
+  --accent: #5fe3f0;
+  --accent-mid: #2a8a9c;
+  --accent-deep: #175c69;
+  --accent-ink: #f4feff;
+  --accent-glow: rgba(95, 227, 240, 0.8);
+  --accent-glow-soft: rgba(95, 227, 240, 0.35);
+
+  /* success — mint */
+  --success: #62eda0;
+  --success-mid: #2f9a63;
+  --success-deep: #14522f;
+  --success-ink: #e8fff1;
+  --success-glow: rgba(98, 237, 160, 0.8);
+  --success-glow-soft: rgba(98, 237, 160, 0.3);
+
+  /* warning — amber */
+  --warning: #ffb648;
+  --warning-mid: #a4761f;
+  --warning-deep: #6b4a12;
+  --warning-ink: #fff5e4;
+  --warning-glow: rgba(255, 182, 72, 0.8);
+  --warning-glow-soft: rgba(255, 182, 72, 0.3);
+
+  /* danger — red */
+  --danger: #ff5d5d;
+  --danger-mid: #a33f42;
+  --danger-deep: #6b1f22;
+  --danger-ink: #ffeaea;
+  --danger-glow: rgba(255, 93, 93, 0.8);
+  --danger-glow-soft: rgba(255, 93, 93, 0.35);
+
+  /* secondary — grey-blue */
+  --secondary: #9fc9d0;
+  --secondary-mid: #5c7b80;
+  --secondary-ink: #d4e2e5;
+  --secondary-glow: rgba(159, 201, 208, 0.7);
+  --secondary-glow-soft: rgba(159, 201, 208, 0.25);
+}

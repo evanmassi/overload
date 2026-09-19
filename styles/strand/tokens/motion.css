@@ -1,0 +1,38 @@
+:root {
+  /* per-variant clocks — hairline / halo / side-light, in ms */
+  --clock-primary-hair: 520ms;
+  --clock-primary-halo: 620ms;
+  --clock-primary-side: 640ms;
+  --clock-warning-hair: 600ms;
+  --clock-warning-halo: 720ms;
+  --clock-warning-side: 760ms;
+  --clock-danger-hair: 400ms;
+  --clock-danger-halo: 500ms;
+  --clock-danger-side: 520ms;
+  --clock-icon-hair: 360ms;
+  --clock-icon-halo: 460ms;
+  --clock-icon-side: 480ms;
+  --clock-secondary-hair: 640ms;
+  --clock-secondary-halo: 820ms;
+  --clock-secondary-side: 860ms;
+
+  /* state durations */
+  --dur-hold-in: 170ms;
+  --dur-hover-in: 240ms;
+  --dur-bracket-in: 340ms;
+  --dur-bracket-squeeze: 170ms;
+
+  /* easings */
+  --ease-settle: cubic-bezier(0.2, 0.75, 0.25, 1);
+  --ease-snap: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --ease-emit: cubic-bezier(0.18, 0.72, 0.3, 1);
+  --steps-hair: steps(7, end);
+  --steps-hair-echo: steps(5, end);
+
+  /* idle flicker periods */
+  --flicker-primary: 3100ms;
+  --flicker-warning: 3800ms;
+  --flicker-danger: 2400ms;
+  --flicker-icon: 2800ms;
+  --flicker-secondary: 5200ms;
+}

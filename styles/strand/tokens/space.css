@@ -1,0 +1,29 @@
+:root {
+  /* control geometry */
+  --radius: 0px;                 /* nothing in this system is rounded */
+  --border: 1px;
+  --pad-control: 17px 28px 17px 34px;   /* asymmetric: letter-spacing pads the right */
+  --pad-control-quiet: 14px 10px 14px 16px;
+  --size-icon-button: 56px;
+
+  /* holographic layering */
+  --offset-plate: 3px;           /* framed variants */
+  --offset-plate-ghost: 2.5px;   /* text-only variants */
+  --offset-plate-hold: 1px;      /* pulled into register while held */
+
+  /* targeting brackets */
+  --bracket-inset: 5px;
+  --bracket-arm: 14px;
+  --bracket-echo-inset: 10px;
+  --bracket-echo-arm: 19px;
+
+  /* emanation travel */
+  --emit-hair: 18px;
+  --emit-hair-echo: 31px;
+  --emit-halo: 18px;
+
+  /* layout */
+  --gap-card: 26px;
+  --gap-stack: 14px;
+  --stage-min: 200px;
+}

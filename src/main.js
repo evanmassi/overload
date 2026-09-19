@@ -32,5 +32,15 @@ subscribe(render);
 hydrate();
 loadDate(iso(new Date()));
 
-if("serviceWorker" in navigator)
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+const LOCAL_HOST = /^(localhost|127\.|\[?::1\]?$|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/;
+const isLocalDev = LOCAL_HOST.test(location.hostname);
+
+if("serviceWorker" in navigator){
+  if(isLocalDev){
+    navigator.serviceWorker.getRegistrations()
+      .then(all => all.forEach(one => one.unregister())).catch(() => {});
+    if(window.caches) caches.keys().then(keys => keys.forEach(key => caches.delete(key))).catch(() => {});
+  } else {
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  }
+}

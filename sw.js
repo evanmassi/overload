@@ -1,4 +1,4 @@
-const CACHE = 'overload-v4';
+const CACHE = 'overload-v6';
 
 const ASSETS = [
   './', './index.html', './style.css', './manifest.json',
