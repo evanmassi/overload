@@ -4,6 +4,7 @@ import {state} from "./state.js";
 import {exerciseName} from "./swaps.js";
 import {loggedCount, bestEstimate, estimateFor} from "./progression.js";
 import {iso} from "./session.js";
+import {strandPanel} from "./strand/panel.js";
 
 export function renderProgress(main){
   const byExercise = {};
@@ -52,7 +53,8 @@ export function renderProgress(main){
     const history = entry.points.length > 1 ? `${sessions} · best ${bestLabel}` : sessions;
 
     const card = document.createElement("div");
-    card.className = "prog";
+    card.className = "prog spanel-flat";
+    strandPanel(card);
     card.innerHTML = `<h3>${entry.name}</h3>
       <div class="best">${shown(latest)}<em>${qualifier}</em></div>
       <div class="meta">${history}</div>

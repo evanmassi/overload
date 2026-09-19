@@ -9,6 +9,7 @@ import {setSummary, elapsedLabel, unitSuffix} from "./format.js";
 import {exportSessions, importSessions, onBackupStatus} from "./backup.js";
 import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
 import {strandButton} from "./strand/button.js";
+import {strandPanel} from "./strand/panel.js";
 
 function deltaMark(date, id, sets, isBodyweight){
   const prior = priorSets(state.sessions, id, date);
@@ -118,6 +119,7 @@ function sessionCard(date, session, plan){
   const open = state.historyOpen.has(date);
   const card = document.createElement("div");
   card.className = "hist-day" + (open ? " hist-expanded" : "");
+  strandPanel(card);
 
   const row = document.createElement("div");
   row.className = "hist-row";

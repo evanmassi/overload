@@ -16,6 +16,7 @@ import {openSwapSheet, openHowTo} from "./sheet.js";
 import {start as startTimer, setIdleRest} from "./timer.js";
 import {strandButton, strandIconButton} from "./strand/button.js";
 import {strandField} from "./strand/field.js";
+import {strandPanel} from "./strand/panel.js";
 const el = id => document.getElementById(id);
 
 function confirmRelabel(button, run){
@@ -164,6 +165,7 @@ function moveBlock(exercise, position, slot, partnerName){
 function exerciseCard(exercise, position, slot){
   const card = document.createElement("section");
   card.className = "ex";
+  strandPanel(card);
   card.appendChild(moveBlock(exercise, position, slot));
   return card;
 }
@@ -171,6 +173,7 @@ function exerciseCard(exercise, position, slot){
 function corePairCard(pair, index, slots){
   const card = document.createElement("section");
   card.className = "ex core";
+  strandPanel(card);
   card.id = "card-core-" + index;
   const badge = document.createElement("div");
   badge.className = "superset";
@@ -397,6 +400,7 @@ function effortRow(exercise){
 function notesCard(){
   const box = document.createElement("div");
   box.className = "notes";
+  strandPanel(box);
   const label = document.createElement("label");
   label.textContent = "Notes";
   label.setAttribute("for", "notes");
