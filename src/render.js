@@ -142,6 +142,7 @@ function syncCard(exercise){
     card.classList.toggle("done", isComplete(exercise) && !state.expanded.has(exercise.id));
     const summary = card.querySelector(".ex-summary");
     if(summary) summary.innerHTML = summaryFor(exercise);
+    if(card.panel) markDim(card.panel);
   }
 }
 
@@ -162,11 +163,22 @@ function moveBlock(exercise, position, slot, partnerName){
   return move;
 }
 
+function markDim(panel){
+  panel.dataset.dim = panel.moves.every(move => move.classList.contains("done")) ? "on" : "off";
+}
+
+function ownMove(panel, move){
+  move.panel = panel;
+  (panel.moves = panel.moves || []).push(move);
+  panel.appendChild(move);
+}
+
 function exerciseCard(exercise, position, slot){
   const card = document.createElement("section");
   card.className = "ex";
   strandPanel(card);
-  card.appendChild(moveBlock(exercise, position, slot));
+  ownMove(card, moveBlock(exercise, position, slot));
+  markDim(card);
   return card;
 }
 
@@ -181,8 +193,9 @@ function corePairCard(pair, index, slots){
   card.appendChild(badge);
   pair.forEach((exercise, i) => {
     if(i) card.appendChild(Object.assign(document.createElement("div"), {className: "rule"}));
-    card.appendChild(moveBlock(exercise, null, slots[i], i ? null : pair[1].n));
+    ownMove(card, moveBlock(exercise, null, slots[i], i ? null : pair[1].n));
   });
+  markDim(card);
   return card;
 }
 

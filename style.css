@@ -499,6 +499,10 @@ button{cursor:pointer;border:none;background:none}
   animation:hud-text-flicker 5400ms linear infinite;
 }
 .ex-move.done .ex-num{opacity:.5;animation:none}
+.spanel[data-dim="on"]{--p-frame:18%;--p-tint:2%;--p-wash:5%}
+.spanel[data-dim="on"] .spanel-plate{opacity:.22}
+.spanel[data-dim="on"] .ex-num{opacity:.4}
+.spanel[data-dim="on"] .ex-num::after{opacity:.05}
 .section-label::before,.eyebrow::before{content:"// ";color:var(--faint)}
 
 .topbar::after,.savebar::after{
