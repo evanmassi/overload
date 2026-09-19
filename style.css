@@ -187,6 +187,11 @@ button{cursor:pointer;border:none;background:none}
 }
 .timer{flex:none;font-variant-numeric:tabular-nums;--pad:var(--pad-control-quiet)}
 .timer .sbtn-label,.timer .sbtn-word{box-sizing:content-box;width:6ch;text-align:center}
+.timer[data-urgent="on"]{animation:tick-pulse 1s ease-in-out infinite}
+.timer[data-urgent="on"] .sbtn-frame,.timer[data-urgent="on"] .sbtn-glow{
+  animation:hud-charge 500ms ease-in-out infinite alternate;
+}
+@keyframes tick-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 .backup-result,.sound-result{
   flex-basis:100%;text-align:center;
   font-family:var(--font-ui);font-size:11.5px;color:var(--ui-accent);

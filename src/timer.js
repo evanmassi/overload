@@ -1,5 +1,5 @@
 import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, LIVE_FINISH_MS, VIBRATE_PATTERN,
-        WARN_COUNTDOWN_SECONDS} from "./constants.js";
+        WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS} from "./constants.js";
 import {scheduleRest, cancelRest} from "./sound.js";
 import {strandButton} from "./strand/button.js";
 
@@ -10,10 +10,11 @@ let button = null;
 
 const clockFace = seconds => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
-function face(label, tone){
+function face(label, tone, urgent){
   if(!button) return;
   button.strandLabel(label);
   button.dataset.tone = tone;
+  button.dataset.urgent = urgent ? "on" : "off";
 }
 
 export function mountTimer(buttonEl){
@@ -78,7 +79,8 @@ export function stop(){
 function tick(){
   const now = Date.now();
   const left = Math.max(0, Math.round((timer.endsAt - now) / 1000));
-  face(clockFace(left), left > 0 && left <= WARN_COUNTDOWN_SECONDS ? "warning" : "primary");
+  face(clockFace(left), left > 0 && left <= WARN_COUNTDOWN_SECONDS ? "warning" : "primary",
+    left > 0 && left <= FINAL_COUNTDOWN_SECONDS);
   if(left > 0) return;
 
   clearInterval(timer.tick);
