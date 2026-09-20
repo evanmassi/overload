@@ -1,12 +1,12 @@
 import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_UP, ICON_SAME, ICON_DOWN,
         EFFORT_LEVELS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT,
-        CONFIRM_WINDOW_MS} from "./constants.js";
-import {workoutFor, allExercises} from "./movements.js";
+        DEFAULT_REST} from "./constants.js";
+import {workoutFor, allExercises, findExercise} from "./movements.js";
 import {state, notify} from "./state.js";
 import {score, loggedCount, priorSets, sessionVolume, suggestTarget,
         prescribedCount, hasStalled} from "./progression.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
-import {resolveSlot} from "./swaps.js";
+import {resolveSlot, exerciseName} from "./swaps.js";
 import {loadDate, setBlockIndex, setDay, setsFor, queueSave, previousSameWorkout,
         setEffort, markLogged} from "./session.js";
 import {setRuns, setSummary, elapsedLabel, unitSuffix} from "./format.js";
@@ -18,20 +18,6 @@ import {strandButton, strandIconButton} from "./strand/button.js";
 import {strandField} from "./strand/field.js";
 import {strandPanel} from "./strand/panel.js";
 const el = id => document.getElementById(id);
-
-function confirmRelabel(button, run){
-  return () => {
-    if(!loggedCount(state.current) || button.dataset.armed){ run(); return; }
-    const original = button.dataset.label;
-    button.dataset.armed = "1";
-    button.strandLabel("sure?");
-    setTimeout(() => {
-      if(!button.dataset.armed) return;
-      delete button.dataset.armed;
-      button.strandLabel(original);
-    }, CONFIRM_WINDOW_MS);
-  };
-}
 
 function toggleExpanded(id){
   state.expanded.has(id) ? state.expanded.delete(id) : state.expanded.add(id);
@@ -72,11 +58,11 @@ function renderLog(main){
     strandButton(button, {label: letter, tone: "secondary", ghost: true, key: "block:" + letter});
     button.dataset.chosen = letter === current.block ? "on" : "off";
     button.setAttribute("aria-pressed", String(letter === current.block));
-    button.addEventListener("click", confirmRelabel(button, () => {
+    button.addEventListener("click", () => {
       setBlockIndex(start + i);
       queueSave();
       notify();
-    }));
+    });
     blocks.appendChild(button);
   });
   bar.append(dateField, blocks);
@@ -94,11 +80,11 @@ function renderLog(main){
     });
     button.dataset.chosen = day === current.day ? "on" : "off";
     button.setAttribute("aria-pressed", String(day === current.day));
-    button.addEventListener("click", confirmRelabel(button, () => {
+    button.addEventListener("click", () => {
       setDay(day);
       queueSave();
       notify();
-    }));
+    });
     days.appendChild(button);
   });
   main.appendChild(days);
@@ -124,7 +110,28 @@ function renderLog(main){
     plan.core.forEach((pair, i) => main.appendChild(corePairCard(pair.map(resolveSlot), i, pair)));
   }
 
+  const strays = strayExercises(plan);
+  if(strays.length){
+    const label = document.createElement("p");
+    label.className = "section-label";
+    label.textContent = "Not in this session";
+    main.appendChild(label);
+    strays.forEach(exercise => main.appendChild(exerciseCard(exercise, null, null)));
+  }
+
   main.appendChild(notesCard());
+}
+
+function strayExercises(plan){
+  const planned = new Set(allExercises(plan).map(slot => resolveSlot(slot).id));
+  const entries = state.current.entries;
+  return Object.keys(entries)
+    .filter(id => !planned.has(id) && entries[id].some(set => set && set.r))
+    .map(id => Object.assign(
+      {id, n: exerciseName(id), s: entries[id].length, r: "", rest: DEFAULT_REST},
+      findExercise(id) || {},
+      {stray: true}
+    ));
 }
 
 function summaryFor(exercise){
@@ -230,7 +237,7 @@ function fillCard(card, exercise, position, slot, partnerName){
       notify();
     } else openSwapSheet(slot);
   });
-  head.appendChild(swap);
+  if(!exercise.stray) head.appendChild(swap);
   if(exercise.swappedFrom) card.classList.add("ex-swapped");
 
   const fold = document.createElement("button");
@@ -247,10 +254,11 @@ function fillCard(card, exercise, position, slot, partnerName){
   const meta = document.createElement("div");
   meta.className = "meta";
   if(exercise.per) meta.innerHTML += `<span class="tag side">per ${exercise.per}</span>`;
-  meta.innerHTML += `<span class="tag">${LOAD_LABEL[exercise.load]}</span>`;
+  if(LOAD_LABEL[exercise.load]) meta.innerHTML += `<span class="tag">${LOAD_LABEL[exercise.load]}</span>`;
+  const prescription = exercise.r ? `${exercise.s} × ${exercise.r}${suffix}` : `${exercise.s} logged`;
   meta.innerHTML += exercise.core
     ? `<span>${exercise.s} rounds × ${exercise.r}${suffix}</span><span class="dot">·</span><span>${partnerName ? "straight into " + partnerName : `rest ${exercise.rest}s between rounds`}</span>`
-    : `<span>${exercise.s} × ${exercise.r}${suffix}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
+    : `<span>${prescription}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
   card.appendChild(meta);
 
   const target = suggestTarget(exercise, prior);
