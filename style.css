@@ -44,10 +44,28 @@ button{cursor:pointer;border:none;background:none}
   letter-spacing:.22em;text-transform:uppercase;margin:0;flex:1;text-shadow:var(--fringe);
 }
 .save{
-  flex:none;width:7px;height:7px;background:var(--up);
-  transition:background .2s ease,transform .2s ease;
+  flex:none;position:relative;width:8px;height:4px;
+  color:var(--success);background:currentColor;
+  box-shadow:0 0 8px var(--save-glow,var(--success-glow));
+  transition:color .2s ease,box-shadow .2s ease;
 }
-.save.saving{background:var(--ui-accent);transform:scale(1.35)}
+.save::before,.save::after{
+  content:"";position:absolute;background:currentColor;pointer-events:none;
+}
+.save::before{
+  inset:0;filter:blur(2.3px);opacity:.28;transform:translate(2px,2px);
+  animation:hud-pin-flicker-echo 4800ms linear infinite;
+}
+.save::after{inset:-5px;filter:blur(6px);opacity:0}
+.save.saved{
+  color:var(--success);--save-glow:var(--success-glow);
+  animation:hud-pin-flicker 5600ms linear infinite;
+}
+.save.saved::after{animation:hud-bloom 620ms var(--ease-emit) both}
+.save.saving{
+  color:var(--accent);--save-glow:var(--accent-glow);
+  animation:hud-charge 420ms ease-in-out infinite alternate;
+}
 @media (prefers-reduced-motion:reduce){.save{transition:none}}
 .brand span{color:var(--ui-accent)}
 .chip{
