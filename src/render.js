@@ -19,8 +19,14 @@ import {strandField} from "./strand/field.js";
 import {strandPanel} from "./strand/panel.js";
 const el = id => document.getElementById(id);
 
-function toggleExpanded(id){
-  state.expanded.has(id) ? state.expanded.delete(id) : state.expanded.add(id);
+function isFolded(exercise){
+  return isComplete(exercise) !== state.foldFlips.has(exercise.id);
+}
+
+function flipFold(exercise){
+  const flips = state.foldFlips;
+  flips.has(exercise.id) ? flips.delete(exercise.id) : flips.add(exercise.id);
+  syncCard(exercise);
 }
 
 export function render(){
@@ -146,9 +152,12 @@ function syncCard(exercise){
   const card = el("main").querySelector("#card-" + exercise.id) ||
     document.getElementById("card-" + exercise.id);
   if(card && card.classList){
-    card.classList.toggle("done", isComplete(exercise) && !state.expanded.has(exercise.id));
+    const folded = isFolded(exercise);
+    card.classList.toggle("done", folded);
     const summary = card.querySelector(".ex-summary");
     if(summary) summary.innerHTML = summaryFor(exercise);
+    const fold = card.querySelector(".ex-fold");
+    if(fold) fold.strandLabel(folded ? "expand_more" : "expand_less");
     if(card.panel) markDim(card.panel);
   }
 }
@@ -166,7 +175,7 @@ function moveBlock(exercise, position, slot, partnerName){
   move.className = "ex-move";
   move.id = "card-" + exercise.id;
   fillCard(move, exercise, position, slot, partnerName);
-  if(isComplete(exercise) && !state.expanded.has(exercise.id)) move.classList.add("done");
+  if(isFolded(exercise)) move.classList.add("done");
   return move;
 }
 
@@ -243,11 +252,11 @@ function fillCard(card, exercise, position, slot, partnerName){
   const fold = document.createElement("button");
   fold.className = "ex-fold";
   strandIconButton(fold, {
-    icon: isComplete(exercise) && !state.expanded.has(exercise.id) ? "expand_more" : "expand_less",
+    icon: isFolded(exercise) ? "expand_more" : "expand_less",
     label: "Show or hide sets", tone: "secondary", ghost: true, size: 30, glyph: 18,
     key: "fold:" + exercise.id
   });
-  fold.addEventListener("click", () => { toggleExpanded(exercise.id); notify(); });
+  fold.addEventListener("click", () => flipFold(exercise));
   head.appendChild(fold);
   card.appendChild(head);
 
@@ -349,7 +358,9 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
     const sets = setsFor(exercise.id);
     while(sets.length <= index) sets.push({w: "", r: ""});
     const hadReps = !!sets[index].r;
+    const wasComplete = isComplete(exercise);
     sets[index] = {w: weight.value.trim(), r: reps.value.trim()};
+    if(isComplete(exercise) !== wasComplete) state.foldFlips.delete(exercise.id);
     if(!hadReps && sets[index].r) markLogged();
     paint();
     syncCard(exercise);

@@ -56,6 +56,10 @@ function wire(el, key){
   const fire = () => {
     lastFire = Date.now();
     if(key) recentFires.set(key, lastFire);
+    if(fired){
+      el.removeAttribute("data-fired");
+      void el.offsetWidth;
+    }
     fired = true;
     held = false;
     paint();
@@ -65,7 +69,10 @@ function wire(el, key){
   el.addEventListener("pointerenter", () => { hover = true; paint(); });
   el.addEventListener("pointerleave", () => { hover = false; held = false; paint(); });
   el.addEventListener("pointerdown", () => { held = true; paint(); });
-  el.addEventListener("pointerup", () => { if(held) fire(); });
+  el.addEventListener("pointerup", event => {
+    if(event.pointerType === "touch") hover = false;
+    if(held) fire();
+  });
   el.addEventListener("click", () => { if(Date.now() - lastFire > CLICK_GUARD_MS) fire(); });
   el.addEventListener("keydown", event => {
     if(!HOLD_KEYS.has(event.key) || event.repeat) return;

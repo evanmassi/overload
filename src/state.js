@@ -4,7 +4,7 @@ export const state = {
   sessions: {},
   customNames: {},
   view: "log",
-  expanded: new Set(),
+  foldFlips: new Set(),
   historyDay: null,
   historyOpen: new Set(),
   current: {date: null, day: null, block: null, blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}, startedAt: null, lastLoggedAt: null}
