@@ -1,7 +1,7 @@
 import {spawnSync} from "node:child_process";
 import {fileURLToPath} from "node:url";
 
-const suites = ["modules.mjs", "run.mjs", "render.mjs"];
+const suites = ["guards.mjs", "logic.mjs", "views.mjs"];
 let failed = 0;
 
 for(const suite of suites){

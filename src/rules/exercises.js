@@ -1,9 +1,9 @@
-import {PROGRAM} from "./program.js";
-import {EXTRAS} from "./extras.js";
-import {OFFDAYS} from "./offdays.js";
-import {LOAD, PER, PATTERNS, COMPOUND} from "./taxonomy.js";
+import {PROGRAM} from "../data/program.js";
+import {EXTRAS} from "../data/extras.js";
+import {OFFDAYS} from "../data/offdays.js";
+import {LOAD, PER, PATTERNS, COMPOUND} from "../data/taxonomy.js";
 import {BLOCKS, DAY_KEYS, OFF_KEYS, REST, IMPLEMENTS_PER_LOAD,
-        HEAVY_REP_CEILING, LEAD_SET_COUNT} from "./constants.js";
+        HEAVY_REP_CEILING, LEAD_SET_COUNT} from "../data/constants.js";
 
 export const PATTERN_OF = {};
 for(const pattern in PATTERNS) PATTERNS[pattern].forEach(id => { PATTERN_OF[id] = pattern; });

@@ -1,21 +1,24 @@
 const CACHE = 'overload-v6';
 
 const ASSETS = [
-  './', './index.html', './style.css', './manifest.json',
-  './src/main.js', './src/state.js', './src/session.js', './src/render.js',
-  './src/savestate.js', './src/sound.js', './src/format.js',
-  './src/history.js', './src/progress.js',
-  './src/sheet.js', './src/timer.js', './src/backup.js', './src/storage.js',
-  './src/rotation.js', './src/progression.js', './src/swaps.js', './src/holds.js', './src/muscles.js',
-  './src/movements.js', './src/constants.js', './src/sets.js',
-  './src/program.js', './src/offdays.js', './src/extras.js', './src/howto.js', './src/taxonomy.js',
+  './', './index.html', './manifest.json', './src/main.js',
+  './src/data/constants.js', './src/data/extras.js', './src/data/howto.js', './src/data/muscles.js',
+  './src/data/offdays.js', './src/data/program.js', './src/data/taxonomy.js',
+  './src/rules/exercises.js', './src/rules/format.js', './src/rules/progression.js', './src/rules/rotation.js',
+  './src/rules/sets.js',
+  './src/store/backup.js', './src/store/customs.js', './src/store/holds.js', './src/store/session.js',
+  './src/store/slots.js', './src/store/state.js', './src/store/storage.js',
+  './src/views/app.js', './src/views/dom.js', './src/views/exerciseCard.js', './src/views/history.js',
+  './src/views/log.js', './src/views/progress.js', './src/views/saveBar.js', './src/views/saveStatus.js',
+  './src/views/settings.js', './src/views/sound.js', './src/views/timer.js',
+  './src/views/sheets/howtoSheet.js', './src/views/sheets/relabelSheet.js', './src/views/sheets/sheet.js',
+  './src/views/sheets/swapSheet.js', './src/views/sheets/timerSheet.js',
   './src/strand/button.js', './src/strand/field.js', './src/strand/panel.js',
-  './styles/strand/index.css', './styles/strand/stripe.css', './styles/strand/button.css',
-  './styles/strand/field.css', './styles/strand/panel.css',
-  './styles/strand/tokens/colors.css', './styles/strand/tokens/typography.css', './styles/strand/tokens/motion.css',
-  './styles/strand/tokens/space.css', './styles/strand/tokens/animations.css', './styles/strand/tokens/fonts.css',
-  './icons/icon-192.png', './icons/icon-512.png',
-  './icons/maskable-512.png', './icons/apple-touch-180.png',
+  './styles/app.css', './styles/strand/button.css', './styles/strand/field.css', './styles/strand/index.css',
+  './styles/strand/panel.css', './styles/strand/stripe.css', './styles/strand/tokens/animations.css',
+  './styles/strand/tokens/colors.css', './styles/strand/tokens/fonts.css', './styles/strand/tokens/motion.css',
+  './styles/strand/tokens/space.css', './styles/strand/tokens/typography.css',
+  './icons/apple-touch-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png',
 ];
 
 self.addEventListener('install', e => {

@@ -4,17 +4,20 @@ import {section, check, equal, report} from "./checks.mjs";
 const els = installDom();
 installStorage();
 
-const {state} = await import("../src/state.js");
-const {render} = await import("../src/render.js");
-const {mountSheet, openSwapSheet, openHowTo, openTimerSheet} = await import("../src/sheet.js");
-const {mountTimer} = await import("../src/timer.js");
-const {mountSaveState} = await import("../src/savestate.js");
-const {findExercise} = await import("../src/movements.js");
-const {loadDate, setDay} = await import("../src/session.js");
-const {clockFace, iso} = await import("../src/format.js");
+const {state} = await import("../src/store/state.js");
+const {render} = await import("../src/views/app.js");
+const {mountSheet} = await import("../src/views/sheets/sheet.js");
+const {openSwapSheet} = await import("../src/views/sheets/swapSheet.js");
+const {openHowTo} = await import("../src/views/sheets/howtoSheet.js");
+const {openTimerSheet} = await import("../src/views/sheets/timerSheet.js");
+const {mountTimer} = await import("../src/views/timer.js");
+const {mountSaveStatus} = await import("../src/views/saveStatus.js");
+const {findExercise} = await import("../src/rules/exercises.js");
+const {loadDate, setDay} = await import("../src/store/session.js");
+const {clockFace, iso} = await import("../src/rules/format.js");
 
 mountTimer(els.timer, {onHold: openTimerSheet});
-mountSaveState(els.status);
+mountSaveStatus(els.status);
 mountSheet(els.sheet, els.sheettitle, els.sheetbody, els.sheetclose, els.sheetback);
 
 const cell = (row, i) => row.children[i].find("sfield-input")[0] || row.children[i];
@@ -279,7 +282,7 @@ section("Effort buttons");
 section("A stalled lift offers swap, drop and hold");
 {
   fresh();
-  const {holdLift, isHeld} = await import("../src/holds.js");
+  const {holdLift, isHeld} = await import("../src/store/holds.js");
   state.holds = {};
   ["2026-08-04", "2026-08-11", "2026-08-18"].forEach(date => {
     state.sessions[date] = {date, day: "arms", block: "A", blockIndex: 0, entries: {ez_curl: [{w: "60", r: "10"}, {w: "60", r: "10"}]}};
@@ -372,7 +375,7 @@ section("Logging updates the page without a re-render");
 
 section("Time in the gym is first log to last log");
 {
-  const {elapsedLabel} = await import("../src/format.js");
+  const {elapsedLabel} = await import("../src/rules/format.js");
   const minutes = n => n * 60000;
 
   check("a session with no end has no duration", elapsedLabel(1000, null) === null);
@@ -440,8 +443,8 @@ section("Expansion does not leak between sessions");
 
 section("The countdown escalates in its last seconds");
 {
-  const {start, stop} = await import("../src/timer.js");
-  const {WARN_COUNTDOWN_SECONDS} = await import("../src/constants.js");
+  const {start, stop} = await import("../src/views/timer.js");
+  const {WARN_COUNTDOWN_SECONDS} = await import("../src/data/constants.js");
 
   fresh();
   render();
@@ -469,7 +472,7 @@ section("The countdown escalates in its last seconds");
 
 section("The idle countdown tracks the next unlogged set");
 {
-  const {stop} = await import("../src/timer.js");
+  const {stop} = await import("../src/views/timer.js");
   fresh();
   render();
   stop();
@@ -496,7 +499,7 @@ section("The idle countdown tracks the next unlogged set");
 
 section("Save state is a dot, not a shifting line");
 {
-  const {setNotes} = await import("../src/session.js");
+  const {setNotes} = await import("../src/store/session.js");
   fresh();
   render();
   setNotes("");
@@ -581,7 +584,7 @@ section("A history card groups, collapses and marks");
 
 section("Each button is its own workout for the day");
 {
-  const {loggedCount} = await import("../src/progression.js");
+  const {loggedCount} = await import("../src/rules/progression.js");
   fresh();
   render();
   const firstRow = els.main.find("set").filter(r => !r.classList.contains("head"))[0];
@@ -627,7 +630,7 @@ section("Two sessions of the same lift on one day compare in order");
   fresh();
   state.sessions["2026-09-01T08:00:00"] = {date: "2026-09-01", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "50", r: "10"}]}};
   state.sessions["2026-09-01T18:00:00"] = {date: "2026-09-01", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "55", r: "10"}]}};
-  const {priorSets} = await import("../src/progression.js");
+  const {priorSets} = await import("../src/rules/progression.js");
   const prior = priorSets(state.sessions, "flat_db_press", "2026-09-01T18:00:00");
   check("the evening compares against the morning", prior && prior.sets[0].w === "50" && prior.date === "2026-09-01");
   const earlier = priorSets(state.sessions, "flat_db_press", "2026-09-01T08:00:00");
@@ -739,7 +742,7 @@ section("History filters by workout, groups by cycle and marks deltas");
 
 section("Sound is optional, remembered and testable");
 {
-  const sound = await import("../src/sound.js");
+  const sound = await import("../src/views/sound.js");
   fresh();
 
   check("with no Web Audio the state says so", sound.audioState() === "unsupported");
@@ -809,9 +812,9 @@ section("Beeps are scheduled on the audio clock when a rest starts");
     };
   };
 
-  const sound = await import("../src/sound.js");
-  const {start, stop} = await import("../src/timer.js");
-  const {BEEP_COUNTDOWN, BEEP_GO} = await import("../src/constants.js");
+  const sound = await import("../src/views/sound.js");
+  const {start, stop} = await import("../src/views/timer.js");
+  const {BEEP_COUNTDOWN, BEEP_GO} = await import("../src/data/constants.js");
   const goPitches = BEEP_GO.pulses.map(p => p.freq);
   const blip = BEEP_COUNTDOWN.pulses[0].freq;
   const live = () => scheduled.filter(o => !o.stopped);
@@ -938,7 +941,7 @@ const comeBackAfter = ms => {
 };
 const timedCards = () => els.main.find("ex-move").filter(card => card.find("ex-time").length);
 const longPress = async () => {
-  const {LONG_PRESS_MS} = await import("../src/constants.js");
+  const {LONG_PRESS_MS} = await import("../src/data/constants.js");
   els.timer.fire("pointerdown");
   await new Promise(resolve => setTimeout(resolve, LONG_PRESS_MS + 60));
   els.timer.fire("pointerup");
@@ -947,7 +950,7 @@ const longPress = async () => {
 
 section("A work window times the set and rolls into the rest");
 {
-  const {stop} = await import("../src/timer.js");
+  const {stop} = await import("../src/views/timer.js");
   fresh();
   render();
   stop();
@@ -998,7 +1001,7 @@ section("A work window times the set and rolls into the rest");
 
 section("A cardio round runs the window then the rest without a restart");
 {
-  const {stop} = await import("../src/timer.js");
+  const {stop} = await import("../src/views/timer.js");
   fresh();
   setDay("conditioning");
   render();
@@ -1023,8 +1026,8 @@ section("A cardio round runs the window then the rest without a restart");
 
 section("Long-pressing the clock opens a picker with presets and a stopwatch");
 {
-  const {stop} = await import("../src/timer.js");
-  const {LONG_PRESS_MS, TIMER_PRESETS} = await import("../src/constants.js");
+  const {stop} = await import("../src/views/timer.js");
+  const {LONG_PRESS_MS, TIMER_PRESETS} = await import("../src/data/constants.js");
   fresh();
   render();
   stop();
@@ -1053,7 +1056,7 @@ section("Long-pressing the clock opens a picker with presets and a stopwatch");
   check("and closes the sheet", els.sheet.hidden === true);
   stop();
 
-  const {parseClock} = await import("../src/format.js");
+  const {parseClock} = await import("../src/rules/format.js");
   equal("a typed length reads seconds, m:ss or a unit",
     ["90", "1:30", "1.30", "2m", "45s", "2 min", "1.75", "abc", ""].map(parseClock), [90, 90, 90, 120, 45, 120, 0, 0, 0]);
   await longPress();

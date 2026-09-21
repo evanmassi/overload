@@ -1,11 +1,11 @@
-import {CONSISTENCY_WEEKS} from "./constants.js";
-import {findExercise} from "./movements.js";
-import {state} from "./state.js";
-import {exerciseName} from "./swaps.js";
-import {loggedCount, bestEstimate, estimateFor, loggedAsBodyweight} from "./progression.js";
-import {iso} from "./format.js";
-import {isLogged} from "./sets.js";
-import {strandPanel} from "./strand/panel.js";
+import {CONSISTENCY_WEEKS} from "../data/constants.js";
+import {findExercise} from "../rules/exercises.js";
+import {state} from "../store/state.js";
+import {exerciseName} from "../store/customs.js";
+import {loggedCount, bestEstimate, estimateFor, loggedAsBodyweight} from "../rules/progression.js";
+import {iso} from "../rules/format.js";
+import {isLogged} from "../rules/sets.js";
+import {strandPanel} from "../strand/panel.js";
 
 export function renderProgress(main){
   const byExercise = {};

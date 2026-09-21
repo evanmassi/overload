@@ -10,6 +10,7 @@ installStorage();
 const root = fileURLToPath(new URL("../", import.meta.url));
 const at = (...parts) => path.join(root, ...parts);
 const read = file => fs.readFileSync(file, "utf8");
+const relative = file => path.relative(root, file).split(path.sep).join("/");
 
 function filesUnder(dir, extension){
   return fs.readdirSync(dir, {withFileTypes: true}).flatMap(entry => {
@@ -19,16 +20,16 @@ function filesUnder(dir, extension){
   });
 }
 
-const modules = fs.readdirSync(at("src")).filter(file => file.endsWith(".js"));
-const sourceOf = file => read(at("src", file));
+const modules = filesUnder(at("src"), ".js").map(relative);
+const sourceOf = file => read(at(file));
 
 section("Every module loads");
 const exportsByFile = {};
 for(const file of modules){
-  if(file === "main.js") continue;
+  if(file === "src/main.js") continue;
   try{
-    exportsByFile[file] = Object.keys(await import(new URL("../src/" + file, import.meta.url)));
-    check(file.padEnd(18) + exportsByFile[file].length + " exports", true);
+    exportsByFile[file] = Object.keys(await import(new URL("../" + file, import.meta.url)));
+    check(file.padEnd(34) + exportsByFile[file].length + " exports", true);
   }catch(err){
     check(file, false, err.message);
   }
@@ -44,12 +45,36 @@ for(const file in exportsByFile){
 }
 equal("every export is imported somewhere", dead, []);
 
+section("Layers");
+const MAY_IMPORT = {
+  data: ["data"],
+  rules: ["data", "rules"],
+  store: ["data", "rules", "store"],
+  strand: ["strand"],
+  views: ["data", "rules", "store", "strand", "views"],
+  main: ["data", "rules", "store", "strand", "views"]
+};
+const layerOf = file => {
+  const parts = file.split("/");
+  return parts.length > 2 ? parts[1] : "main";
+};
+equal("every file sits in a known layer", modules.filter(file => !MAY_IMPORT[layerOf(file)]), []);
+const upward = [];
+for(const file of modules){
+  const allowed = MAY_IMPORT[layerOf(file)] || [];
+  for(const match of sourceOf(file).matchAll(/from\s+"(\.[^"]+)"/g)){
+    const target = relative(path.resolve(path.dirname(at(file)), match[1]));
+    if(!allowed.includes(layerOf(target))) upward.push(file + " → " + target);
+  }
+}
+equal("no file imports from a layer above it", upward, []);
+
 section("Rendered classes");
-const css = [at("style.css"), ...filesUnder(at("styles"), ".css")].map(read).join("\n");
+const css = filesUnder(at("styles"), ".css").map(read).join("\n");
 const rendered = new Set();
 const collect = (text, pattern, split) => {
   for(const match of text.matchAll(pattern))
-    (split ? match[1].split(/\s+/) : [match[1]]).forEach(name => name && rendered.add(name));
+    (split ? match[1].split(/\s+/) : [match[1]]).forEach(name => name && !name.endsWith("-") && rendered.add(name));
 };
 for(const text of modules.map(sourceOf).concat(read(at("index.html")))){
   collect(text, /className\s*[=:]\s*"([^"]+)"/g, true);
@@ -62,8 +87,7 @@ equal("every rendered class has a CSS rule", unstyled, []);
 section("Service worker precache");
 const assets = read(at("sw.js")).match(/const ASSETS = \[([\s\S]*?)\];/)[1];
 const precached = [...assets.matchAll(/'\.\/([^']*)'/g)].map(match => match[1]);
-const relative = file => path.relative(root, file).split(path.sep).join("/");
-const shipped = ["", "index.html", "style.css", "manifest.json"].concat(
+const shipped = ["", "index.html", "manifest.json"].concat(
   [...filesUnder(at("src"), ".js"), ...filesUnder(at("styles"), ".css"), ...filesUnder(at("icons"), ".png")].map(relative));
 equal("every shipped file is precached", shipped.filter(file => !precached.includes(file)), []);
 equal("every precached file exists", precached.filter(file => !shipped.includes(file)), []);

@@ -1,8 +1,8 @@
 import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, LIVE_FINISH_MS, VIBRATE_PATTERN,
-        WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS, LONG_PRESS_MS} from "./constants.js";
+        WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS, LONG_PRESS_MS} from "../data/constants.js";
 import {scheduleRest, cancelRest} from "./sound.js";
-import {strandButton} from "./strand/button.js";
-import {clockFace} from "./format.js";
+import {strandButton} from "../strand/button.js";
+import {clockFace} from "../rules/format.js";
 
 const RUNNING_TONE = {rest: "primary", work: "secondary", stopwatch: "secondary"};
 
@@ -57,7 +57,8 @@ function showIdle(){
 }
 
 export function setIdleRest(seconds){
-  timer.idle = seconds || DEFAULT_REST;
+  if(!seconds) return;
+  timer.idle = seconds;
   if(!timer.mode) showIdle();
 }
 

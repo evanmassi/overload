@@ -1,8 +1,8 @@
-import {findExercise, programIds, allExercises} from "./movements.js";
-import {ALIASES} from "./taxonomy.js";
+import {findExercise, programIds} from "../rules/exercises.js";
+import {ALIASES} from "../data/taxonomy.js";
 import {state, persistCustomNames, persistSessions, persistHolds} from "./state.js";
-import {loggedCount} from "./progression.js";
-import {isLogged} from "./sets.js";
+import {loggedCount} from "../rules/progression.js";
+import {isLogged} from "../rules/sets.js";
 
 const squash = text => String(text).toLowerCase().replace(/[^a-z0-9]/g, "").replace(/s$/, "");
 
@@ -12,38 +12,6 @@ for(const id in ALIASES) ALIASES[id].forEach(name => { ALIAS_OF[squash(name)] = 
 export function exerciseName(id){
   const known = findExercise(id);
   return known ? known.n : (state.customNames[id] || id);
-}
-
-export function resolveSlot(slot, swaps){
-  const substituteId = swaps && swaps[slot.id];
-  if(!substituteId || substituteId === slot.id) return slot;
-  const known = findExercise(substituteId);
-  const factors = known
-    ? {bw: known.bw, unit: known.unit, load: known.load,
-       per: known.per, sides: known.sides, implements: known.implements}
-    : {};
-  if(known && known.unit !== slot.unit) factors.r = known.r;
-  return Object.assign({}, slot, factors, {
-    id: substituteId,
-    n: exerciseName(substituteId),
-    swappedFrom: slot.id
-  });
-}
-
-export function resolvedExercises(plan, swaps){
-  return allExercises(plan).map(slot => resolveSlot(slot, swaps));
-}
-
-export function idsTakenElsewhere(slot, plan, swaps){
-  const taken = new Set(resolvedExercises(plan, swaps).map(exercise => exercise.id));
-  taken.delete(resolveSlot(slot, swaps).id);
-  return taken;
-}
-
-export function strayIds(session, plan){
-  const planned = new Set(resolvedExercises(plan, session.swaps).map(exercise => exercise.id));
-  const entries = session.entries || {};
-  return Object.keys(entries).filter(id => !planned.has(id) && entries[id].some(isLogged));
 }
 
 export function customIdFor(name){

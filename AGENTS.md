@@ -11,48 +11,55 @@ lives on the device in `localStorage`.
 ```
 overload/
 ├── index.html        # The shell: header, tabs, sheet, save bar. One module entry: src/main.js
-├── style.css         # App styles, built on the strand tokens
 ├── sw.js             # Service worker: precache list + stale-while-revalidate
 ├── manifest.json
 ├── src/
-│   ├── strand/       # Design system primitives (button, field, panel). Imports nothing from the app
-│   └── *.js          # The app, one concern per file (layers below)
-├── styles/strand/    # Design system CSS and tokens
+│   ├── main.js       # Entry: mounts the views, subscribes the app view, registers the service worker
+│   ├── data/         # The program, off days, extras, how-tos, taxonomy, muscles, constants
+│   ├── rules/        # Pure rules over exercises and sets: scoring, rotation, formatting
+│   ├── store/        # Saved state and every edit to it: storage, sessions, custom exercises, holds, backup
+│   ├── views/        # DOM and audio: one file per screen or piece of one
+│   │   └── sheets/   # The pop-up frame and one file per pop-up
+│   └── strand/       # Design system primitives (button, field, panel). Imports nothing from the app
+├── styles/
+│   ├── app.css       # App styles, built on the strand tokens
+│   └── strand/       # Design system CSS and tokens
 ├── test/             # Node suites, no dependencies
 └── refs/             # Untracked design source (Strand OS). Read it, never ship from it
 ```
 
 ---
 
-## Module Layers
+## Layers
 
-A module imports only from its own row or the rows above it. The graph has no cycles; keep it that way.
+The folder is the layer. A file imports only from its own layer or the ones listed before it, and
+`test/guards.mjs` fails on anything else.
 
-| Layer | Modules | Role |
-|-------|---------|------|
-| Data | `program`, `offdays`, `extras`, `howto`, `taxonomy`, `muscles`, `constants` | Plain literals, no imports |
-| Derivation | `movements` | Tags the data once at load: rest, load kind, sides, lookup by id |
-| Store | `storage`, `state` | `storage` is the only file that touches `localStorage`; `state` holds the one state object |
-| Logic | `sets`, `format`, `progression`, `rotation`, `swaps`, `holds` | No DOM. The first four are pure; `swaps` and `holds` save through `state` |
-| Session | `session`, `backup` | The open session, autosave, export and import |
-| Views | `render`, `history`, `progress`, `sheet`, `timer`, `savestate`, `sound` | DOM and audio. Read logic, never reimplement it |
-| Entry | `main` | Mounts views, subscribes `render`, registers the service worker |
+| Layer | May import | Role |
+|-------|------------|------|
+| `data/` | `data/` | Plain literals, no logic |
+| `rules/` | `data/`, `rules/` | Pure functions: no DOM, no storage, no saved state |
+| `store/` | `data/`, `rules/`, `store/` | Saved state and every edit to it. `storage.js` is the only file that touches `localStorage` |
+| `strand/` | `strand/` | Design system primitives, no app knowledge |
+| `views/` | everything above | DOM and audio. Read rules and the store, never reimplement them |
+| `main.js` | everything above | Mounts the views, nothing else |
 
-- Nothing imports `render.js` except `main.js`. `render.js` is the only importer of `history.js` and `progress.js`.
-- A view that needs a number (score, volume, rotation, target) gets it from a logic module. Scoring rules written
-  inside a view are a second copy waiting to drift.
-- `strand/` knows nothing about workouts. An app import inside `strand/` is a bug.
+- Nothing imports `views/app.js` except `main.js`. It picks the screen for the current tab and refreshes the save bar.
+- A view that needs a number (score, volume, rotation, target) gets it from `rules/` or `store/`. A rule written
+  inside a view is a second copy waiting to drift.
+- `store/slots.js` resolves which move fills a slot. It sits in `store/` because naming a custom move reads your saved
+  names.
 
 ### State and rendering
 
-- One `state` object in `state.js`. Change it, then call `notify()`; `main.js` subscribes `render` to it. A full
-  re-render is the default.
+- One `state` object in `store/state.js`. Change it, then call `notify()`; `main.js` subscribes the app view to it. A
+  full re-render is the default.
 - The one exception is typing in a set row. A full render would drop focus and the keyboard, so the set field commit
-  updates its own card in place (`syncCard`, `updateFooter`). Keep that path narrow.
-- `session.js` owns the session being edited. Views change it only through its functions (`logSet`, `swapSlot`,
-  `setTravel`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves. `logSet` does not re-render,
-  because the set row updates in place; the rest do. `flushNow()` runs on hide and pagehide. Views never write
-  `state.current` or `state.sessions` directly.
+  updates its own card in place (`syncCard` in `views/exerciseCard.js`, `updateSaveBar`). Keep that path narrow.
+- `store/session.js` owns the session being edited. Views change it only through its functions (`logSet`,
+  `swapSlot`, `setTravel`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves. `logSet` does not
+  re-render, because the set row updates in place; the rest do. `flushNow()` runs on hide and pagehide. Views never
+  write `state.current` or `state.sessions` directly.
 - `persistSessions`, `persistCustomNames`, `persistHolds` in `state.js` are the only save calls. `storage.js` is the
   only reader and writer behind them.
 
@@ -63,8 +70,8 @@ A module imports only from its own row or the rows above it. The graph has no cy
 **Exercise `id` is identity.** History, holds, swaps, how-tos and muscles all key on it. Renaming an id orphans every
 logged set. Changing the display name `n` is safe; names are capped at 22 characters so card text never wraps.
 
-**Adding a movement touches four places.** `test/run.mjs` fails when the pattern, how-to or muscles are missing:
-1. The workout or `extras.js` entry (`id`, `n`, `s`, `r`, plus `bw` or `unit` when they apply)
+**Adding a movement touches four places.** `test/logic.mjs` fails when the pattern, how-to or muscles are missing:
+1. The workout or `data/extras.js` entry (`id`, `n`, `s`, `r`, plus `bw` or `unit` when they apply)
 2. `taxonomy.js`: its pattern; its load kind unless it is a single dumbbell or `bw`; its side if it is unilateral
 3. `howto.js`: 3+ steps and a watch-out line
 4. `muscles.js`: primary movers, secondary if any
@@ -75,8 +82,8 @@ logged set. Changing the display name `n` is safe; names are capped at 22 charac
 and comparing correctly. Every session has a `date` once loaded, so code reads `session.date` and never the key.
 
 **Storage keys** are `overload.<name>.v1`, defined once in `constants.js`. Legacy shapes are converted at read time
-inside `storage.js` (see `migrateLegacySessions` and the legacy key fallback). No migration system until a second version
-of a key exists.
+inside `storage.js` (see `migrateLegacySessions` and the legacy key fallback). No migration system until a second
+version of a key exists.
 
 **Backup import merges, never overwrites.** For a key present on both sides, the copy with more logged sets wins.
 
@@ -90,7 +97,7 @@ of a key exists.
 - **Two type families.** Lato for language, IBM Plex Mono for data (weights, reps, times, tags, dates).
 - **Phone first, 390px wide.** The number keyboard covers the bottom of the screen while typing, so anything needed
   mid-set lives in the sticky header. Card text never wraps.
-- **Every class the code renders needs a rule.** `test/modules.mjs` fails otherwise. Before deleting CSS, search
+- **Every class the code renders needs a rule.** `test/guards.mjs` fails otherwise. Before deleting CSS, search
   `src/` and `index.html` for the class.
 - **Evan judges how it looks.** Make the change and say what it does. For a layout bug, measure; do not guess from a
   screenshot.
@@ -100,8 +107,8 @@ of a key exists.
 ## Service Worker
 
 `ASSETS` in `sw.js` lists every file the app loads. A new module, stylesheet or icon goes into that list in the same
-change; `test/modules.mjs` fails otherwise. Bump `CACHE` only to recover from a bad cache, never per deploy. On localhost, `main.js` unregisters the
-worker and clears caches so development always sees fresh files.
+change; `test/guards.mjs` fails otherwise. Bump `CACHE` only to recover from a bad cache, never per deploy. On
+localhost, `main.js` unregisters the worker and clears caches so development always sees fresh files.
 
 ---
 
@@ -137,7 +144,7 @@ explicitly: preserve, intersect, or replace. Replacement needs a `PITFALL:` line
 carries the same data under different names.
 
 **4. Caller-first: no speculative exports.** No export, constant, storage key or CSS rule without a real caller in the
-same change. `test/modules.mjs` fails on an export nothing imports.
+same change. `test/guards.mjs` fails on an export nothing imports.
 
 **5. No unused parameters.** Every declared parameter is read by at least one caller.
 
@@ -161,7 +168,8 @@ Match the surrounding code. It is consistent, and a new file should be indisting
 
 | Category | Convention | Example |
 |----------|------------|---------|
-| Files | lowercase, named for the concern | `rotation.js`, `savestate.js` |
+| Folders | lowercase, named for the layer | `rules/`, `views/sheets/` |
+| Files | named for the concern; lowercase for one word, camelCase for more | `rotation.js`, `saveBar.js` |
 | Functions | camelCase, verb first | `activeBlockIndex`, `openSwapSheet` |
 | Constants | UPPER_CASE | `AUTOSAVE_DELAY_MS` |
 | Booleans | is/has prefix | `isOffDay`, `hasStalled` |
@@ -170,6 +178,7 @@ Match the surrounding code. It is consistent, and a new file should be indisting
 
 - **Generic filenames are banned**: no `utils.js`, `helpers.js`, `misc.js`. Name the file after what it contains.
 - **One file, one concern.** A new concern gets a new file and a line in the README layout table.
+- **A pop-up is a file** in `views/sheets/`, named for what it shows plus `Sheet`: `swapSheet.js`.
 
 ---
 
@@ -179,7 +188,7 @@ Match the surrounding code. It is consistent, and a new file should be indisting
 tests. The code documents itself through naming. If a comment feels needed, rename something.
 
 **Sole exception**: one line containing `PITFALL:` for something a reader cannot infer from the code (a Safari quirk,
-a silent failure, an intentional overwrite). See `sound.js` for the model.
+a silent failure, an intentional overwrite). See `views/sound.js` for the model.
 
 The strand token files keep the group labels they came with. Add none.
 
@@ -204,11 +213,12 @@ no storage key before something writes it.
 | Scoring, volume, targets, stalls, back-off | `progression.js` | Math inside a view |
 | Beat, match or below | `trend` in `progression.js` | Comparing scores in a view |
 | Whether a set counts as logged | `isLogged` in `sets.js` | `set && set.r` |
-| Rest after a set | `restAfterSet` in `movements.js` | Rewriting the ternary |
-| Which move fills a slot, and strays | `resolveSlot(slot, swaps)`, `strayIds` in `swaps.js` | Reading `swaps` by hand |
+| Rest after a set | `restAfterSet` in `rules/exercises.js` | Rewriting the ternary |
+| Which move fills a slot, and strays | `resolveSlot(slot, swaps)`, `strayIds` in `store/slots.js` | Reading `swaps` by hand |
 | Week and version rotation | `rotation.js` | Counting sessions in a view |
-| Exercise lookup and derived fields | `movements.js` (`findExercise`, `workoutFor`) | Walking `PROGRAM` by hand |
+| Exercise lookup and derived fields | `rules/exercises.js` (`findExercise`, `workoutFor`) | Walking `PROGRAM` by hand |
 | Buttons, inputs, panels | `strand/` | Hand-built markup |
+| Opening a pop-up | `openSheet` in `views/sheets/sheet.js` | Touching the sheet elements directly |
 | Colors | strand tokens | Hex or rgba literals |
 
 ### No Convenience Wrappers
@@ -240,18 +250,18 @@ node test/all.mjs
 
 Three suites, no dependencies, all must pass before a commit.
 
-- `modules.mjs` loads every module against the fake DOM and fails on a dead export, a rendered class with no CSS
-  rule, or a precache list that disagrees with the files on disk.
-- `run.mjs` covers the data (every movement patterned, tagged, written up) and the logic that can silently corrupt
+- `guards.mjs` loads every module against the fake DOM and fails on a dead export, an import from a layer above,
+  a rendered class with no CSS rule, or a precache list that disagrees with the files on disk.
+- `logic.mjs` covers the data (every movement patterned, tagged, written up) and the logic that can silently corrupt
   history: rotation, targets, volume, name matching, swap identity, backup merging.
-- `render.mjs` boots the real views against the fake DOM in `dom.mjs` and asserts what renders.
+- `views.mjs` boots the real views against the fake DOM in `dom.mjs` and asserts what renders.
 
 Shared pieces, never redefined inside a suite: browser fakes (`installDom`, `installStorage`) in `dom.mjs`,
-assertions (`section`, `check`, `equal`, `report`) in `checks.mjs`, `run.mjs` fixtures in `harness.mjs`.
+assertions (`section`, `check`, `equal`, `report`) in `checks.mjs`, `logic.mjs` fixtures in `fixtures.mjs`.
 
 Rules:
-- New logic gets a test in `run.mjs`; new rendering gets one in `render.mjs`.
-- Every `render.mjs` block opens with `fresh()`. Blocks never inherit state from each other.
+- New logic gets a test in `logic.mjs`; new rendering gets one in `views.mjs`.
+- Every `views.mjs` block opens with `fresh()`. Blocks never inherit state from each other.
 - When a decision changes, delete the tests that pinned the old decision. Do not bend them to pass.
 
 ---

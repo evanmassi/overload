@@ -1,6 +1,6 @@
-import {HOLD_RELEASE_MARGIN} from "./constants.js";
+import {HOLD_RELEASE_MARGIN} from "../data/constants.js";
 import {state, persistHolds} from "./state.js";
-import {score} from "./progression.js";
+import {score} from "../rules/progression.js";
 
 export function isHeld(id){ return !!state.holds[id]; }
 

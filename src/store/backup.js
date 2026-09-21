@@ -1,8 +1,8 @@
 import {state, notify, persistSessions} from "./state.js";
-import {loggedCount} from "./progression.js";
+import {loggedCount} from "../rules/progression.js";
 import {migrateLegacySessions} from "./storage.js";
 import {loadDate} from "./session.js";
-import {iso} from "./format.js";
+import {iso} from "../rules/format.js";
 
 let statusHandler = () => {};
 export function onBackupStatus(fn){ statusHandler = fn; }

@@ -1,4 +1,4 @@
-import {BLOCKS, DAY_KEYS} from "./constants.js";
+import {BLOCKS, DAY_KEYS} from "../data/constants.js";
 import {loggedCount} from "./progression.js";
 
 export function blockIndexOf(session){

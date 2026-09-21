@@ -1,12 +1,12 @@
-import {AUTOSAVE_DELAY_MS} from "./constants.js";
+import {AUTOSAVE_DELAY_MS} from "../data/constants.js";
 import {state, notify, persistSessions} from "./state.js";
-import {loggedCount, priorSets} from "./progression.js";
-import {blockIndexOf, blockLetter, activeBlockIndex, nextSessionIn, nextOffBlockIndex} from "./rotation.js";
-import {isOffDay, workoutFor} from "./movements.js";
-import {idsTakenElsewhere} from "./swaps.js";
+import {loggedCount, priorSets} from "../rules/progression.js";
+import {blockIndexOf, blockLetter, activeBlockIndex, nextSessionIn, nextOffBlockIndex} from "../rules/rotation.js";
+import {isOffDay, workoutFor, restAfterSet} from "../rules/exercises.js";
+import {idsTakenElsewhere, resolvedExercises} from "./slots.js";
 import {releaseIfBeaten} from "./holds.js";
-import {isLogged} from "./sets.js";
-import {iso} from "./format.js";
+import {isLogged} from "../rules/sets.js";
+import {iso} from "../rules/format.js";
 
 let saveTimer = null;
 let statusHandler = () => {};
@@ -245,6 +245,17 @@ export function deleteSession(key){
   persistSessions();
   if(key === state.current.key) loadDate(date || state.current.date);
   else notify();
+}
+
+export function nextRest(){
+  const plan = workoutFor(state.current.block, state.current.day);
+  if(!plan) return null;
+  for(const exercise of resolvedExercises(plan, state.current.swaps)){
+    const sets = state.current.entries[exercise.id] || [];
+    for(let i = 0; i < exercise.s; i++)
+      if(!isLogged(sets[i])) return restAfterSet(exercise, i);
+  }
+  return null;
 }
 
 export function previousSameWorkout(){

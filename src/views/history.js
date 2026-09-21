@@ -1,17 +1,17 @@
-import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "./constants.js";
-import {workoutFor, findExercise, isOffDay} from "./movements.js";
-import {state, notify} from "./state.js";
-import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "./progression.js";
-import {blockIndexOf, cycleNumber} from "./rotation.js";
-import {exerciseName, resolveSlot, strayIds} from "./swaps.js";
-import {isLogged} from "./sets.js";
-import {loadSession, deleteSession} from "./session.js";
-import {openRelabelSheet} from "./sheet.js";
-import {setSummary, elapsedLabel, unitSuffix} from "./format.js";
-import {exportSessions, importSessions, onBackupStatus} from "./backup.js";
-import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
-import {strandButton} from "./strand/button.js";
-import {strandPanel} from "./strand/panel.js";
+import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
+import {workoutFor, findExercise, isOffDay} from "../rules/exercises.js";
+import {state, notify} from "../store/state.js";
+import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
+import {blockIndexOf, cycleNumber} from "../rules/rotation.js";
+import {exerciseName} from "../store/customs.js";
+import {resolveSlot, strayIds} from "../store/slots.js";
+import {isLogged} from "../rules/sets.js";
+import {loadSession, deleteSession} from "../store/session.js";
+import {openRelabelSheet} from "./sheets/relabelSheet.js";
+import {settingsPanel} from "./settings.js";
+import {setSummary, elapsedLabel, unitSuffix} from "../rules/format.js";
+import {strandButton} from "../strand/button.js";
+import {strandPanel} from "../strand/panel.js";
 
 const TREND_WORD = {up: "Beat", same: "Matched", down: "Below"};
 
@@ -165,15 +165,11 @@ function filterBar(className, keys){
   return bar;
 }
 
-function settings(){
-  return [soundControls(), soundNote(), backupControls(), backupNote()];
-}
-
 export function renderHistory(main){
   const keys = Object.keys(state.sessions).sort().reverse();
   if(!keys.length){
     main.innerHTML = `<p class="empty">Nothing logged yet. Fill in a set on the Log tab and it shows up here.</p>`;
-    main.append(...settings());
+    main.append(...settingsPanel());
     return;
   }
 
@@ -185,7 +181,7 @@ export function renderHistory(main){
     const empty = document.createElement("p");
     empty.className = "empty";
     empty.textContent = `No ${DAYS[state.historyDay].label} sessions yet.`;
-    main.append(empty, ...settings());
+    main.append(empty, ...settingsPanel());
     return;
   }
 
@@ -207,78 +203,5 @@ export function renderHistory(main){
     main.appendChild(sessionCard(key, session, plan));
   });
 
-  main.append(...settings());
-}
-
-function backupControls(){
-  const box = document.createElement("div");
-  box.className = "backup";
-
-  const save = document.createElement("button");
-  save.addEventListener("click", exportSessions);
-  strandButton(save, {label: "Export backup", tone: "primary"});
-
-  const picker = document.createElement("input");
-  picker.type = "file";
-  picker.accept = "application/json,.json";
-  picker.hidden = true;
-  picker.addEventListener("change", importSessions);
-
-  const load = document.createElement("button");
-  load.addEventListener("click", () => picker.click());
-  strandButton(load, {label: "Import backup", tone: "primary"});
-
-  const result = document.createElement("span");
-  result.className = "backup-result";
-  onBackupStatus(text => { result.textContent = text; });
-
-  box.append(save, load, picker, result);
-  return box;
-}
-
-function backupNote(){
-  const note = document.createElement("p");
-  note.className = "backup-note";
-  note.textContent = "Your log lives on this device. Export before clearing browser data.";
-  return note;
-}
-
-function soundControls(){
-  const box = document.createElement("div");
-  box.className = "soundrow";
-
-  const toggle = document.createElement("button");
-  const paint = () => {
-    toggle.strandLabel(soundOn() ? "Sound on" : "Sound off");
-    toggle.dataset.chosen = soundOn() ? "on" : "off";
-    toggle.setAttribute("aria-pressed", String(soundOn()));
-  };
-  toggle.addEventListener("click", () => { setSoundOn(!soundOn()); paint(); });
-  strandButton(toggle, {label: "Sound off", tone: "secondary"});
-  paint();
-
-  const note = document.createElement("p");
-  note.className = "sound-result";
-
-  const test = document.createElement("button");
-  strandButton(test, {label: "Test sound", tone: "primary"});
-  test.addEventListener("click", () => {
-    const played = testTone();
-    const state = audioState();
-    note.textContent = played
-      ? "Played. Heard nothing? Check the ring/silent switch."
-      : state === "unsupported"
-        ? "This browser has no Web Audio."
-        : "Blocked by the browser. Tap once more.";
-  });
-
-  box.append(toggle, test, note);
-  return box;
-}
-
-function soundNote(){
-  const note = document.createElement("p");
-  note.className = "sound-note";
-  note.textContent = "Three short beeps in the last seconds, one long high one when the rest is up. The screen stays awake while a rest runs. Switching apps pauses the clock; come back and it shows GO.";
-  return note;
+  main.append(...settingsPanel());
 }

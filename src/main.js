@@ -1,26 +1,26 @@
-import {state, hydrate, subscribe, notify} from "./state.js";
-import {loadDate, flushNow} from "./session.js";
-import {iso} from "./format.js";
-import {render} from "./render.js";
-import {mountSheet, openTimerSheet} from "./sheet.js";
-import {mountTimer} from "./timer.js";
-import {mountSaveState} from "./savestate.js";
-import {loadSoundPreference, unlockAudio} from "./sound.js";
+import {state, hydrate, subscribe, notify} from "./store/state.js";
+import {loadDate, flushNow} from "./store/session.js";
+import {iso} from "./rules/format.js";
+import {render} from "./views/app.js";
+import {mountSheet} from "./views/sheets/sheet.js";
+import {openTimerSheet} from "./views/sheets/timerSheet.js";
+import {mountTimer} from "./views/timer.js";
+import {mountSaveStatus} from "./views/saveStatus.js";
+import {loadSoundPreference, unlockAudio} from "./views/sound.js";
+import {byId} from "./views/dom.js";
 import {strandButton} from "./strand/button.js";
-
-const el = id => document.getElementById(id);
 
 loadSoundPreference();
 document.addEventListener("pointerdown", unlockAudio);
 
-mountSaveState(el("status"));
-mountTimer(el("timer"), {onHold: openTimerSheet});
-mountSheet(el("sheet"), el("sheettitle"), el("sheetbody"), el("sheetclose"), el("sheetback"));
+mountSaveStatus(byId("status"));
+mountTimer(byId("timer"), {onHold: openTimerSheet});
+mountSheet(byId("sheet"), byId("sheettitle"), byId("sheetbody"), byId("sheetclose"), byId("sheetback"));
 
-el("tabs").querySelectorAll(".tab").forEach(tab =>
+byId("tabs").querySelectorAll(".tab").forEach(tab =>
   strandButton(tab, {tone: "secondary", ghost: true}));
 
-el("tabs").addEventListener("click", event => {
+byId("tabs").addEventListener("click", event => {
   const tab = event.target.closest(".tab");
   if(!tab) return;
   state.view = tab.dataset.view;

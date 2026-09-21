@@ -1,6 +1,6 @@
 import {BEEP_COUNTDOWN, BEEP_GO, BEEP_PULSE_GAP_SECONDS, BEEP_RELEASE_SECONDS, FINAL_COUNTDOWN_SECONDS,
-        BEEP_LATE_TOLERANCE_SECONDS} from "./constants.js";
-import {loadSoundOn, saveSoundOn} from "./storage.js";
+        BEEP_LATE_TOLERANCE_SECONDS} from "../data/constants.js";
+import {loadSoundOn, saveSoundOn} from "../store/storage.js";
 
 let ctx = null;
 let on = true;

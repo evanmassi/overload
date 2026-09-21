@@ -1,9 +1,9 @@
 import {section, check, equal, report} from "./checks.mjs";
 import {
   reset, logged, setsOf, everyMovement, prescribedMovements, offDayMovements,
-  state, hydrate, constants, movements, progression, rotation, swaps, backup,
+  state, hydrate, constants, exercises, progression, rotation, customs, slots, backup,
   HOWTO, PATTERNS, LOAD, PER, EXTRAS, MUSCLES
-} from "./harness.mjs";
+} from "./fixtures.mjs";
 
 const {BLOCKS, DAY_KEYS, OFF_KEYS, IMPLEMENTS_PER_LOAD} = constants;
 const {activeBlockIndex, nextSessionIn, sessionsDoneIn, blockLetter, cycleNumber, nextOffBlockIndex} = rotation;
@@ -15,7 +15,7 @@ const prescribedCountFor = (block, day) => progression.prescribedCount(block, da
 section("Program data");
 {
   const moves = everyMovement();
-  equal("three week blocks", Object.keys(movements.PROGRAM), BLOCKS);
+  equal("three week blocks", Object.keys(exercises.PROGRAM), BLOCKS);
   check("165 distinct movements", moves.size === 165, moves.size);
 
   const prescribed = prescribedMovements();
@@ -26,7 +26,7 @@ section("Program data");
   const leaked = EXTRAS.filter(e => prescribed.has(e.id));
   equal("extras are swappable but never prescribed", leaked.map(e => e.id), []);
 
-  const untagged = [...moves.keys()].filter(id => !movements.PATTERN_OF[id]);
+  const untagged = [...moves.keys()].filter(id => !exercises.PATTERN_OF[id]);
   equal("every movement belongs to a pattern", untagged, []);
 
   const missingHowTo = [...moves.keys()].filter(id => !HOWTO[id]);
@@ -62,7 +62,7 @@ section("Program data");
   equal("no movement carries two load tags", dupes, []);
 
   for(const block of BLOCKS) for(const day of DAY_KEYS){
-    const plan = movements.workoutFor(block, day);
+    const plan = exercises.workoutFor(block, day);
     check(`${block}/${day} has 8 or 9 main moves`, plan.ex.length === 8 || plan.ex.length === 9, plan.ex.length);
     check(`${block}/${day} has 3 core supersets of 2`, plan.core.length === 3 && plan.core.every(p => p.length === 2));
   }
@@ -104,9 +104,9 @@ section("Rotation follows work done, not the calendar");
 
 section("Progression targets");
 {
-  equal("a hyphenated rep range parses", movements.repRange("8-10"), {min: 8, max: 10});
-  equal("a single rep count parses", movements.repRange("12"), {min: 12, max: 12});
-  equal("AMRAP has no range", movements.repRange("AMRAP"), null);
+  equal("a hyphenated rep range parses", exercises.repRange("8-10"), {min: 8, max: 10});
+  equal("a single rep count parses", exercises.repRange("12"), {min: 12, max: 12});
+  equal("AMRAP has no range", exercises.repRange("AMRAP"), null);
 
   const press = {r: "8-10", bw: 0};
   const target = (ex, pairs) => {
@@ -158,34 +158,34 @@ section("Session volume counts implements and sides");
 section("Custom exercises keep one identity");
 {
   reset();
-  const first = swaps.customIdFor("sledgehammer slams");
+  const first = customs.customIdFor("sledgehammer slams");
   equal("a new name mints a custom id", first, "custom_sledgehammer_slams");
 
   state.customNames = {custom_sledgehammer_slams: "sledgehammer slams"};
   for(const variant of ["sledgehammer slams", "Sledgehammer Slams", "sledgehammer slam", "sledge-hammer slams", "Sledgehammer Slams!"])
-    equal(`"${variant}" resolves to the same exercise`, swaps.customIdFor(variant), first);
+    equal(`"${variant}" resolves to the same exercise`, customs.customIdFor(variant), first);
 
-  equal("a genuinely different name does not", swaps.customIdFor("tyre flips"), "custom_tyre_flips");
+  equal("a genuinely different name does not", customs.customIdFor("tyre flips"), "custom_tyre_flips");
 
   state.customNames = {};
-  equal("typing a program move's name resolves to that move", swaps.customIdFor("Face Pull"), "face_pull");
-  equal("punctuation variance still resolves", swaps.customIdFor("bench dips"), "bench_dip");
-  equal("empty input yields nothing", swaps.customIdFor("   "), null);
+  equal("typing a program move's name resolves to that move", customs.customIdFor("Face Pull"), "face_pull");
+  equal("punctuation variance still resolves", customs.customIdFor("bench dips"), "bench_dip");
+  equal("empty input yields nothing", customs.customIdFor("   "), null);
 
-  equal("a nickname resolves to the move it names", swaps.customIdFor("lateral push ups"), "archer_pushup");
-  equal("so does a nickname for a move you described", swaps.customIdFor("weighted shoulder rotations"), "shoulder_circles");
+  equal("a nickname resolves to the move it names", customs.customIdFor("lateral push ups"), "archer_pushup");
+  equal("so does a nickname for a move you described", customs.customIdFor("weighted shoulder rotations"), "shoulder_circles");
   equal("a custom name you already own beats a nickname",
-    (state.customNames = {custom_arm_circles: "arm circles"}, swaps.customIdFor("arm circles")), "custom_arm_circles");
+    (state.customNames = {custom_arm_circles: "arm circles"}, customs.customIdFor("arm circles")), "custom_arm_circles");
 }
 
 section("Swapping keeps history with the movement");
 {
   reset();
-  const slot = movements.findExercise("leg_curl");
-  equal("no swap returns the slot untouched", swaps.resolveSlot(slot, state.current.swaps).id, "leg_curl");
+  const slot = exercises.findExercise("leg_curl");
+  equal("no swap returns the slot untouched", slots.resolveSlot(slot, state.current.swaps).id, "leg_curl");
 
   state.current.swaps = {leg_curl: "db_rdl"};
-  const resolved = swaps.resolveSlot(slot, state.current.swaps);
+  const resolved = slots.resolveSlot(slot, state.current.swaps);
   equal("a swap adopts the substitute's identity", resolved.id, "db_rdl");
   equal("the substitute records where it came from", resolved.swappedFrom, "leg_curl");
   equal("the slot's prescription is kept", [resolved.s, resolved.r], [slot.s, slot.r]);
@@ -205,9 +205,9 @@ section("Removing a custom exercise takes its sets with it");
       entries: {custom_sled_push: setsOf([[200, 5]]), goblet_squat: setsOf([[50, 10]])},
       swaps: {leg_curl: "custom_sled_push"}}
   };
-  equal("its sets are counted before removal", swaps.setsLoggedFor("custom_sled_push"), 1);
+  equal("its sets are counted before removal", customs.setsLoggedFor("custom_sled_push"), 1);
 
-  swaps.removeCustom("custom_sled_push");
+  customs.removeCustom("custom_sled_push");
   equal("the name is gone", state.customNames.custom_sled_push, undefined);
   equal("its sets are gone", state.sessions["2026-09-01"].entries.custom_sled_push, undefined);
   equal("the swap pointing at it is gone", state.sessions["2026-09-01"].swaps.leg_curl, undefined);
@@ -215,15 +215,15 @@ section("Removing a custom exercise takes its sets with it");
 
   state.sessions = {"2026-09-02": {date: "2026-09-02", day: "legs", block: "A", entries: {custom_only: setsOf([[10, 10]])}}};
   state.customNames = {custom_only: "only move"};
-  swaps.removeCustom("custom_only");
+  customs.removeCustom("custom_only");
   equal("a session left with nothing is dropped", state.sessions["2026-09-02"], undefined);
 }
 
 section("Rest comes from the movement, not its place in the list");
 {
-  const {restFor} = movements;
+  const {restFor} = exercises;
   const rest = (block, day, name) =>
-    movements.workoutFor(block, day).ex.find(e => e.n === name).rest;
+    exercises.workoutFor(block, day).ex.find(e => e.n === name).rest;
 
   equal("a heavy five gets the long rest", rest("C", "chest", "Flat DB Bench Press"), 180);
   equal("the day's lead compound gets two minutes", rest("A", "chest", "Flat DB Bench Press"), 120);
@@ -238,12 +238,12 @@ section("Rest comes from the movement, not its place in the list");
   equal("an AMRAP lead is still a lead", rest("A", "chest", "Pull-ups"), 120);
   equal("an AMRAP finisher is not", rest("A", "chest", "Push-ups to Failure"), 90);
 
-  const slot = movements.findExercise("hip_thrust");
+  const slot = exercises.findExercise("hip_thrust");
   equal("restFor reads the prescription, not the program", restFor(slot), 120);
   equal("dropping it to three sets drops the rest",
     restFor({id: slot.id, s: 3, r: slot.r}), 90);
 
-  const positional = movements.workoutFor("C", "chest").ex
+  const positional = exercises.workoutFor("C", "chest").ex
     .map((e, i) => e.rest === (i < 2 ? 120 : 60));
   check("the old positional rule no longer describes the day",
     positional.some(same => !same));
@@ -274,7 +274,7 @@ section("The progress card reads the best estimate, not the biggest pile");
 
 section("One formatter serves both views");
 {
-  const {setSummary, elapsedLabel, unitSuffix} = await import("../src/format.js");
+  const {setSummary, elapsedLabel, unitSuffix} = await import("../src/rules/format.js");
 
   equal("a run folds", setSummary([{w: "50", r: "12"}, {w: "50", r: "12"}], ""), "2 × 50×12");
   equal("a lone set does not", setSummary([{w: "50", r: "12"}], ""), "50×12");
@@ -325,7 +325,7 @@ section("Storage round trip and legacy migration");
 
   localStorage.clear();
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
-  const {saveSessions, loadSessions} = await import("../src/storage.js");
+  const {saveSessions, loadSessions} = await import("../src/store/storage.js");
   saveSessions(state.sessions);
   equal("sessions survive a save and load", loadSessions()["2026-09-01"].day, "chest");
 }
@@ -340,23 +340,23 @@ section("Rules the views share live below them");
   equal("the back-off drops 10% to the nearest plate", backoffWeight(setsOf([[60, 10]]), false), 55);
   equal("a lift with no weight has no back-off", backoffWeight(setsOf([["", 12]]), true), null);
 
-  const press = movements.findExercise("flat_db_press");
-  equal("rest between sets is the move's own", movements.restAfterSet(press, 0), press.rest);
-  equal("the last set rests into the next move", movements.restAfterSet(press, press.s - 1), press.restAfter);
+  const press = exercises.findExercise("flat_db_press");
+  equal("rest between sets is the move's own", exercises.restAfterSet(press, 0), press.rest);
+  equal("the last set rests into the next move", exercises.restAfterSet(press, press.s - 1), press.restAfter);
 
-  const plan = movements.workoutFor("A", "chest");
+  const plan = exercises.workoutFor("A", "chest");
   const session = {
     swaps: {flat_db_press: "db_rdl"},
     entries: {db_rdl: setsOf([[95, 10]]), leg_curl: setsOf([[40, 12]]), hammer_curl: [{w: "", r: ""}]}
   };
-  equal("only a logged move the plan does not hold is a stray", swaps.strayIds(session, plan), ["leg_curl"]);
+  equal("only a logged move the plan does not hold is a stray", slots.strayIds(session, plan), ["leg_curl"]);
 
-  const incline = movements.findExercise("incline_db_press");
-  const taken = swaps.idsTakenElsewhere(incline, plan, {flat_db_press: "db_rdl"});
+  const incline = exercises.findExercise("incline_db_press");
+  const taken = slots.idsTakenElsewhere(incline, plan, {flat_db_press: "db_rdl"});
   check("another slot's substitute counts as taken", taken.has("db_rdl") && !taken.has("flat_db_press"));
   check("the slot's own move does not", !taken.has("incline_db_press"));
 
-  const {logSet, swapSlot, flushNow} = await import("../src/session.js");
+  const {logSet, swapSlot, flushNow} = await import("../src/store/session.js");
   check("reps logged for the first time count as a new set", logSet(press, 0, {w: "50", r: "10"}));
   check("editing a logged set does not", !logSet(press, 0, {w: "55", r: "10"}));
   equal("the set is written in its place", state.current.entries.flat_db_press, [{w: "55", r: "10"}]);
@@ -404,8 +404,8 @@ section("Effort tunes the next target");
 section("Holding a lift");
 {
   reset();
-  const {isHeld, holdLift, releaseLift, beatsHold} = await import("../src/holds.js");
-  const {loadHolds} = await import("../src/storage.js");
+  const {isHeld, holdLift, releaseLift, beatsHold} = await import("../src/store/holds.js");
+  const {loadHolds} = await import("../src/store/storage.js");
   holdLift("ez_curl");
   check("a hold is remembered", isHeld("ez_curl") && loadHolds().ez_curl === 1);
   check("beating the held number by more than the margin releases it", beatsHold(60 * 12, 60 * 10));
@@ -416,14 +416,14 @@ section("Holding a lift");
 
   state.customNames = {custom_x: "x"};
   holdLift("custom_x");
-  swaps.removeCustom("custom_x");
+  customs.removeCustom("custom_x");
   check("removing a custom exercise drops its hold", !isHeld("custom_x"));
 }
 
 section("Stall detection");
 {
   reset();
-  const press = movements.findExercise("flat_db_press");
+  const press = exercises.findExercise("flat_db_press");
   const flat = {};
   ["2026-08-04", "2026-08-11", "2026-08-18"].forEach(date => {
     flat[date] = {date, day: "chest", block: "A", blockIndex: 0,
@@ -446,27 +446,27 @@ section("Stall detection");
 section("Off days sit beside the program, not inside it");
 {
   for(const block of BLOCKS) for(const day of OFF_KEYS){
-    const plan = movements.workoutFor(block, day);
+    const plan = exercises.workoutFor(block, day);
     check(`${block}/${day} has three sections`, plan.sections.length === 3, plan.sections.length);
     check(`${block}/${day} prescribes 15-36 sets`,
       progression.prescribedCount(block, day) >= 15 && progression.prescribedCount(block, day) <= 36,
       progression.prescribedCount(block, day));
-    const ids = movements.allExercises(plan).map(e => e.id);
+    const ids = exercises.allExercises(plan).map(e => e.id);
     equal(`${block}/${day} lists no move twice`, ids.filter((id, i) => ids.indexOf(id) !== i), []);
     const badTravel = Object.keys(plan.travel).filter(id =>
-      !ids.includes(id) || !movements.findExercise(plan.travel[id]) || ids.includes(plan.travel[id]));
+      !ids.includes(id) || !exercises.findExercise(plan.travel[id]) || ids.includes(plan.travel[id]));
     equal(`${block}/${day} travel swaps point at real moves not already in the session`, badTravel, []);
   }
 
-  const thruster = movements.workoutFor("A", "conditioning").sections[0].ex[0];
+  const thruster = exercises.workoutFor("A", "conditioning").sections[0].ex[0];
   equal("an interval move takes its shape from its section",
     [thruster.s, thruster.r, thruster.win, thruster.rest, thruster.restAfter], [4, "AMRAP", 40, 20, 20]);
-  const hang = movements.workoutFor("A", "functional").sections[2].ex[0];
+  const hang = exercises.workoutFor("A", "functional").sections[2].ex[0];
   equal("a finisher keeps its own set count", [hang.s, hang.r, hang.unit, hang.rest], [2, "30", "sec", 60]);
-  const stairs = movements.workoutFor("A", "conditioning").sections[2].ex[0];
+  const stairs = exercises.workoutFor("A", "conditioning").sections[2].ex[0];
   equal("a machine finisher logs level and minutes", [stairs.load, stairs.unit, stairs.implements, !!stairs.bw], ["level", "min", 0, true]);
 
-  const liftingGoblet = movements.findExercise("goblet_squat");
+  const liftingGoblet = exercises.findExercise("goblet_squat");
   equal("a lift reused on an off day keeps its lifting definition", [liftingGoblet.r, liftingGoblet.win], ["10-12", undefined]);
 
   equal("a machine finisher that hit its minutes goes up a level",
@@ -491,7 +491,7 @@ section("Off days sit beside the program, not inside it");
   equal("after three it wraps to version A of cycle 2",
     [nextOffBlockIndex(state.sessions, "conditioning"), blockLetter(3), cycleNumber(3)], [3, "A", 2]);
 
-  const {setDay} = await import("../src/session.js");
+  const {setDay} = await import("../src/store/session.js");
   state.current = {date: "2026-09-20", day: "legs", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}};
   setDay("conditioning");
   equal("switching to an off day picks up that type's next version", [state.current.blockIndex, state.current.block], [3, "A"]);
@@ -509,7 +509,7 @@ section("Prescribed set counts");
   }
   equal("main work plus core makes up the total",
     prescribedCountFor("A", "chest"),
-    movements.workoutFor("A", "chest").ex.reduce((n, e) => n + e.s, 0) + 12);
+    exercises.workoutFor("A", "chest").ex.reduce((n, e) => n + e.s, 0) + 12);
 }
 
 section("Last time is looked up within the same kind of session");
@@ -533,7 +533,7 @@ section("Last time is looked up within the same kind of session");
 
 section("Relabelling a session gives it the right week index");
 {
-  const {relabelSession} = await import("../src/session.js");
+  const {relabelSession} = await import("../src/store/session.js");
   reset();
   for(let i = 0; i < 7; i++){
     const date = `2026-07-0${i + 1}`;

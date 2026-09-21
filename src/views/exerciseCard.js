@@ -1,25 +1,20 @@
-import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, LOAD_LABEL, TREND_ICON,
-        EFFORT_LEVELS, STALL_EXPOSURES, DEFAULT_REST} from "./constants.js";
-import {workoutFor, findExercise, isOffDay, restAfterSet} from "./movements.js";
-import {state, notify} from "./state.js";
-import {loggedCount, priorSets, sessionVolume, suggestTarget,
-        prescribedCount, hasStalled, trend, backoffWeight} from "./progression.js";
-import {isHeld, holdLift, releaseLift} from "./holds.js";
-import {MUSCLES} from "./muscles.js";
-import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
-import {resolveSlot, resolvedExercises, strayIds, exerciseName} from "./swaps.js";
-import {isLogged} from "./sets.js";
-import {loadDate, chooseBlock, setDay, setsFor, previousSameWorkout,
-        setEffort, setNotes, logSet, swapSlot, isAway, setTravel} from "./session.js";
-import {setRuns, setSummary, elapsedLabel, unitSuffix, unitName} from "./format.js";
-import {renderHistory} from "./history.js";
-import {renderProgress} from "./progress.js";
-import {openSwapSheet, openHowTo} from "./sheet.js";
+import {LOAD_LABEL, TREND_ICON, EFFORT_LEVELS, STALL_EXPOSURES} from "../data/constants.js";
+import {restAfterSet} from "../rules/exercises.js";
+import {state, notify} from "../store/state.js";
+import {priorSets, suggestTarget, hasStalled, trend, backoffWeight} from "../rules/progression.js";
+import {isHeld, holdLift, releaseLift} from "../store/holds.js";
+import {MUSCLES} from "../data/muscles.js";
+import {isLogged} from "../rules/sets.js";
+import {setsFor, setEffort, logSet, swapSlot, nextRest} from "../store/session.js";
+import {setRuns, setSummary, unitSuffix, unitName} from "../rules/format.js";
+import {openSwapSheet} from "./sheets/swapSheet.js";
+import {openHowTo} from "./sheets/howtoSheet.js";
 import {start as startTimer, startWork, setIdleRest} from "./timer.js";
-import {strandButton, strandIconButton} from "./strand/button.js";
-import {strandField} from "./strand/field.js";
-import {strandPanel} from "./strand/panel.js";
-const el = id => document.getElementById(id);
+import {strandButton, strandIconButton} from "../strand/button.js";
+import {strandField} from "../strand/field.js";
+import {strandPanel} from "../strand/panel.js";
+import {byId} from "./dom.js";
+import {updateSaveBar} from "./saveBar.js";
 
 let restAlreadyRunningFor = null;
 
@@ -33,158 +28,6 @@ function flipFold(exercise){
   syncCard(exercise);
 }
 
-export function render(){
-  const main = el("main");
-  main.innerHTML = "";
-  if(state.view === "log") renderLog(main);
-  else if(state.view === "history") renderHistory(main);
-  else renderProgress(main);
-  updateFooter();
-  document.querySelectorAll(".tab").forEach(tab => {
-    const here = tab.dataset.view === state.view;
-    tab.setAttribute("aria-selected", String(here));
-    tab.dataset.chosen = here ? "on" : "off";
-  });
-}
-
-function renderLog(main){
-  const current = state.current;
-
-  const bar = document.createElement("div");
-  bar.className = "daybar";
-  const date = document.createElement("input");
-  date.type = "date";
-  date.className = "date-input";
-  date.value = current.date;
-  date.addEventListener("change", () => { if(date.value) loadDate(date.value); });
-  const dateField = strandField(date);
-
-  const blocks = document.createElement("div");
-  blocks.className = "blockset";
-  const start = cycleStart(current.blockIndex);
-  const offDay = isOffDay(current.day);
-  BLOCKS.forEach((letter, i) => {
-    const button = document.createElement("button");
-    button.title = `${offDay ? "Version" : "Week"} ${letter}`;
-    strandButton(button, {label: letter, tone: "secondary", key: "block:" + letter});
-    button.dataset.chosen = letter === current.block ? "on" : "off";
-    button.setAttribute("aria-pressed", String(letter === current.block));
-    button.addEventListener("click", () => chooseBlock(start + i));
-    blocks.appendChild(button);
-  });
-  bar.append(dateField, blocks);
-  main.appendChild(bar);
-
-  const done = offDay ? new Set() : sessionsDoneIn(state.sessions, current.blockIndex);
-  main.appendChild(dayRow("blockset sessions", DAY_KEYS, done));
-  main.appendChild(dayRow("blockset offdays", OFF_KEYS, new Set()));
-
-  const plan = workoutFor(current.block, current.day);
-  const head = document.createElement("div");
-  head.className = "dayhead";
-  head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>${offDay ? "Version" : "Week"} ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2></div>`;
-  if(plan.travel) head.appendChild(placeSwitch(plan));
-  main.appendChild(head);
-
-  const legend = document.createElement("div");
-  legend.className = "legend";
-  legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">${TREND_ICON.up}</em> beat it</span><span><em class="same">${TREND_ICON.same}</em> matched</span><span><em class="down">${TREND_ICON.down}</em> below</span>`;
-  main.appendChild(legend);
-
-  if(plan.sections){
-    let position = 0;
-    plan.sections.forEach(section => {
-      const label = document.createElement("p");
-      label.className = "section-label";
-      label.textContent = sectionLabel(section);
-      main.appendChild(label);
-      section.ex.forEach(slot => main.appendChild(exerciseCard(resolveSlot(slot, current.swaps), ++position, slot)));
-    });
-  } else {
-    plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot, current.swaps), i + 1, slot)));
-  }
-
-  if(plan.core){
-    const label = document.createElement("p");
-    label.className = "section-label";
-    label.textContent = "Core finisher · 3 supersets, 2 rounds each";
-    main.appendChild(label);
-    plan.core.forEach((pair, i) =>
-      main.appendChild(corePairCard(pair.map(slot => resolveSlot(slot, current.swaps)), i, pair)));
-  }
-
-  const strays = strayExercises(plan);
-  if(strays.length){
-    const label = document.createElement("p");
-    label.className = "section-label";
-    label.textContent = "Not in this session";
-    main.appendChild(label);
-    strays.forEach(exercise => main.appendChild(exerciseCard(exercise, null, null)));
-  }
-
-  main.appendChild(notesCard());
-}
-
-function dayRow(className, keys, done){
-  const current = state.current;
-  const row = document.createElement("div");
-  row.className = className;
-  keys.forEach(day => {
-    const button = document.createElement("button");
-    strandButton(button, {label: DAYS[day].short, tone: "secondary", ghost: true, key: "day:" + day});
-    if(done.has(day) && day !== current.day){
-      const mark = document.createElement("i");
-      mark.className = "icon day-done";
-      mark.textContent = "check";
-      mark.title = "Logged this week";
-      button.appendChild(mark);
-    }
-    button.dataset.chosen = day === current.day ? "on" : "off";
-    button.setAttribute("aria-pressed", String(day === current.day));
-    button.addEventListener("click", () => setDay(day));
-    row.appendChild(button);
-  });
-  return row;
-}
-
-function sectionLabel(section){
-  if(section.on) return `${section.name} · ${section.rounds} rounds · ${section.on}s on, ${section.off}s off`;
-  if(section.rounds) return `${section.name} · ${section.rounds} rounds`;
-  return section.name;
-}
-
-function placeSwitch(plan){
-  const wrap = document.createElement("div");
-  wrap.className = "place-wrap";
-  const label = document.createElement("p");
-  label.className = "eyebrow";
-  label.textContent = "Location";
-  const row = document.createElement("div");
-  row.className = "blockset place";
-  const away = isAway(plan);
-  [["gym", !away], ["away", away]].forEach(([place, chosen]) => {
-    const button = document.createElement("button");
-    strandButton(button, {label: place, tone: "secondary", ghost: true, key: "place:" + place});
-    button.dataset.chosen = chosen ? "on" : "off";
-    button.setAttribute("aria-pressed", String(chosen));
-    button.title = place === "gym" ? "The gym versions" : "No-equipment versions for travel";
-    button.addEventListener("click", () => { if(!chosen) setTravel(plan, place === "away"); });
-    row.appendChild(button);
-  });
-  wrap.append(label, row);
-  return wrap;
-}
-
-function strayExercises(plan){
-  const entries = state.current.entries;
-  return strayIds(state.current, plan)
-    .map(id => Object.assign(
-      {id, n: exerciseName(id), s: entries[id].length, r: "", rest: DEFAULT_REST},
-      findExercise(id) || {},
-      {stray: true}
-    ));
-}
-
 function summaryFor(exercise){
   const chips = setRuns(state.current.entries[exercise.id], unitSuffix(exercise))
     .map(run => `<b>${run.count > 1 ? `<i>${run.count}×</i>` : ""}${run.part}</b>`);
@@ -194,7 +37,7 @@ function summaryFor(exercise){
 }
 
 function syncCard(exercise){
-  const card = el("main").querySelector("#card-" + exercise.id) ||
+  const card = byId("main").querySelector("#card-" + exercise.id) ||
     document.getElementById("card-" + exercise.id);
   if(card && card.classList){
     const folded = isFolded(exercise);
@@ -234,7 +77,7 @@ function ownMove(panel, move){
   panel.appendChild(move);
 }
 
-function exerciseCard(exercise, position, slot){
+export function exerciseCard(exercise, position, slot){
   const card = document.createElement("section");
   card.className = "ex";
   strandPanel(card);
@@ -243,7 +86,7 @@ function exerciseCard(exercise, position, slot){
   return card;
 }
 
-function corePairCard(pair, index, slots){
+export function corePairCard(pair, index, slots){
   const card = document.createElement("section");
   card.className = "ex core";
   strandPanel(card);
@@ -359,7 +202,7 @@ function workWindowSeconds(exercise){
 }
 
 function liveRows(exercise){
-  const card = el("main").querySelector("#card-" + exercise.id) || document.getElementById("card-" + exercise.id);
+  const card = byId("main").querySelector("#card-" + exercise.id) || document.getElementById("card-" + exercise.id);
   if(!card || !card.querySelectorAll) return [];
   return [...card.querySelectorAll(".set")].filter(row => row.logSeconds);
 }
@@ -491,7 +334,8 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
     if(isComplete(exercise) !== wasComplete) state.foldFlips.delete(exercise.id);
     paint();
     syncCard(exercise);
-    updateFooter();
+    updateSaveBar();
+    setIdleRest(nextRest());
     refreshRepeats();
     if(!newlyLogged) return;
     const restRunning = restAlreadyRunningFor === exercise.id + ":" + index;
@@ -558,99 +402,4 @@ function effortRow(exercise){
     row.appendChild(button);
   });
   return row;
-}
-
-function notesCard(){
-  const box = document.createElement("div");
-  box.className = "notes";
-  strandPanel(box);
-  const label = document.createElement("label");
-  label.textContent = "Notes";
-  label.setAttribute("for", "notes");
-  const area = document.createElement("textarea");
-  area.id = "notes";
-  area.value = state.current.notes || "";
-  area.placeholder = "How it felt, what was occupied, anything worth remembering next cycle.";
-  const save = () => setNotes(area.value);
-  area.addEventListener("change", save);
-  area.addEventListener("blur", save);
-  box.append(label, strandField(area));
-  return box;
-}
-
-function setBarGroups(){
-  const plan = workoutFor(state.current.block, state.current.day);
-  if(!plan) return [];
-  let reached = false;
-  return resolvedExercises(plan, state.current.swaps).map(exercise => {
-    const sets = state.current.entries[exercise.id] || [];
-    const marks = [];
-    for(let i = 0; i < exercise.s; i++) marks.push(isLogged(sets[i]) ? "on" : "off");
-    const here = !reached && marks.includes("off");
-    if(here){
-      reached = true;
-      return marks.map(mark => mark === "off" ? "now" : mark);
-    }
-    return marks;
-  });
-}
-
-function updateSetBar(groups, done, total){
-  const bar = el("setbar");
-  if(!bar) return;
-  const marks = groups.flat();
-  const shape = groups.map(group => group.length).join(",");
-  if(bar.dataset.shape !== shape){
-    bar.innerHTML = "";
-    marks.forEach(() => bar.appendChild(Object.assign(document.createElement("i"), {className: "tick"})));
-    bar.dataset.shape = shape;
-  }
-  const lead = marks.indexOf("now");
-  marks.forEach((mark, i) => {
-    const tick = bar.children[i];
-    tick.dataset.state = mark;
-    if(i === lead) tick.dataset.lead = "";
-    else tick.removeAttribute("data-lead");
-  });
-  bar.setAttribute("aria-valuemax", String(total));
-  bar.setAttribute("aria-valuenow", String(done));
-  bar.setAttribute("aria-label", `${done} of ${total} sets logged`);
-}
-
-function nextRestSeconds(){
-  const plan = workoutFor(state.current.block, state.current.day);
-  if(!plan) return null;
-  for(const exercise of resolvedExercises(plan, state.current.swaps)){
-    const sets = state.current.entries[exercise.id] || [];
-    for(let i = 0; i < exercise.s; i++)
-      if(!isLogged(sets[i])) return restAfterSet(exercise, i);
-  }
-  return null;
-}
-
-function updateFooter(){
-  const current = state.current;
-  const pending = nextRestSeconds();
-  if(pending) setIdleRest(pending);
-
-  const total = prescribedCount(current.block, current.day);
-  const count = loggedCount(current);
-  const volume = sessionVolume(current);
-  updateSetBar(setBarGroups(), count, total);
-
-  el("volume").textContent = volume ? `${volume.toLocaleString()} lb` : (count ? `${count} sets` : "0");
-  el("tally").textContent = `${count}/${total}`;
-
-  if(!count){ el("volnote").textContent = "nothing logged yet"; return; }
-
-  const parts = [];
-  const elapsed = elapsedLabel(current.startedAt, current.lastLoggedAt);
-  if(elapsed) parts.push(elapsed);
-
-  const previous = previousSameWorkout();
-  if(previous){
-    const before = sessionVolume(previous.session);
-    if(before) parts.push(`${volume - before >= 0 ? "+" : ""}${(volume - before).toLocaleString()} vs ${previous.date.slice(5)}`);
-  }
-  el("volnote").textContent = parts.length ? parts.join(" · ") : "first set in";
 }

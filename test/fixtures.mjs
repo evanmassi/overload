@@ -2,17 +2,18 @@ import {installStorage} from "./dom.mjs";
 
 installStorage();
 
-const {state, hydrate} = await import("../src/state.js");
-const constants = await import("../src/constants.js");
-const movements = await import("../src/movements.js");
-const progression = await import("../src/progression.js");
-const rotation = await import("../src/rotation.js");
-const swaps = await import("../src/swaps.js");
-const backup = await import("../src/backup.js");
-const {HOWTO} = await import("../src/howto.js");
-const {PATTERNS, LOAD, PER} = await import("../src/taxonomy.js");
-const {EXTRAS} = await import("../src/extras.js");
-const {MUSCLES} = await import("../src/muscles.js");
+const {state, hydrate} = await import("../src/store/state.js");
+const constants = await import("../src/data/constants.js");
+const exercises = await import("../src/rules/exercises.js");
+const progression = await import("../src/rules/progression.js");
+const rotation = await import("../src/rules/rotation.js");
+const customs = await import("../src/store/customs.js");
+const slots = await import("../src/store/slots.js");
+const backup = await import("../src/store/backup.js");
+const {HOWTO} = await import("../src/data/howto.js");
+const {PATTERNS, LOAD, PER} = await import("../src/data/taxonomy.js");
+const {EXTRAS} = await import("../src/data/extras.js");
+const {MUSCLES} = await import("../src/data/muscles.js");
 
 export function reset(){
   localStorage.clear();
@@ -37,14 +38,14 @@ export function setsOf(pairs){
 export function prescribedMovements(){
   const seen = new Map();
   for(const block of constants.BLOCKS) for(const day of constants.DAY_KEYS)
-    movements.allExercises(movements.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
+    exercises.allExercises(exercises.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
   return seen;
 }
 
 export function offDayMovements(){
   const seen = new Map();
   for(const block of constants.BLOCKS) for(const day of constants.OFF_KEYS)
-    movements.allExercises(movements.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
+    exercises.allExercises(exercises.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
   return seen;
 }
 
@@ -55,4 +56,4 @@ export function everyMovement(){
   return seen;
 }
 
-export {state, hydrate, constants, movements, progression, rotation, swaps, backup, HOWTO, PATTERNS, LOAD, PER, EXTRAS, MUSCLES};
+export {state, hydrate, constants, exercises, progression, rotation, customs, slots, backup, HOWTO, PATTERNS, LOAD, PER, EXTRAS, MUSCLES};

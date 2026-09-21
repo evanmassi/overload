@@ -1,4 +1,4 @@
-import {SESSIONS_KEY, CUSTOM_KEY, SOUND_KEY, HOLD_KEY, LEGACY_DAY_KEYS} from "./constants.js";
+import {SESSIONS_KEY, CUSTOM_KEY, SOUND_KEY, HOLD_KEY, LEGACY_DAY_KEYS} from "../data/constants.js";
 
 const LEGACY_SESSIONS_KEY = "ironledger.v1";
 

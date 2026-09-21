@@ -1,8 +1,8 @@
-import {findExercise, allExercises, workoutFor, repRange, isOffDay} from "./movements.js";
+import {findExercise, allExercises, workoutFor, repRange, isOffDay} from "./exercises.js";
 import {unitSuffix} from "./format.js";
 import {isLogged} from "./sets.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
-        EFFORT_STEPS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT} from "./constants.js";
+        EFFORT_STEPS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT} from "../data/constants.js";
 
 function num(value){
   const parsed = parseFloat(value);

@@ -173,37 +173,45 @@ Two families, no more. **Lato** for everything written (titles, labels, buttons,
 
 ## Layout
 
-Static files, ES modules, no build step.
+Static files, ES modules, no build step. The folder under `src/` is the layer, and a file only imports from its own
+layer or the ones before it: `data`, `rules`, `store`, then `views`.
 
 | | |
 |---|---|
-| `src/program.js` | the nine workouts |
-| `src/offdays.js` | the nine off-day workouts and their no-gym substitutes |
-| `src/extras.js` | moves the program never prescribes but the swap sheet offers, including the no-gym substitutes |
-| `src/howto.js` | 165 movement write-ups |
-| `src/taxonomy.js` | movement patterns, load conventions, per-side table |
-| `src/movements.js` | derives rest times and load factors onto the program, and parses rep ranges |
-| `src/constants.js` | every tunable number |
-| `src/state.js` | shared state and a subscribe/notify pair |
-| `src/storage.js` | localStorage read and write |
-| `src/rotation.js` | which week and which session comes next |
-| `src/sets.js` | whether a set counts as logged |
-| `src/progression.js` | scoring, volume, target suggestions, beat/match/below, stall back-off |
-| `src/swaps.js` | substitutions and custom exercises |
-| `src/holds.js` | lifts you are holding on purpose |
-| `src/muscles.js` | what each movement works, primary and secondary |
-| `src/session.js` | the session being edited: every edit to it, and autosave |
-| `src/format.js` | set summaries and durations, shared by every view |
-| `src/render.js` | the log view, the save bar |
-| `src/history.js` | the history view, backup and sound controls |
-| `src/progress.js` | the progress view, consistency grid, sparkline |
-| `src/sheet.js` | swap and how-to sheets |
-| `src/timer.js` | rest timer |
-| `src/savestate.js` | the header save dot |
-| `src/sound.js` | countdown beeps and the sound preference |
-| `src/backup.js` | JSON export and import |
+| `src/data/program.js` | the nine workouts |
+| `src/data/offdays.js` | the nine off-day workouts and their no-gym substitutes |
+| `src/data/extras.js` | moves the program never prescribes but the swap sheet offers, including the no-gym substitutes |
+| `src/data/howto.js` | 165 movement write-ups |
+| `src/data/taxonomy.js` | movement patterns, load conventions, per-side table |
+| `src/data/muscles.js` | what each movement works, primary and secondary |
+| `src/data/constants.js` | every tunable number |
+| `src/rules/exercises.js` | finds an exercise, derives its rest times and load factors, parses rep ranges |
+| `src/rules/sets.js` | whether a set counts as logged |
+| `src/rules/format.js` | dates, set summaries and durations, shared by every view |
+| `src/rules/progression.js` | scoring, volume, target suggestions, beat/match/below, stall back-off |
+| `src/rules/rotation.js` | which week and which session comes next |
+| `src/store/storage.js` | localStorage read and write |
+| `src/store/state.js` | shared state and a subscribe/notify pair |
+| `src/store/session.js` | the session being edited: every edit to it, and autosave |
+| `src/store/slots.js` | which move fills a slot once swaps apply, and moves logged outside the plan |
+| `src/store/customs.js` | custom exercises and loose name matching |
+| `src/store/holds.js` | lifts you are holding on purpose |
+| `src/store/backup.js` | JSON export and import |
+| `src/views/app.js` | picks the screen for the current tab and refreshes the save bar |
+| `src/views/log.js` | the log view |
+| `src/views/exerciseCard.js` | an exercise card: set rows, target, stall and hold callouts, effort |
+| `src/views/saveBar.js` | the bottom bar: set ticks, volume, tally |
+| `src/views/saveStatus.js` | the header save dot |
+| `src/views/history.js` | the history view |
+| `src/views/settings.js` | sound and backup controls under the history list |
+| `src/views/progress.js` | the progress view, consistency grid, sparkline |
+| `src/views/timer.js` | rest timer |
+| `src/views/sound.js` | countdown beeps and the sound preference |
+| `src/views/sheets/` | the pop-up frame, and the swap, how-to, timer and relabel pop-ups |
+| `styles/app.css` | app styles on top of the strand tokens |
 
-Nothing imports `render.js` except `main.js`, and `render.js` is the only thing that imports `history.js` and `progress.js`. State changes call `notify()`, and `main.js` subscribes `render` to it. That keeps the view out of the logic and the module graph free of cycles.
+Nothing imports `views/app.js` except `main.js`. State changes call `notify()`, and `main.js` subscribes the app view
+to it. That keeps the view out of the logic and the module graph free of cycles.
 
 ## Tests
 
@@ -213,11 +221,11 @@ node test/all.mjs
 
 Three suites, no dependencies.
 
-- `modules.mjs` loads every module against a DOM stub, fails on a dead export, and fails on any class the renderers emit that has no rule in `style.css`. That last check exists because a stylesheet edit once deleted the consistency grid's rules along with the ones it meant to remove, and every DOM test still passed while the grid rendered invisible. It also fails when a shipped file is missing from the `sw.js` precache list, or the list names a file that no longer exists; the whole strand design system once shipped outside that list without any test noticing.
-- `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
-- `render.mjs` boots the real views against a fake DOM and asserts what renders, including the sheet's hidden state.
+- `guards.mjs` loads every module against a DOM stub, fails on a dead export, fails when a file imports from a layer above its own, and fails on any class the renderers emit that has no stylesheet rule. That last check exists because a stylesheet edit once deleted the consistency grid's rules along with the ones it meant to remove, and every DOM test still passed while the grid rendered invisible. It also fails when a shipped file is missing from the `sw.js` precache list, or the list names a file that no longer exists; the whole strand design system once shipped outside that list without any test noticing.
+- `logic.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
+- `views.mjs` boots the real views against a fake DOM and asserts what renders, including the sheet's hidden state.
 
-`modules.mjs` also fails the build on an export nothing imports, which is why there is no dead code to find by hand.
+`guards.mjs` also fails the build on an export nothing imports, which is why there is no dead code to find by hand.
 
 Blocks must not inherit state from each other; each opens with `fresh()`.
 
@@ -235,6 +243,6 @@ Service workers need HTTPS or localhost, so opening `index.html` as a `file://` 
 
 Session keys in `PROGRAM` are `chest` / `legs` / `arms`; sessions carry a `blockIndex` that drives the A/B/C rotation, and `block` is derived from it.
 
-Exercise how-tos live in `src/howto.js`, keyed by exercise id: `s` is the step array, `w` is the watch-out line. A move with no entry still opens the sheet and shows the YouTube link.
+Exercise how-tos live in `src/data/howto.js`, keyed by exercise id: `s` is the step array, `w` is the watch-out line. A move with no entry still opens the sheet and shows the YouTube link.
 
-Editing the program means editing `src/program.js`. Exercise `id` values are what link a lift to its history, so renaming an id orphans its past data; changing the display name `n` is safe.
+Editing the program means editing `src/data/program.js`. Exercise `id` values are what link a lift to its history, so renaming an id orphans its past data; changing the display name `n` is safe.
