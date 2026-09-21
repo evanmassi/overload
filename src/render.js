@@ -62,7 +62,7 @@ function renderLog(main){
   BLOCKS.forEach((letter, i) => {
     const button = document.createElement("button");
     button.title = `${offDay ? "Version" : "Week"} ${letter}`;
-    strandButton(button, {label: letter, tone: "secondary", ghost: true, key: "block:" + letter});
+    strandButton(button, {label: letter, tone: "secondary", key: "block:" + letter});
     button.dataset.chosen = letter === current.block ? "on" : "off";
     button.setAttribute("aria-pressed", String(letter === current.block));
     button.addEventListener("click", () => {
@@ -133,7 +133,7 @@ function dayRow(className, keys, done){
     const isDone = done.has(day) && day !== current.day;
     strandButton(button, {
       label: DAYS[day].short, meta: isDone ? "done" : "",
-      tone: "secondary", ghost: true, key: "day:" + day
+      tone: "secondary", key: "day:" + day
     });
     button.dataset.chosen = day === current.day ? "on" : "off";
     button.setAttribute("aria-pressed", String(day === current.day));
