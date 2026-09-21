@@ -1,14 +1,12 @@
 import {findExercise, IDS_BY_PATTERN} from "../../rules/exercises.js";
-import {workoutFor} from "../../rules/workouts.js";
-import {priorSets} from "../../rules/progression.js";
+import {workoutOf} from "../../rules/workouts.js";
 import {state, changes} from "../../store/state.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor} from "../../store/customs.js";
 import {idsTakenElsewhere} from "../../store/slots.js";
-import {swapSlot} from "../../store/session.js";
-import {makeField} from "../../ui/field.js";
+import {swapSlot, lastTimeFor} from "../../store/session.js";
 import {el, escapeHtml} from "../dom.js";
 import {actionButton, confirmButton} from "../controls.js";
-import {openSheet, closeSheet, sheetGroup} from "./sheet.js";
+import {openSheet, closeSheet, sheetGroup, sheetEntry} from "./sheet.js";
 
 let openSlot = null;
 
@@ -19,7 +17,7 @@ function pick(slot, id){
 }
 
 function lastDate(id){
-  const last = priorSets(state.sessions, id, state.current.key, state.current.day);
+  const last = lastTimeFor(id);
   return last ? last.date.slice(5) : "";
 }
 
@@ -55,27 +53,10 @@ function customRow(slot, id, taken){
   return row;
 }
 
-function typedEntry(slot){
-  const input = el("input");
-  input.type = "text";
-  input.placeholder = "Exercise name";
-  const submit = () => {
-    const id = registerCustom(input.value.trim());
-    if(id && !pick(slot, id)){
-      input.value = "";
-      input.placeholder = "Already in this session";
-    }
-  };
-  input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
-  const row = el("div", "sheet-custom");
-  row.append(makeField(input), actionButton("Use", {tone: "primary"}, submit));
-  return row;
-}
-
 export function openSwapSheet(slot){
   openSlot = slot;
   const body = openSheet("Instead of " + slot.n);
-  const taken = idsTakenElsewhere(slot, workoutFor(state.current.block, state.current.day), state.current.swaps);
+  const taken = idsTakenElsewhere(slot, workoutOf(state.current), state.current.swaps);
   const offer = ids => ids.filter(id => !taken.has(id)).forEach(id => body.appendChild(exerciseRow(slot, id)));
 
   const mine = Object.keys(state.customNames)
@@ -92,7 +73,13 @@ export function openSwapSheet(slot){
   }
 
   sheetGroup("Type your own");
-  body.appendChild(typedEntry(slot));
+  body.appendChild(sheetEntry("Exercise name", "Use", input => {
+    const id = registerCustom(input.value.trim());
+    if(id && !pick(slot, id)){
+      input.value = "";
+      input.placeholder = "Already in this session";
+    }
+  }));
 
   sheetGroup("Everything else");
   Object.keys(IDS_BY_PATTERN).filter(p => p !== pattern).forEach(other => {

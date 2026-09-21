@@ -20,8 +20,7 @@ export function choiceRow(className, choices, style = {}){
 }
 
 export function confirmButton(label, prompt, options, onConfirm){
-  const button = makeButton(el("button"), Object.assign({label}, options));
-  button.addEventListener("click", event => {
+  const button = actionButton(label, options, event => {
     event.stopPropagation();
     if(button.dataset.armed){ onConfirm(); return; }
     button.dataset.armed = "1";

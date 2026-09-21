@@ -2,7 +2,7 @@ import {AUTOSAVE_DELAY_MS} from "../data/constants.js";
 import {state, changes, channel, persistSessions} from "./state.js";
 import {loggedCount, priorSets} from "../rules/progression.js";
 import {blockIndexOf, blockLetter, activeBlockIndex, nextSessionIn, nextOffBlockIndex} from "../rules/rotation.js";
-import {isOffDay, workoutFor, restAfterSet} from "../rules/workouts.js";
+import {isOffDay, workoutOf, restAfterSet} from "../rules/workouts.js";
 import {idsTakenElsewhere, resolvedExercises} from "./slots.js";
 import {releaseIfBeaten} from "./holds.js";
 import {isLogged} from "../rules/sets.js";
@@ -132,9 +132,15 @@ function markLogged(){
   state.current.lastLoggedAt = now;
 }
 
-export function setsFor(exerciseId){
+function setsFor(exerciseId){
   if(!state.current.entries[exerciseId]) state.current.entries[exerciseId] = [];
   return state.current.entries[exerciseId];
+}
+
+export function currentSets(exerciseId){ return state.current.entries[exerciseId] || []; }
+
+export function lastTimeFor(exerciseId){
+  return priorSets(state.sessions, exerciseId, state.current.key, state.current.day);
 }
 
 export function logSet(exercise, index, set){
@@ -143,14 +149,13 @@ export function logSet(exercise, index, set){
   const newlyLogged = !isLogged(sets[index]) && isLogged(set);
   sets[index] = set;
   if(newlyLogged) markLogged();
-  const prior = priorSets(state.sessions, exercise.id, state.current.key, state.current.day);
+  const prior = lastTimeFor(exercise.id);
   releaseIfBeaten(exercise, set, prior && prior.sets[index]);
   queueSave();
   return newlyLogged;
 }
 
 export function setEffort(exerciseId, level){
-  if(!state.current.effort) state.current.effort = {};
   if(state.current.effort[exerciseId] === level) delete state.current.effort[exerciseId];
   else state.current.effort[exerciseId] = level;
   queueSave();
@@ -163,7 +168,7 @@ export function setNotes(text){
 }
 
 export function swapSlot(slot, id){
-  const workout = workoutFor(state.current.block, state.current.day);
+  const workout = workoutOf(state.current);
   if(idsTakenElsewhere(slot, workout, state.current.swaps).has(id)) return false;
   if(id === slot.id) delete state.current.swaps[slot.id];
   else state.current.swaps[slot.id] = id;
@@ -205,7 +210,7 @@ function snapshot(){
     entries: cleanEntries(current.entries)
   };
   if(current.notes && current.notes.trim()) snap.notes = current.notes.trim();
-  if(Object.keys(current.effort || {}).length) snap.effort = Object.assign({}, current.effort);
+  if(Object.keys(current.effort).length) snap.effort = Object.assign({}, current.effort);
   if(current.startedAt) snap.startedAt = current.startedAt;
   if(current.lastLoggedAt) snap.lastLoggedAt = current.lastLoggedAt;
   if(Object.keys(current.swaps).length) snap.swaps = Object.assign({}, current.swaps);
@@ -247,13 +252,13 @@ export function deleteSession(key){
 }
 
 export function openSetIndex(exercise){
-  const sets = state.current.entries[exercise.id] || [];
+  const sets = currentSets(exercise.id);
   for(let i = 0; i < exercise.s; i++) if(!isLogged(sets[i])) return i;
   return -1;
 }
 
 export function nextRest(){
-  const workout = workoutFor(state.current.block, state.current.day);
+  const workout = workoutOf(state.current);
   if(!workout) return null;
   for(const exercise of resolvedExercises(workout, state.current.swaps)){
     const index = openSetIndex(exercise);

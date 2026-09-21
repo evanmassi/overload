@@ -1,6 +1,6 @@
 import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON, DEFAULT_REST} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
-import {workoutFor, isOffDay, supersetPairs} from "../rules/workouts.js";
+import {workoutOf, isOffDay, corePairs} from "../rules/workouts.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "../rules/rotation.js";
 import {state} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
@@ -15,7 +15,7 @@ import {exerciseCard, corePairCard} from "./exerciseCard.js";
 export function renderLog(main){
   const current = state.current;
   const offDay = isOffDay(current.day);
-  const workout = workoutFor(current.block, current.day);
+  const workout = workoutOf(current);
 
   const date = el("input", "date-input");
   date.type = "date";
@@ -51,8 +51,8 @@ export function renderLog(main){
   workout.sections.forEach(section => {
     const label = SECTION_LABEL[section.kind](section);
     if(label) main.appendChild(el("p", "section-label", label));
-    if(section.kind === "superset")
-      supersetPairs(section).forEach(pair => main.appendChild(corePairCard(pair.map(resolve), pairIndex++, pair)));
+    if(section.kind === "core")
+      corePairs(section).forEach(pair => main.appendChild(corePairCard(pair.map(resolve), pairIndex++, pair)));
     else
       section.ex.forEach(slot => main.appendChild(exerciseCard(resolve(slot), ++position, slot)));
   });
@@ -85,7 +85,7 @@ function dayRow(className, keys, done){
 
 const SECTION_LABEL = {
   straight: () => null,
-  superset: section => `${section.name} · ${section.ex.length / 2} supersets, ${section.rounds} rounds each`,
+  core: section => `${section.name} · ${section.ex.length / 2} supersets, ${section.rounds} rounds each`,
   interval: section => `${section.name} · ${section.rounds} rounds · ${section.on}s on, ${section.off}s off`,
   circuit: section => `${section.name} · ${section.rounds} rounds`,
   finish: section => section.name

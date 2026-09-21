@@ -1,12 +1,12 @@
 import {LOAD_LABEL, TREND_ICON, EFFORT_LEVELS, STALL_EXPOSURES} from "../data/constants.js";
 import {musclesOf} from "../rules/exercises.js";
 import {restAfterSet} from "../rules/workouts.js";
-import {priorSets, suggestTarget, hasStalled, trend, backoffWeight} from "../rules/progression.js";
+import {suggestTarget, hasStalled, trend, backoffWeight} from "../rules/progression.js";
 import {isLogged} from "../rules/sets.js";
 import {setRuns, setSummary, unitSuffix, unitName} from "../rules/format.js";
 import {state, changes} from "../store/state.js";
 import {isHeld, holdExercise, releaseExercise} from "../store/holds.js";
-import {setsFor, setEffort, logSet, swapSlot, nextRest, openSetIndex} from "../store/session.js";
+import {setEffort, logSet, swapSlot, nextRest, openSetIndex, currentSets, lastTimeFor} from "../store/session.js";
 import {makeIconButton} from "../ui/button.js";
 import {makeField} from "../ui/field.js";
 import {makePanel} from "../ui/panel.js";
@@ -30,7 +30,7 @@ function flipFold(exercise){
 function summaryFor(exercise){
   const chips = setRuns(state.current.entries[exercise.id], unitSuffix(exercise))
     .map(run => `<b>${run.count > 1 ? `<i>${run.count}×</i>` : ""}${escapeHtml(run.part)}</b>`);
-  const effort = (state.current.effort || {})[exercise.id];
+  const effort = state.current.effort[exercise.id];
   if(effort) chips.push(`<em>${effort}</em>`);
   return chips.join("");
 }
@@ -95,7 +95,7 @@ export function corePairCard(pair, index, slots){
 
 function fillCard(card, exercise, position, slot, notch){
   slot = slot || exercise;
-  const prior = priorSets(state.sessions, exercise.id, state.current.key, state.current.day);
+  const prior = lastTimeFor(exercise.id);
   const unit = unitName(exercise);
   const suffix = unitSuffix(exercise);
 
@@ -157,7 +157,7 @@ function fillCard(card, exercise, position, slot, notch){
     card.appendChild(stallPrompt(exercise, slot, prior));
 
   const sets = el("div", "sets");
-  const logged = setsFor(exercise.id);
+  const logged = currentSets(exercise.id);
 
   const columns = el("div", "set head");
   columns.innerHTML = `<div>${exercise.core || exercise.win ? "rd" : "#"}</div><div>${exercise.load === "level" ? "level" : "weight (lbs)"}</div><div></div><div>${unit}</div>`;
@@ -204,14 +204,14 @@ function workWindowButton(exercise, seconds){
 }
 
 function logTimedSet(exercise, index, seconds){
-  const existing = (state.current.entries[exercise.id] || [])[index];
+  const existing = currentSets(exercise.id)[index];
   if(isLogged(existing)) return;
   recordSet(exercise, index, {w: (existing && existing.w) || "", r: String(seconds)});
   changes.notify();
   startRestAfter(exercise, index);
 }
 
-function stallAction(label, key, act){
+function calloutAction(label, key, act){
   return actionButton(label, {tone: "secondary", ghost: true, key}, act);
 }
 
@@ -229,21 +229,21 @@ function callout(tone, icon, title, body, actions){
 }
 
 function stallPrompt(exercise, slot, prior){
-  const actions = [stallAction("swap", "stall-swap:" + exercise.id, () => openSwapSheet(slot))];
+  const actions = [calloutAction("swap", "stall-swap:" + exercise.id, () => openSwapSheet(slot))];
   const dropped = backoffWeight(prior.sets, exercise.bw);
   if(dropped){
-    actions.push(stallAction(`drop to ${dropped}`, "stall-drop:" + exercise.id, () => {
-      const first = (state.current.entries[exercise.id] || [])[0];
+    actions.push(calloutAction(`drop to ${dropped}`, "stall-drop:" + exercise.id, () => {
+      const first = currentSets(exercise.id)[0];
       logSet(exercise, 0, {w: String(dropped), r: (first && first.r) || ""});
       changes.notify();
     }));
   }
-  actions.push(stallAction("hold", "stall-hold:" + exercise.id, () => { holdExercise(exercise.id); changes.notify(); }));
+  actions.push(calloutAction("hold", "stall-hold:" + exercise.id, () => { holdExercise(exercise.id); changes.notify(); }));
   return callout("warning", "warning", "Stalled", `Same numbers ${STALL_EXPOSURES} sessions running.`, actions);
 }
 
 function holdNotice(exercise){
-  const release = stallAction("push", "stall-release:" + exercise.id, () => { releaseExercise(exercise.id); changes.notify(); });
+  const release = calloutAction("push", "stall-release:" + exercise.id, () => { releaseExercise(exercise.id); changes.notify(); });
   return callout("secondary", "anchor", "Holding", "Match it. Beat it by 10% and the push comes back.", [release]);
 }
 
@@ -302,7 +302,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
 
   const carryFrom = () => index === 0
     ? last
-    : (state.current.entries[exercise.id] || [])[index - 1];
+    : currentSets(exercise.id)[index - 1];
 
   const repeat = el("button", "repeat");
   makeIconButton(repeat, {
@@ -335,7 +335,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
 }
 
 function effortRow(exercise){
-  const chosen = (state.current.effort || {})[exercise.id];
+  const chosen = state.current.effort[exercise.id];
   return choiceRow("effort", EFFORT_LEVELS.map(level => ({
     label: level,
     key: "effort:" + exercise.id + ":" + level,

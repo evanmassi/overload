@@ -28,13 +28,6 @@ function brackets(host){
   }));
 }
 
-function glyph(host){
-  const span = document.createElement("span");
-  span.className = "btn-glyph";
-  host.appendChild(span);
-  return span;
-}
-
 function wire(el, key){
   let hover = false;
   let held = false;
@@ -119,7 +112,7 @@ export function makeButton(el, options = {}){
 export function makeIconButton(el, options = {}){
   const {icon, label, size, glyph: glyphSize} = options;
   makeButton(el, Object.assign({}, options, {label: ""}));
-  const marks = [glyph(el.querySelector(".btn-word")), glyph(el.querySelector(".btn-label"))];
+  const marks = [layer(el.querySelector(".btn-word"), "glyph"), layer(el.querySelector(".btn-label"), "glyph")];
   el.classList.add("btn-icon");
   if(size) el.style.setProperty("--s-size", size + "px");
   if(glyphSize) el.style.setProperty("--s-glyph", glyphSize + "px");

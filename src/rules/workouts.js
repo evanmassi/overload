@@ -35,11 +35,11 @@ const roundsWithRest = (slot, section) => ({
 
 const PLACEMENT = {
   straight: slot => ({rest: restFor(slot), restAfter: REST.betweenExercises}),
-  superset: (slot, section, i) => ({
+  core: (slot, section, i) => ({
     core: 1,
     s: section.rounds,
-    rest: i % 2 ? REST.supersetRound : REST.supersetWalk,
-    restAfter: i % 2 ? REST.betweenSupersets : REST.supersetWalk
+    rest: i % 2 ? REST.coreRound : REST.coreSwitch,
+    restAfter: i % 2 ? REST.betweenCorePairs : REST.coreSwitch
   }),
   interval: (slot, section) => Object.assign(roundsWithRest(slot, section), {win: section.on, r: "AMRAP"}),
   circuit: roundsWithRest,
@@ -69,11 +69,13 @@ export function workoutFor(block, day){
   return (book[block] && book[block][day]) || null;
 }
 
+export function workoutOf(session){ return workoutFor(session.block, session.day); }
+
 export function workoutSlots(workout){
   return workout ? workout.sections.flatMap(section => section.ex) : [];
 }
 
-export function supersetPairs(section){
+export function corePairs(section){
   const pairs = [];
   for(let i = 0; i < section.ex.length; i += 2) pairs.push(section.ex.slice(i, i + 2));
   return pairs;

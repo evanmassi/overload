@@ -25,9 +25,9 @@ export const REST = {
   accessory: 90,
   isolation: 60,
   betweenExercises: 90,
-  supersetWalk: 15,
-  supersetRound: 45,
-  betweenSupersets: 60
+  coreSwitch: 15,
+  coreRound: 45,
+  betweenCorePairs: 60
 };
 
 export const HEAVY_REP_CEILING = 6;

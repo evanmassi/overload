@@ -1,5 +1,5 @@
 import {findExercise} from "./exercises.js";
-import {workoutSlots, workoutFor, repRange, isOffDay} from "./workouts.js";
+import {workoutSlots, workoutOf, repRange, isOffDay} from "./workouts.js";
 import {unitSuffix} from "./format.js";
 import {isLogged} from "./sets.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
@@ -35,8 +35,7 @@ export function loggedCount(session){
   return n;
 }
 
-export function prescribedCount(block, day){
-  const workout = workoutFor(block, day);
+export function prescribedCount(workout){
   return workoutSlots(workout).reduce((total, exercise) => total + exercise.s, 0);
 }
 
@@ -73,24 +72,20 @@ function earlierKeysOfSameKind(sessions, beforeKey, day){
     .sort().reverse();
 }
 
-export function priorSets(sessions, exerciseId, beforeKey, day){
+export function exposures(sessions, exerciseId, beforeKey, limit, day){
+  const found = [];
   for(const key of earlierKeysOfSameKind(sessions, beforeKey, day)){
     const session = sessions[key];
     const sets = session.entries && session.entries[exerciseId];
     if(sets && sets.some(isLogged))
-      return {date: session.date, key, sets, effort: session.effort && session.effort[exerciseId]};
-  }
-  return null;
-}
-
-export function exposures(sessions, exerciseId, beforeKey, limit, day){
-  const found = [];
-  for(const key of earlierKeysOfSameKind(sessions, beforeKey, day)){
-    const sets = sessions[key].entries && sessions[key].entries[exerciseId];
-    if(sets && sets.some(isLogged)) found.push({date: sessions[key].date, sets});
+      found.push({date: session.date, key, sets, effort: session.effort && session.effort[exerciseId]});
     if(found.length === limit) break;
   }
   return found;
+}
+
+export function priorSets(sessions, exerciseId, beforeKey, day){
+  return exposures(sessions, exerciseId, beforeKey, 1, day)[0] || null;
 }
 
 export function hasStalled(sessions, exercise, beforeKey, day){
@@ -102,7 +97,7 @@ export function hasStalled(sessions, exercise, beforeKey, day){
 }
 
 export function sessionVolume(session){
-  const workout = workoutFor(session.block, session.day);
+  const workout = workoutOf(session);
   const byId = {};
   for(const e of workoutSlots(workout)) byId[e.id] = e;
   let volume = 0;

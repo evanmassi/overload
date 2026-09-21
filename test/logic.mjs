@@ -10,7 +10,7 @@ const {activeBlockIndex, nextSessionIn, sessionsDoneIn, blockLetter, cycleNumber
 const {suggestTarget, sessionVolume, loggedCount, priorSets} = progression;
 
 const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01");
-const prescribedCountFor = (block, day) => progression.prescribedCount(block, day);
+const prescribedCountFor = (block, day) => progression.prescribedCount(workouts.workoutFor(block, day));
 
 section("Program data");
 {
@@ -57,10 +57,10 @@ section("Program data");
 
   for(const block of BLOCKS) for(const day of DAY_KEYS){
     const workout = workouts.workoutFor(block, day);
-    equal(`${block}/${day} is lifts then a core superset`, workout.sections.map(section => section.kind), ["straight", "superset"]);
+    equal(`${block}/${day} is lifts then a core superset`, workout.sections.map(section => section.kind), ["straight", "core"]);
     const main = workout.sections[0].ex;
     check(`${block}/${day} has 8 or 9 main exercises`, main.length === 8 || main.length === 9, main.length);
-    const pairs = workouts.supersetPairs(workout.sections[1]);
+    const pairs = workouts.corePairs(workout.sections[1]);
     check(`${block}/${day} has 3 core supersets of 2`, pairs.length === 3 && pairs.every(pair => pair.length === 2));
   }
 }
@@ -446,8 +446,8 @@ section("Off days sit beside the program, not inside it");
     const workout = workouts.workoutFor(block, day);
     check(`${block}/${day} has three sections`, workout.sections.length === 3, workout.sections.length);
     check(`${block}/${day} prescribes 15-36 sets`,
-      progression.prescribedCount(block, day) >= 15 && progression.prescribedCount(block, day) <= 36,
-      progression.prescribedCount(block, day));
+      prescribedCountFor(block, day) >= 15 && prescribedCountFor(block, day) <= 36,
+      prescribedCountFor(block, day));
     const ids = workouts.workoutSlots(workout).map(e => e.id);
     equal(`${block}/${day} lists no move twice`, ids.filter((id, i) => ids.indexOf(id) !== i), []);
     const badTravel = Object.keys(workout.travel).filter(id =>

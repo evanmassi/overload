@@ -1,5 +1,5 @@
 const lifts = ex => ({kind: "straight", ex});
-const core = (...pairs) => ({kind: "superset", name: "Core finisher", rounds: 2, ex: pairs.flat()});
+const core = (...pairs) => ({kind: "core", name: "Core finisher", rounds: 2, ex: pairs.flat()});
 
 export const PROGRAM = {
   A: {

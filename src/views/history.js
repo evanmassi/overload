@@ -1,6 +1,6 @@
 import {DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
-import {workoutFor, isOffDay, supersetPairs} from "../rules/workouts.js";
+import {workoutOf, isOffDay, corePairs} from "../rules/workouts.js";
 import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
 import {blockIndexOf, cycleNumber} from "../rules/rotation.js";
 import {isLogged} from "../rules/sets.js";
@@ -68,12 +68,12 @@ function sessionBody(key, session, workout){
 
   const linesOf = slots => slots.map(slot => slotLine(key, session, slot)).filter(Boolean);
   workout.sections.forEach(section => {
-    const superset = section.kind === "superset";
-    const groups = (superset ? supersetPairs(section) : [section.ex]).map(linesOf).filter(lines => lines.length);
+    const core = section.kind === "core";
+    const groups = (core ? corePairs(section) : [section.ex]).map(linesOf).filter(lines => lines.length);
     if(!groups.length) return;
     if(section.name) body.appendChild(el("p", "hist-sub", section.name));
     groups.forEach(lines => {
-      const holder = superset ? body.appendChild(el("div", "hist-super")) : body;
+      const holder = core ? body.appendChild(el("div", "hist-super")) : body;
       lines.forEach(line => holder.appendChild(line));
     });
   });
@@ -144,7 +144,7 @@ export function renderHistory(main){
   let lastCycle = null;
   shown.forEach(key => {
     const session = state.sessions[key];
-    const workout = workoutFor(session.block, session.day);
+    const workout = workoutOf(session);
     if(!workout) return;
 
     const cycle = cycleNumber(blockIndexOf(session));

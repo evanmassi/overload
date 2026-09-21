@@ -1,26 +1,17 @@
 import {TIMER_PRESETS} from "../../data/constants.js";
 import {clockFace, parseClock} from "../../rules/format.js";
-import {makeField} from "../../ui/field.js";
 import {el} from "../dom.js";
 import {actionButton} from "../controls.js";
 import {start as startTimer, startStopwatch} from "../timer.js";
-import {openSheet, closeSheet, sheetGroup} from "./sheet.js";
+import {openSheet, closeSheet, sheetGroup, sheetEntry} from "./sheet.js";
 
 function customCountdown(){
-  const input = el("input");
-  input.type = "text";
-  input.inputMode = "decimal";
-  input.placeholder = "Seconds or m.ss";
-  const submit = () => {
+  return sheetEntry("Seconds or m.ss", "Start", input => {
     const seconds = parseClock(input.value);
     if(!seconds){ input.value = ""; input.placeholder = "Try 90 or 1.30"; return; }
     startTimer(seconds);
     closeSheet();
-  };
-  input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
-  const row = el("div", "sheet-custom");
-  row.append(makeField(input), actionButton("Start", {tone: "primary"}, submit));
-  return row;
+  }, "decimal");
 }
 
 export function openTimerSheet(){

@@ -1,18 +1,18 @@
-import {workoutFor} from "../rules/workouts.js";
+import {workoutOf} from "../rules/workouts.js";
 import {state} from "../store/state.js";
 import {loggedCount, sessionVolume, prescribedCount} from "../rules/progression.js";
 import {resolvedExercises} from "../store/slots.js";
 import {isLogged} from "../rules/sets.js";
-import {previousSameWorkout} from "../store/session.js";
+import {previousSameWorkout, currentSets} from "../store/session.js";
 import {elapsedLabel} from "../rules/format.js";
 import {byId, el} from "./dom.js";
 
 function setBarGroups(){
-  const workout = workoutFor(state.current.block, state.current.day);
+  const workout = workoutOf(state.current);
   if(!workout) return [];
   let reached = false;
   return resolvedExercises(workout, state.current.swaps).map(exercise => {
-    const sets = state.current.entries[exercise.id] || [];
+    const sets = currentSets(exercise.id);
     const marks = [];
     for(let i = 0; i < exercise.s; i++) marks.push(isLogged(sets[i]) ? "on" : "off");
     const here = !reached && marks.includes("off");
@@ -48,7 +48,7 @@ function updateSetBar(groups, done, total){
 
 export function updateSaveBar(){
   const current = state.current;
-  const total = prescribedCount(current.block, current.day);
+  const total = prescribedCount(workoutOf(current));
   const count = loggedCount(current);
   const volume = sessionVolume(current);
   updateSetBar(setBarGroups(), count, total);

@@ -20,7 +20,7 @@ export function reset(){
   state.sessions = {};
   state.customNames = {};
   state.view = "log";
-  state.current = {key: "2026-12-31T00:00:00", date: "2026-12-31", day: "chest", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: ""};
+  state.current = {key: "2026-12-31T00:00:00", date: "2026-12-31", day: "chest", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}};
 }
 
 export function logged(date, day, blockIndex, entries){
