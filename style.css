@@ -537,7 +537,7 @@ button{cursor:pointer;border:none;background:none}
   position:absolute;top:0;left:0;z-index:1;margin:0;border:none;
   width:var(--tag-w);height:var(--notch-h);padding:0 0 0 1px;
   display:flex;align-items:center;justify-content:center;
-  background:color-mix(in oklab,var(--accent-deep) 55%,var(--bg-panel));
+  background:color-mix(in oklab,var(--accent) var(--p-frame,50%),transparent);
   color:var(--accent-ink);--lgl:var(--accent-glow);
   font-family:var(--font-ui);font-size:var(--size-micro);font-weight:var(--weight-control);
   letter-spacing:var(--track-meta);text-transform:uppercase;
@@ -558,6 +558,12 @@ button{cursor:pointer;border:none;background:none}
 .topbar::after,.savebar::after{
   content:"";position:absolute;inset:0;pointer-events:none;
   background:var(--scanlines);mix-blend-mode:multiply;
+}
+.ex-num::before,.superset b::before,.hist-day .chip.live::before,.notes label::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:color-mix(in oklab,var(--accent-deep) 55%,var(--bg-panel));
+  clip-path:polygon(1px 1px,calc(100% - 1px) 1px,calc(100% - 1px) calc(100% - var(--cut) + .5px),
+    calc(100% - var(--cut) + .5px) calc(100% - 1px),1px calc(100% - 1px));
 }
 .ex-num::after,.superset b::after,.hist-day .chip.live::after,.notes label::after{
   content:"";position:absolute;inset:0;pointer-events:none;color:var(--accent);
