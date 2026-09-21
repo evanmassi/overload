@@ -159,6 +159,11 @@ function travelOn(plan){
 }
 
 function placeSwitch(plan){
+  const wrap = document.createElement("div");
+  wrap.className = "place-wrap";
+  const label = document.createElement("p");
+  label.className = "eyebrow";
+  label.textContent = "Location";
   const row = document.createElement("div");
   row.className = "blockset place";
   const away = travelOn(plan);
@@ -179,7 +184,8 @@ function placeSwitch(plan){
     });
     row.appendChild(button);
   });
-  return row;
+  wrap.append(label, row);
+  return wrap;
 }
 
 function strayExercises(plan){

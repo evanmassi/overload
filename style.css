@@ -93,7 +93,8 @@ button{cursor:pointer;border:none;background:none}
 
 .dayhead{padding:14px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 .dayhead-text{min-width:0;flex:1}
-.dayhead .place{flex:none;margin-bottom:3px}
+.dayhead .place-wrap{flex:none;margin-bottom:3px}
+.dayhead .place-wrap .eyebrow{text-align:right}
 .dayhead .place .sbtn{--pad:9px 10px 9px 11px}
 .eyebrow{
   font-family:var(--font-ui);font-size:11px;letter-spacing:.14em;
