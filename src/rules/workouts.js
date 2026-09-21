@@ -27,27 +27,32 @@ function ready(slot, placement){
   return Object.assign({}, findExercise(slot.id), slot, {unit: slot.unit || null}, placement);
 }
 
-function liftingWorkout(workout){
-  return {
-    focus: workout.focus,
-    ex: workout.ex.map(slot => ready(slot, {rest: restFor(slot), restAfter: REST.betweenExercises})),
-    core: workout.core.map(pair => pair.map((slot, i) => ready(slot, {
-      core: 1,
-      rest: i ? REST.supersetRound : REST.supersetWalk,
-      restAfter: i ? REST.betweenSupersets : REST.supersetWalk
-    })))
-  };
-}
+const roundsWithRest = (slot, section) => ({
+  s: slot.s === undefined ? section.rounds : slot.s,
+  rest: section.off,
+  restAfter: section.off
+});
 
-function offDayWorkout(workout){
+const PLACEMENT = {
+  straight: slot => ({rest: restFor(slot), restAfter: REST.betweenExercises}),
+  superset: (slot, section, i) => ({
+    core: 1,
+    s: section.rounds,
+    rest: i % 2 ? REST.supersetRound : REST.supersetWalk,
+    restAfter: i % 2 ? REST.betweenSupersets : REST.supersetWalk
+  }),
+  interval: (slot, section) => Object.assign(roundsWithRest(slot, section), {win: section.on, r: "AMRAP"}),
+  circuit: roundsWithRest,
+  finish: roundsWithRest
+};
+
+function build(workout){
   return Object.assign({}, workout, {sections: workout.sections.map(section => Object.assign({}, section, {
-    ex: section.ex.map(slot => ready(slot, Object.assign(
-      {s: slot.s === undefined ? section.rounds : slot.s, rest: section.off, restAfter: section.off},
-      section.on ? {win: section.on, r: "AMRAP"} : {})))
+    ex: section.ex.map((slot, i) => ready(slot, PLACEMENT[section.kind](slot, section, i)))
   }))});
 }
 
-function buildBook(book, days, build){
+function buildBook(book, days){
   const built = {};
   for(const block of BLOCKS){
     built[block] = {};
@@ -56,8 +61,8 @@ function buildBook(book, days, build){
   return built;
 }
 
-const LIFTING = buildBook(PROGRAM, DAY_KEYS, liftingWorkout);
-const OFF_DAYS = buildBook(OFFDAYS, OFF_KEYS, offDayWorkout);
+const LIFTING = buildBook(PROGRAM, DAY_KEYS);
+const OFF_DAYS = buildBook(OFFDAYS, OFF_KEYS);
 
 export function workoutFor(block, day){
   const book = isOffDay(day) ? OFF_DAYS : LIFTING;
@@ -65,7 +70,11 @@ export function workoutFor(block, day){
 }
 
 export function workoutSlots(workout){
-  if(!workout) return [];
-  if(workout.sections) return workout.sections.flatMap(section => section.ex);
-  return workout.ex.concat(workout.core.flat());
+  return workout ? workout.sections.flatMap(section => section.ex) : [];
+}
+
+export function supersetPairs(section){
+  const pairs = [];
+  for(let i = 0; i < section.ex.length; i += 2) pairs.push(section.ex.slice(i, i + 2));
+  return pairs;
 }

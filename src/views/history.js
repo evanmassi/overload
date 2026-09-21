@@ -1,6 +1,6 @@
 import {DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
-import {workoutFor, isOffDay} from "../rules/workouts.js";
+import {workoutFor, isOffDay, supersetPairs} from "../rules/workouts.js";
 import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
 import {blockIndexOf, cycleNumber} from "../rules/rotation.js";
 import {isLogged} from "../rules/sets.js";
@@ -66,24 +66,17 @@ function sessionActions(key){
 function sessionBody(key, session, workout){
   const body = el("div", "hist-body");
 
-  (workout.sections || [{ex: workout.ex}]).forEach(section => {
-    const lines = section.ex.map(slot => slotLine(key, session, slot)).filter(Boolean);
-    if(!lines.length) return;
+  const linesOf = slots => slots.map(slot => slotLine(key, session, slot)).filter(Boolean);
+  workout.sections.forEach(section => {
+    const superset = section.kind === "superset";
+    const groups = (superset ? supersetPairs(section) : [section.ex]).map(linesOf).filter(lines => lines.length);
+    if(!groups.length) return;
     if(section.name) body.appendChild(el("p", "hist-sub", section.name));
-    lines.forEach(line => body.appendChild(line));
-  });
-
-  const supersets = (workout.core || [])
-    .map(pair => pair.map(slot => slotLine(key, session, slot)).filter(Boolean))
-    .filter(lines => lines.length);
-  if(supersets.length){
-    body.appendChild(el("p", "hist-sub", "Core finisher"));
-    supersets.forEach(lines => {
-      const group = el("div", "hist-super");
-      lines.forEach(line => group.appendChild(line));
-      body.appendChild(group);
+    groups.forEach(lines => {
+      const holder = superset ? body.appendChild(el("div", "hist-super")) : body;
+      lines.forEach(line => holder.appendChild(line));
     });
-  }
+  });
 
   const strays = strayIds(session, workout);
   if(strays.length){

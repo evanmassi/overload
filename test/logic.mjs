@@ -57,8 +57,11 @@ section("Program data");
 
   for(const block of BLOCKS) for(const day of DAY_KEYS){
     const workout = workouts.workoutFor(block, day);
-    check(`${block}/${day} has 8 or 9 main moves`, workout.ex.length === 8 || workout.ex.length === 9, workout.ex.length);
-    check(`${block}/${day} has 3 core supersets of 2`, workout.core.length === 3 && workout.core.every(p => p.length === 2));
+    equal(`${block}/${day} is lifts then a core superset`, workout.sections.map(section => section.kind), ["straight", "superset"]);
+    const main = workout.sections[0].ex;
+    check(`${block}/${day} has 8 or 9 main exercises`, main.length === 8 || main.length === 9, main.length);
+    const pairs = workouts.supersetPairs(workout.sections[1]);
+    check(`${block}/${day} has 3 core supersets of 2`, pairs.length === 3 && pairs.every(pair => pair.length === 2));
   }
 }
 
@@ -217,7 +220,7 @@ section("Rest comes from the movement, not its place in the list");
 {
   const {restFor} = workouts;
   const rest = (block, day, name) =>
-    workouts.workoutFor(block, day).ex.find(e => e.n === name).rest;
+    workouts.workoutSlots(workouts.workoutFor(block, day)).find(e => e.n === name).rest;
 
   equal("a heavy five gets the long rest", rest("C", "chest", "Flat DB Bench Press"), 180);
   equal("the day's lead compound gets two minutes", rest("A", "chest", "Flat DB Bench Press"), 120);
@@ -237,7 +240,7 @@ section("Rest comes from the movement, not its place in the list");
   equal("dropping it to three sets drops the rest",
     restFor({id: slot.id, s: 3, r: slot.r}), 90);
 
-  const positional = workouts.workoutFor("C", "chest").ex
+  const positional = workouts.workoutFor("C", "chest").sections[0].ex
     .map((e, i) => e.rest === (i < 2 ? 120 : 60));
   check("the old positional rule no longer describes the day",
     positional.some(same => !same));
@@ -503,7 +506,7 @@ section("Prescribed set counts");
   }
   equal("main work plus core makes up the total",
     prescribedCountFor("A", "chest"),
-    workouts.workoutFor("A", "chest").ex.reduce((n, e) => n + e.s, 0) + 12);
+    workouts.workoutFor("A", "chest").sections[0].ex.reduce((n, e) => n + e.s, 0) + 12);
 }
 
 section("Last time is looked up within the same kind of session");

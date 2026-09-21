@@ -140,7 +140,8 @@ localhost, `main.js` unregisters the worker and clears caches so development alw
 ### Pre-Implementation Checklist
 
 1. **Read the data** the change touches (`catalog.js`, `program.js`, `offdays.js`, the session shape above) before writing code.
-2. **Verify exact field names.** Sets are `{w, r}`, a workout's moves are `ex`, sections are `sections[].ex`.
+2. **Verify exact field names.** Sets are `{w, r}`. Every workout is `sections`, each with a `kind` (`straight`,
+   `superset`, `interval`, `circuit`, `finish`) and its slots in `ex`. How a slot rests and counts follows its kind.
 3. **Find the owner.** Search for the module that already does the job before writing a new function.
 4. **Check the README section** for the behavior you are changing. It records decisions and why they were made.
 

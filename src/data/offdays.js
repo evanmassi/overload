@@ -1,6 +1,6 @@
-const interval = (name, rounds, on, off, ex) => ({name, rounds, on, off, ex});
-const circuit = (name, rounds, off, ex) => ({name, rounds, off, ex});
-const finish = (ex, off) => ({name: "Finish", off: off || 60, ex});
+const interval = (name, rounds, on, off, ex) => ({kind: "interval", name, rounds, on, off, ex});
+const circuit = (name, rounds, off, ex) => ({kind: "circuit", name, rounds, off, ex});
+const finish = (ex, off) => ({kind: "finish", name: "Finish", off: off || 60, ex});
 
 const hold = (id, seconds, sets) => ({id, r: String(seconds), unit: "sec", s: sets});
 const reps = (id, count) => ({id, r: String(count)});

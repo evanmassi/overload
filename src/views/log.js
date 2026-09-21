@@ -1,6 +1,6 @@
 import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON, DEFAULT_REST} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
-import {workoutFor, isOffDay} from "../rules/workouts.js";
+import {workoutFor, isOffDay, supersetPairs} from "../rules/workouts.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "../rules/rotation.js";
 import {state} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
@@ -46,22 +46,16 @@ export function renderLog(main){
   main.appendChild(legend);
 
   let position = 0;
-  const addCards = slots => slots.forEach(slot =>
-    main.appendChild(exerciseCard(resolveSlot(slot, current.swaps), ++position, slot)));
-  if(workout.sections){
-    workout.sections.forEach(section => {
-      main.appendChild(el("p", "section-label", sectionLabel(section)));
-      addCards(section.ex);
-    });
-  } else {
-    addCards(workout.ex);
-  }
-
-  if(workout.core){
-    main.appendChild(el("p", "section-label", "Core finisher · 3 supersets, 2 rounds each"));
-    workout.core.forEach((pair, i) =>
-      main.appendChild(corePairCard(pair.map(slot => resolveSlot(slot, current.swaps)), i, pair)));
-  }
+  let pairIndex = 0;
+  const resolve = slot => resolveSlot(slot, current.swaps);
+  workout.sections.forEach(section => {
+    const label = SECTION_LABEL[section.kind](section);
+    if(label) main.appendChild(el("p", "section-label", label));
+    if(section.kind === "superset")
+      supersetPairs(section).forEach(pair => main.appendChild(corePairCard(pair.map(resolve), pairIndex++, pair)));
+    else
+      section.ex.forEach(slot => main.appendChild(exerciseCard(resolve(slot), ++position, slot)));
+  });
 
   const strays = strayExercises(workout);
   if(strays.length){
@@ -89,11 +83,13 @@ function dayRow(className, keys, done){
   return row;
 }
 
-function sectionLabel(section){
-  if(section.on) return `${section.name} · ${section.rounds} rounds · ${section.on}s on, ${section.off}s off`;
-  if(section.rounds) return `${section.name} · ${section.rounds} rounds`;
-  return section.name;
-}
+const SECTION_LABEL = {
+  straight: () => null,
+  superset: section => `${section.name} · ${section.ex.length / 2} supersets, ${section.rounds} rounds each`,
+  interval: section => `${section.name} · ${section.rounds} rounds · ${section.on}s on, ${section.off}s off`,
+  circuit: section => `${section.name} · ${section.rounds} rounds`,
+  finish: section => section.name
+};
 
 function placeSwitch(workout){
   const away = isAway(workout);
