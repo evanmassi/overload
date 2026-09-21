@@ -133,7 +133,7 @@ function dayRow(className, keys, done){
     const isDone = done.has(day) && day !== current.day;
     strandButton(button, {
       label: DAYS[day].short, meta: isDone ? "done" : "",
-      tone: "secondary", key: "day:" + day
+      tone: "secondary", ghost: true, key: "day:" + day
     });
     button.dataset.chosen = day === current.day ? "on" : "off";
     button.setAttribute("aria-pressed", String(day === current.day));
