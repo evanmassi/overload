@@ -377,39 +377,38 @@ function stallAction(label, key, act){
   return button;
 }
 
+function callout(tone, icon, title, body, actions){
+  const box = document.createElement("div");
+  box.className = "callout stall";
+  box.dataset.tone = tone;
+  box.innerHTML = `<span class="callout-echo"></span><div class="callout-in"><span class="callout-fill"></span>`
+    + `<i class="icon callout-icon">${icon}</i><span class="callout-text"><span class="callout-title">${title}</span><span class="callout-body">${body}</span></span></div>`;
+  const row = document.createElement("div");
+  row.className = "stall-actions";
+  actions.forEach(button => row.appendChild(button));
+  box.querySelector(".callout-text").appendChild(row);
+  return box;
+}
+
 function stallPrompt(exercise, slot, prior){
-  const flag = document.createElement("div");
-  flag.className = "stall";
-  const text = document.createElement("p");
-  text.textContent = `Stuck here ${STALL_EXPOSURES} sessions running.`;
-  const actions = document.createElement("div");
-  actions.className = "stall-actions";
   const top = topSet(prior.sets, exercise.bw);
-  actions.appendChild(stallAction("swap it", "stall-swap:" + exercise.id, () => openSwapSheet(slot)));
+  const actions = [stallAction("swap it", "stall-swap:" + exercise.id, () => openSwapSheet(slot))];
   if(top && num(top.w)){
     const dropped = Math.max(WEIGHT_STEP_LB, Math.round(num(top.w) * (1 - STALL_BACKOFF_PERCENT / 100) / WEIGHT_STEP_LB) * WEIGHT_STEP_LB);
-    actions.appendChild(stallAction(`drop to ${dropped}`, "stall-drop:" + exercise.id, () => {
+    actions.push(stallAction(`drop to ${dropped}`, "stall-drop:" + exercise.id, () => {
       const sets = setsFor(exercise.id);
       sets[0] = {w: String(dropped), r: (sets[0] && sets[0].r) || ""};
       queueSave();
       notify();
     }));
   }
-  actions.appendChild(stallAction("hold here", "stall-hold:" + exercise.id, () => { holdLift(exercise.id); notify(); }));
-  flag.append(text, actions);
-  return flag;
+  actions.push(stallAction("hold here", "stall-hold:" + exercise.id, () => { holdLift(exercise.id); notify(); }));
+  return callout("warning", "warning", "Signal loss", `Flat for ${STALL_EXPOSURES} sessions running.`, actions);
 }
 
 function holdNotice(exercise){
-  const flag = document.createElement("div");
-  flag.className = "stall hold";
-  const text = document.createElement("p");
-  text.textContent = "Holding here on purpose. Beat it by 10% and the push comes back on its own.";
-  const actions = document.createElement("div");
-  actions.className = "stall-actions";
-  actions.appendChild(stallAction("push again", "stall-release:" + exercise.id, () => { releaseLift(exercise.id); notify(); }));
-  flag.append(text, actions);
-  return flag;
+  const release = stallAction("push again", "stall-release:" + exercise.id, () => { releaseLift(exercise.id); notify(); });
+  return callout("secondary", "anchor", "Holding", "On purpose. Beat it by 10% and the push comes back on its own.", [release]);
 }
 
 function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
