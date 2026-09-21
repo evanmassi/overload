@@ -62,17 +62,17 @@ function sessionActions(key){
   return actions;
 }
 
-function sessionBody(key, session, plan){
+function sessionBody(key, session, workout){
   const body = el("div", "hist-body");
 
-  (plan.sections || [{ex: plan.ex}]).forEach(section => {
+  (workout.sections || [{ex: workout.ex}]).forEach(section => {
     const lines = section.ex.map(slot => slotLine(key, session, slot)).filter(Boolean);
     if(!lines.length) return;
     if(section.name) body.appendChild(el("p", "hist-sub", section.name));
     lines.forEach(line => body.appendChild(line));
   });
 
-  const supersets = (plan.core || [])
+  const supersets = (workout.core || [])
     .map(pair => pair.map(slot => slotLine(key, session, slot)).filter(Boolean))
     .filter(lines => lines.length);
   if(supersets.length){
@@ -84,7 +84,7 @@ function sessionBody(key, session, plan){
     });
   }
 
-  const strays = strayIds(session, plan);
+  const strays = strayIds(session, workout);
   if(strays.length){
     body.appendChild(el("p", "hist-sub", "Not in this session"));
     strays.forEach(id =>
@@ -96,7 +96,7 @@ function sessionBody(key, session, plan){
   return body;
 }
 
-function sessionCard(key, session, plan){
+function sessionCard(key, session, workout){
   const date = session.date;
   const open = state.historyOpen.has(key);
   const card = el("div", "hist-day" + (open ? " hist-expanded" : ""));
@@ -106,7 +106,7 @@ function sessionCard(key, session, plan){
   row.setAttribute("role", "button");
   row.setAttribute("aria-expanded", String(open));
   const top = el("div", "hist-top");
-  top.innerHTML = `<h3>${plan.focus}</h3><span class="chip live">${session.block}</span><span class="chip" title="${date}">${date.slice(5)}</span>`;
+  top.innerHTML = `<h3>${workout.focus}</h3><span class="chip live">${session.block}</span><span class="chip" title="${date}">${date.slice(5)}</span>`;
   const foot = el("div", "hist-foot");
   const took = elapsedLabel(session.startedAt, session.lastLoggedAt);
   foot.innerHTML = `<b>${sessionVolume(session).toLocaleString()} lb</b>`
@@ -118,7 +118,7 @@ function sessionCard(key, session, plan){
   });
   card.appendChild(row);
 
-  if(open) card.appendChild(sessionBody(key, session, plan));
+  if(open) card.appendChild(sessionBody(key, session, workout));
   return card;
 }
 
@@ -150,8 +150,8 @@ export function renderHistory(main){
   let lastCycle = null;
   shown.forEach(key => {
     const session = state.sessions[key];
-    const plan = workoutFor(session.block, session.day);
-    if(!plan) return;
+    const workout = workoutFor(session.block, session.day);
+    if(!workout) return;
 
     const cycle = cycleNumber(blockIndexOf(session));
     const ownRotation = !isOffDay(session.day) || state.historyDay === session.day;
@@ -159,7 +159,7 @@ export function renderHistory(main){
       main.appendChild(el("p", "section-label hist-cycle", `Cycle ${cycle}`));
       lastCycle = cycle;
     }
-    main.appendChild(sessionCard(key, session, plan));
+    main.appendChild(sessionCard(key, session, workout));
   });
 
   main.append(...settingsPanel());

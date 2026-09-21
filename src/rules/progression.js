@@ -1,4 +1,4 @@
-import {findExercise, allExercises, workoutFor, repRange, isOffDay} from "./exercises.js";
+import {findExercise, workoutSlots, workoutFor, repRange, isOffDay} from "./exercises.js";
 import {unitSuffix} from "./format.js";
 import {isLogged} from "./sets.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
@@ -35,8 +35,8 @@ export function loggedCount(session){
 }
 
 export function prescribedCount(block, day){
-  const plan = workoutFor(block, day);
-  return allExercises(plan).reduce((total, exercise) => total + exercise.s, 0);
+  const workout = workoutFor(block, day);
+  return workoutSlots(workout).reduce((total, exercise) => total + exercise.s, 0);
 }
 
 export function estimateFor(set, isBodyweight){
@@ -101,9 +101,9 @@ export function hasStalled(sessions, exercise, beforeKey, day){
 }
 
 export function sessionVolume(session){
-  const plan = workoutFor(session.block, session.day);
+  const workout = workoutFor(session.block, session.day);
   const byId = {};
-  for(const e of allExercises(plan)) byId[e.id] = e;
+  for(const e of workoutSlots(workout)) byId[e.id] = e;
   let volume = 0;
   for(const id in (session.entries || {})){
     const exercise = byId[id] || findExercise(id);

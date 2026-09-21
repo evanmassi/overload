@@ -163,8 +163,8 @@ export function setNotes(text){
 }
 
 export function swapSlot(slot, id){
-  const plan = workoutFor(state.current.block, state.current.day);
-  if(idsTakenElsewhere(slot, plan, state.current.swaps).has(id)) return false;
+  const workout = workoutFor(state.current.block, state.current.day);
+  if(idsTakenElsewhere(slot, workout, state.current.swaps).has(id)) return false;
   if(id === slot.id) delete state.current.swaps[slot.id];
   else state.current.swaps[slot.id] = id;
   queueSave();
@@ -172,13 +172,13 @@ export function swapSlot(slot, id){
   return true;
 }
 
-export function isAway(plan){
-  return Object.keys(plan.travel).every(id => state.current.swaps[id] === plan.travel[id]);
+export function isAway(workout){
+  return Object.keys(workout.travel).every(id => state.current.swaps[id] === workout.travel[id]);
 }
 
-export function setTravel(plan, away){
-  for(const id in plan.travel){
-    if(away) state.current.swaps[id] = plan.travel[id];
+export function setTravel(workout, away){
+  for(const id in workout.travel){
+    if(away) state.current.swaps[id] = workout.travel[id];
     else delete state.current.swaps[id];
   }
   queueSave();
@@ -253,9 +253,9 @@ export function openSetIndex(exercise){
 }
 
 export function nextRest(){
-  const plan = workoutFor(state.current.block, state.current.day);
-  if(!plan) return null;
-  for(const exercise of resolvedExercises(plan, state.current.swaps)){
+  const workout = workoutFor(state.current.block, state.current.day);
+  if(!workout) return null;
+  for(const exercise of resolvedExercises(workout, state.current.swaps)){
     const index = openSetIndex(exercise);
     if(index >= 0) return restAfterSet(exercise, index);
   }

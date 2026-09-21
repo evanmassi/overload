@@ -4,12 +4,12 @@ import {score} from "../rules/progression.js";
 
 export function isHeld(id){ return !!state.holds[id]; }
 
-export function holdLift(id){
+export function holdExercise(id){
   state.holds[id] = 1;
   persistHolds();
 }
 
-export function releaseLift(id){
+export function releaseExercise(id){
   delete state.holds[id];
   persistHolds();
 }
@@ -20,5 +20,5 @@ export function beatsHold(now, then){
 
 export function releaseIfBeaten(exercise, set, last){
   if(isHeld(exercise.id) && last && beatsHold(score(set, exercise.bw), score(last, exercise.bw)))
-    releaseLift(exercise.id);
+    releaseExercise(exercise.id);
 }

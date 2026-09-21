@@ -34,10 +34,10 @@ export function restAfterSet(exercise, index){
   return index + 1 >= exercise.s ? exercise.restAfter : exercise.rest;
 }
 
-export function allExercises(plan){
-  if(!plan) return [];
-  if(plan.sections) return plan.sections.flatMap(section => section.ex);
-  return plan.ex.concat((plan.core || []).flat());
+export function workoutSlots(workout){
+  if(!workout) return [];
+  if(workout.sections) return workout.sections.flatMap(section => section.ex);
+  return workout.ex.concat((workout.core || []).flat());
 }
 
 export function isOffDay(day){ return OFF_KEYS.includes(day); }
@@ -51,17 +51,17 @@ function tagLoadAndSides(exercise){
 }
 
 for(const block of BLOCKS) for(const day of DAY_KEYS){
-  const plan = PROGRAM[block][day];
-  plan.ex.forEach(e => {
+  const workout = PROGRAM[block][day];
+  workout.ex.forEach(e => {
     e.rest = restFor(e);
-    e.restAfter = REST.betweenMoves;
+    e.restAfter = REST.betweenExercises;
   });
-  (plan.core || []).forEach(pair => pair.forEach((e, i) => {
+  (workout.core || []).forEach(pair => pair.forEach((e, i) => {
     e.core = 1;
     e.rest = i ? REST.supersetRound : REST.supersetWalk;
     e.restAfter = i ? REST.betweenSupersets : REST.supersetWalk;
   }));
-  allExercises(plan).forEach(tagLoadAndSides);
+  workoutSlots(workout).forEach(tagLoadAndSides);
 }
 
 for(const block of BLOCKS) for(const day of OFF_KEYS){
@@ -76,20 +76,20 @@ for(const block of BLOCKS) for(const day of OFF_KEYS){
 
 EXTRAS.forEach(e => {
   e.rest = restFor(e);
-  e.restAfter = REST.betweenMoves;
+  e.restAfter = REST.betweenExercises;
   tagLoadAndSides(e);
 });
 
 const BY_ID = {};
 for(const block of BLOCKS) for(const day of DAY_KEYS)
-  allExercises(PROGRAM[block][day]).forEach(e => { BY_ID[e.id] = e; });
+  workoutSlots(PROGRAM[block][day]).forEach(e => { BY_ID[e.id] = e; });
 for(const block of BLOCKS) for(const day of OFF_KEYS)
-  allExercises(OFFDAYS[block][day]).forEach(e => { if(!BY_ID[e.id]) BY_ID[e.id] = e; });
+  workoutSlots(OFFDAYS[block][day]).forEach(e => { if(!BY_ID[e.id]) BY_ID[e.id] = e; });
 EXTRAS.forEach(e => { BY_ID[e.id] = e; });
 
 export function findExercise(id){ return BY_ID[id] || null; }
 
-export function programIds(){ return Object.keys(BY_ID); }
+export function exerciseIds(){ return Object.keys(BY_ID); }
 
 export function workoutFor(block, day){
   const book = isOffDay(day) ? OFFDAYS : PROGRAM;

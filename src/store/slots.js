@@ -1,4 +1,4 @@
-import {findExercise, allExercises} from "../rules/exercises.js";
+import {findExercise, workoutSlots} from "../rules/exercises.js";
 import {isLogged} from "../rules/sets.js";
 import {exerciseName} from "./customs.js";
 
@@ -18,18 +18,18 @@ export function resolveSlot(slot, swaps){
   });
 }
 
-export function resolvedExercises(plan, swaps){
-  return allExercises(plan).map(slot => resolveSlot(slot, swaps));
+export function resolvedExercises(workout, swaps){
+  return workoutSlots(workout).map(slot => resolveSlot(slot, swaps));
 }
 
-export function idsTakenElsewhere(slot, plan, swaps){
-  const taken = new Set(resolvedExercises(plan, swaps).map(exercise => exercise.id));
+export function idsTakenElsewhere(slot, workout, swaps){
+  const taken = new Set(resolvedExercises(workout, swaps).map(exercise => exercise.id));
   taken.delete(resolveSlot(slot, swaps).id);
   return taken;
 }
 
-export function strayIds(session, plan){
-  const planned = new Set(resolvedExercises(plan, session.swaps).map(exercise => exercise.id));
+export function strayIds(session, workout){
+  const planned = new Set(resolvedExercises(workout, session.swaps).map(exercise => exercise.id));
   const entries = session.entries || {};
   return Object.keys(entries).filter(id => !planned.has(id) && entries[id].some(isLogged));
 }

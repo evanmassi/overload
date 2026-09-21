@@ -201,7 +201,7 @@ section("Collapsing and the set bar");
     els.setbar.children.length === 41, els.setbar.children.length);
   check("with none lit", els.setbar.children.every(t => t.dataset.state !== "on"));
 
-  const card = els.main.find("ex-move")[0];
+  const card = els.main.find("ex-item")[0];
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
   rows.forEach(row => {
     wt(row).value = "50";
@@ -210,7 +210,7 @@ section("Collapsing and the set bar");
   });
   render();
 
-  check("finishing every set collapses the card", els.main.find("ex-move")[0].classList.contains("done"));
+  check("finishing every set collapses the card", els.main.find("ex-item")[0].classList.contains("done"));
   check("its summary is populated", els.main.find("ex-summary")[0].textContent.includes("50"));
   check("the tally counts the logged sets", els.tally.textContent === "4/41", els.tally.textContent);
   check("and four ticks light up",
@@ -223,9 +223,9 @@ section("Collapsing and the set bar");
 
   els.main.find("ex-fold")[0].fire("click");
   render();
-  check("tapping the chevron expands it again", !els.main.find("ex-move")[0].classList.contains("done"));
+  check("tapping the chevron expands it again", !els.main.find("ex-item")[0].classList.contains("done"));
 
-  const blocks = els.main.find("ex-move");
+  const blocks = els.main.find("ex-item");
   check("a block per main move plus two per superset", blocks.length === 15, blocks.length);
 
   const coreMove = blocks[9];
@@ -234,7 +234,7 @@ section("Collapsing and the set bar");
     rp(row).fire("change");
   });
   render();
-  const after = els.main.find("ex-move");
+  const after = els.main.find("ex-item");
   check("a finished superset move collapses too", after[9].classList.contains("done"));
   check("its partner stays open", !after[10].classList.contains("done"));
   check("its summary is populated", after[9].find("ex-summary")[0].textContent.includes("12"));
@@ -251,13 +251,13 @@ section("Carry-forward repeat button");
   setDay("chest");
   render();
 
-  const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
+  const rows = els.main.find("ex-item")[0].find("set").filter(r => !r.classList.contains("head"));
   const first = rows[0].children[4];
   const second = rows[1].children[4];
   check("a set with history offers repeat", first.disabled === false);
   check("a set with none does not", second.disabled === true);
 
-  const cue = els.main.find("ex-move")[0].find("prior")[0];
+  const cue = els.main.find("ex-item")[0].find("prior")[0];
   check("the card footer dates last time's work",
     cue && cue.textContent.startsWith("2026-08-25"), cue && cue.textContent);
   check("and uses the same shorthand as history",
@@ -304,7 +304,7 @@ section("Effort buttons");
 section("A stalled lift offers swap, drop and hold");
 {
   fresh();
-  const {holdLift, isHeld} = await import("../src/store/holds.js");
+  const {holdExercise, isHeld} = await import("../src/store/holds.js");
   state.holds = {};
   ["2026-08-04", "2026-08-11", "2026-08-18"].forEach(date => {
     state.sessions[date] = {date, day: "arms", block: "A", blockIndex: 0, entries: {ez_curl: [{w: "60", r: "10"}, {w: "60", r: "10"}]}};
@@ -312,14 +312,14 @@ section("A stalled lift offers swap, drop and hold");
   loadDate("2026-09-01");
   setDay("arms");
   render();
-  const curl = els.main.find("ex-move").find(m => m.id === "card-ez_curl");
+  const curl = els.main.find("ex-item").find(m => m.id === "card-ez_curl");
   check("the stall prompt shows as a warning callout", curl.find("stall").length === 1 && curl.find("stall")[0].dataset.tone === "warning");
   const actions = curl.find("stall-actions")[0].children.map(b => b.dataset.label);
   equal("with three ways out", actions, ["swap", "drop to 55", "hold"]);
 
   curl.find("stall-actions")[0].children[2].fire("click");
   render();
-  const heldCurl = els.main.find("ex-move").find(m => m.id === "card-ez_curl");
+  const heldCurl = els.main.find("ex-item").find(m => m.id === "card-ez_curl");
   check("holding is remembered", isHeld("ez_curl"));
   check("the target asks for a match", heldCurl.find("target")[0].innerHTML.includes("match it"), heldCurl.find("target")[0].innerHTML);
   check("the stall prompt becomes a hold notice", heldCurl.find("stall")[0].dataset.tone === "secondary");
@@ -336,12 +336,12 @@ section("A stalled lift offers swap, drop and hold");
   check("beating it by a clear margin releases the hold", !isHeld("ez_curl"));
 
   render();
-  const dropRow = els.main.find("ex-move").find(m => m.id === "card-ez_curl");
+  const dropRow = els.main.find("ex-item").find(m => m.id === "card-ez_curl");
   const dropButton = dropRow.find("stall-actions")[0] && dropRow.find("stall-actions")[0].children[1];
   check("with the hold gone the stall prompt is back", !!dropButton && dropButton.dataset.label === "drop to 55");
   dropButton.fire("click");
   render();
-  const droppedRow = els.main.find("ex-move").find(m => m.id === "card-ez_curl").find("set").filter(r => !r.classList.contains("head"))[0];
+  const droppedRow = els.main.find("ex-item").find(m => m.id === "card-ez_curl").find("set").filter(r => !r.classList.contains("head"))[0];
   check("drop fills set 1 with 10% less, rounded to the plate", wt(droppedRow).value === "55", wt(droppedRow).value);
 }
 
@@ -367,7 +367,7 @@ section("Logging updates the page without a re-render");
 {
   fresh();
   render();
-  const card = els.main.find("ex-move")[0];
+  const card = els.main.find("ex-item")[0];
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
 
   rows.slice(0, 3).forEach(row => {
@@ -415,7 +415,7 @@ section("Time in the gym is first log to last log");
     rp(row).value = r;
     rp(row).fire("change");
   };
-  const setRows = () => els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
+  const setRows = () => els.main.find("ex-item")[0].find("set").filter(r => !r.classList.contains("head"));
   logSet(setRows()[0], "50", "10");
 
   check("logging stamps a start", !!state.current.startedAt);
@@ -445,7 +445,7 @@ section("Expansion does not leak between sessions");
 {
   fresh();
   render();
-  const card = els.main.find("ex-move")[0];
+  const card = els.main.find("ex-item")[0];
   card.find("set").filter(r => !r.classList.contains("head")).forEach(row => {
     wt(row).value = "50";
     rp(row).value = "10";
@@ -453,14 +453,14 @@ section("Expansion does not leak between sessions");
   });
   els.main.find("ex-fold")[0].fire("click");
   render();
-  check("the card is expanded on this session", !els.main.find("ex-move")[0].classList.contains("done"));
+  check("the card is expanded on this session", !els.main.find("ex-item")[0].classList.contains("done"));
 
   setDay("legs");
   render();
   setDay("chest");
   render();
   check("switching away and back collapses it again",
-    els.main.find("ex-move")[0].classList.contains("done"));
+    els.main.find("ex-item")[0].classList.contains("done"));
 }
 
 section("The countdown escalates in its last seconds");
@@ -501,7 +501,7 @@ section("The idle countdown tracks the next unlogged set");
   check("it opens on the lead lift's rest",
     els.timer.dataset.label === "2:00", els.timer.dataset.label);
 
-  const rows = els.main.find("ex-move")[0].find("set").filter(r => !r.classList.contains("head"));
+  const rows = els.main.find("ex-item")[0].find("set").filter(r => !r.classList.contains("head"));
   rows.slice(0, 3).forEach(row => {
     wt(row).value = "50";
     rp(row).value = "10";
@@ -923,7 +923,7 @@ section("A superset reads as an alternating pair");
   render();
   check("no superset badge", els.main.find("superset").length === 0);
 
-  const blocks = els.main.find("ex-move");
+  const blocks = els.main.find("ex-item");
   const first = blocks[9], second = blocks[10];
   check("the first move carries the S1 notch", first.find("ex-head")[0].innerHTML.includes(">S1<"), first.find("ex-head")[0].innerHTML);
   check("the second move carries the pairing glyph", second.find("ex-head")[0].innerHTML.includes("call_merge"));
@@ -961,7 +961,7 @@ const comeBackAfter = ms => {
   document.fire("visibilitychange");
   Date.now = realNow;
 };
-const timedCards = () => els.main.find("ex-move").filter(card => card.find("ex-time").length);
+const timedCards = () => els.main.find("ex-item").filter(card => card.find("ex-time").length);
 const longPress = async () => {
   const {LONG_PRESS_MS} = await import("../src/data/constants.js");
   els.timer.fire("pointerdown");

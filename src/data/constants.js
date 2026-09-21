@@ -24,7 +24,7 @@ export const REST = {
   lead: 120,
   accessory: 90,
   isolation: 60,
-  betweenMoves: 90,
+  betweenExercises: 90,
   supersetWalk: 15,
   supersetRound: 45,
   betweenSupersets: 60

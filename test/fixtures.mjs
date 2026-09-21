@@ -35,23 +35,23 @@ export function setsOf(pairs){
   return pairs.map(([w, r]) => ({w: String(w), r: String(r)}));
 }
 
-export function prescribedMovements(){
+export function prescribedExercises(){
   const seen = new Map();
   for(const block of constants.BLOCKS) for(const day of constants.DAY_KEYS)
-    exercises.allExercises(exercises.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
+    exercises.workoutSlots(exercises.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
   return seen;
 }
 
-export function offDayMovements(){
+export function offDayExercises(){
   const seen = new Map();
   for(const block of constants.BLOCKS) for(const day of constants.OFF_KEYS)
-    exercises.allExercises(exercises.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
+    exercises.workoutSlots(exercises.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
   return seen;
 }
 
-export function everyMovement(){
-  const seen = prescribedMovements();
-  offDayMovements().forEach((e, id) => { if(!seen.has(id)) seen.set(id, e); });
+export function everyExercise(){
+  const seen = prescribedExercises();
+  offDayExercises().forEach((e, id) => { if(!seen.has(id)) seen.set(id, e); });
   EXTRAS.forEach(e => seen.set(e.id, e));
   return seen;
 }

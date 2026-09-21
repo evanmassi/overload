@@ -8,10 +8,10 @@ import {elapsedLabel} from "../rules/format.js";
 import {byId, el} from "./dom.js";
 
 function setBarGroups(){
-  const plan = workoutFor(state.current.block, state.current.day);
-  if(!plan) return [];
+  const workout = workoutFor(state.current.block, state.current.day);
+  if(!workout) return [];
   let reached = false;
-  return resolvedExercises(plan, state.current.swaps).map(exercise => {
+  return resolvedExercises(workout, state.current.swaps).map(exercise => {
     const sets = state.current.entries[exercise.id] || [];
     const marks = [];
     for(let i = 0; i < exercise.s; i++) marks.push(isLogged(sets[i]) ? "on" : "off");

@@ -156,9 +156,9 @@ button{cursor:pointer;border:none;background:none}
   text-transform:uppercase;color:var(--ink-4);text-align:center;white-space:nowrap;
 }
 .ex.core .rule{height:1px;background:var(--line);margin:0 13px}
-.ex.core .ex-move{position:relative}
+.ex.core .ex-item{position:relative}
 .ex.core .ex-num .icon{font-size:15px;color:inherit}
-.ex.core .ex-move:last-child .sets{padding-bottom:20px}
+.ex.core .ex-item:last-child .sets{padding-bottom:20px}
 .set-n{
   font-family:var(--font-ui);font-size:12px;color:var(--faint);
   text-align:center;font-variant-numeric:tabular-nums;
@@ -522,8 +522,8 @@ button{cursor:pointer;border:none;background:none}
 }
 .ex-summary b i{font-style:normal;color:var(--ui-accent);margin-right:4px}
 .ex-summary em{color:var(--muted);border-style:dashed;background:none;text-transform:uppercase;font-size:10px;letter-spacing:.1em}
-.ex-move.done .ex-summary{display:flex}
-.ex-move.done .meta,.ex-move.done .target,.ex-move.done .sets,.ex-move.done .effort,.ex-move.done .ex-cue,.ex-move.done .stall{display:none}
+.ex-item.done .ex-summary{display:flex}
+.ex-item.done .meta,.ex-item.done .target,.ex-item.done .sets,.ex-item.done .effort,.ex-item.done .ex-cue,.ex-item.done .stall{display:none}
 .stall{margin:0 13px 11px}
 .callout{position:relative;font-family:var(--font-ui);--c-line:var(--warning);--c-glow:var(--warning-glow);--c-plate:var(--warning-deep)}
 .callout[data-tone="secondary"]{--c-line:var(--secondary);--c-glow:var(--secondary-glow);--c-plate:var(--secondary-mid)}
@@ -567,7 +567,7 @@ button{cursor:pointer;border:none;background:none}
   clip-path:polygon(0 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%);
   animation:hud-text-flicker calc(5400ms * var(--flicker-pace)) linear infinite;
 }
-.ex-move.done .ex-num{opacity:.5;animation:none}
+.ex-item.done .ex-num{opacity:.5;animation:none}
 .panel[data-dim="on"]{--p-frame:18%;--p-tint:2%;--p-wash:5%}
 .panel[data-dim="on"] .panel-plate{opacity:.22}
 .panel[data-dim="on"] .ex-num{opacity:.4}

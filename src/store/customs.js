@@ -1,4 +1,4 @@
-import {findExercise, programIds} from "../rules/exercises.js";
+import {findExercise, exerciseIds} from "../rules/exercises.js";
 import {ALIASES} from "../data/taxonomy.js";
 import {state, persistCustomNames, persistSessions, persistHolds} from "./state.js";
 import {loggedCount} from "../rules/progression.js";
@@ -18,7 +18,7 @@ export function customIdFor(name){
   const target = squash(name);
   if(!target) return null;
   for(const id in state.customNames) if(squash(state.customNames[id]) === target) return id;
-  for(const id of programIds()) if(squash(exerciseName(id)) === target) return id;
+  for(const id of exerciseIds()) if(squash(exerciseName(id)) === target) return id;
   if(ALIAS_OF[target]) return ALIAS_OF[target];
   return "custom_" + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
 }

@@ -23,7 +23,7 @@ function lastDate(id){
   return last ? last.date.slice(5) : "";
 }
 
-function movementRow(slot, id){
+function exerciseRow(slot, id){
   const button = el("button", "sheet-item" + (id === slot.id ? " current" : ""));
   const when = lastDate(id);
   button.innerHTML = `<span>${escapeHtml(exerciseName(id))}</span>${when ? `<em>${when}</em>` : ""}`;
@@ -76,7 +76,7 @@ export function openSwapSheet(slot){
   openSlot = slot;
   const body = openSheet("Instead of " + slot.n);
   const taken = idsTakenElsewhere(slot, workoutFor(state.current.block, state.current.day), state.current.swaps);
-  const offer = ids => ids.filter(id => !taken.has(id)).forEach(id => body.appendChild(movementRow(slot, id)));
+  const offer = ids => ids.filter(id => !taken.has(id)).forEach(id => body.appendChild(exerciseRow(slot, id)));
 
   const mine = Object.keys(state.customNames)
     .sort((a, b) => state.customNames[a].localeCompare(state.customNames[b]));

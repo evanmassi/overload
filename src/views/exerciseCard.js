@@ -5,7 +5,7 @@ import {priorSets, suggestTarget, hasStalled, trend, backoffWeight} from "../rul
 import {isLogged} from "../rules/sets.js";
 import {setRuns, setSummary, unitSuffix, unitName} from "../rules/format.js";
 import {state, changes} from "../store/state.js";
-import {isHeld, holdLift, releaseLift} from "../store/holds.js";
+import {isHeld, holdExercise, releaseExercise} from "../store/holds.js";
 import {setsFor, setEffort, logSet, swapSlot, nextRest, openSetIndex} from "../store/session.js";
 import {makeIconButton} from "../ui/button.js";
 import {makeField} from "../ui/field.js";
@@ -61,8 +61,8 @@ function startRestAfter(exercise, index){
   if(!restRunningFor(tag)) startTimer(restAfterSet(exercise, index), tag);
 }
 
-function moveBlock(exercise, position, slot, notch){
-  const move = el("div", "ex-move");
+function exerciseItem(exercise, position, slot, notch){
+  const move = el("div", "ex-item");
   move.id = "card-" + exercise.id;
   fillCard(move, exercise, position, slot, notch || (position ? String(position).padStart(2, "0") : ""));
   if(isFolded(exercise)) move.classList.add("done");
@@ -70,13 +70,13 @@ function moveBlock(exercise, position, slot, notch){
 }
 
 function markDim(panel){
-  panel.dataset.dim = [...panel.querySelectorAll(".ex-move")].every(move => move.classList.contains("done")) ? "on" : "off";
+  panel.dataset.dim = [...panel.querySelectorAll(".ex-item")].every(move => move.classList.contains("done")) ? "on" : "off";
 }
 
 export function exerciseCard(exercise, position, slot){
   const card = el("section", "ex");
   makePanel(card);
-  card.appendChild(moveBlock(exercise, position, slot));
+  card.appendChild(exerciseItem(exercise, position, slot));
   markDim(card);
   return card;
 }
@@ -87,7 +87,7 @@ export function corePairCard(pair, index, slots){
   card.id = "card-core-" + index;
   pair.forEach((exercise, i) => {
     if(i) card.appendChild(el("div", "rule"));
-    card.appendChild(moveBlock(exercise, null, slots[i], i ? '<i class="icon">call_merge</i>' : "S" + (index + 1)));
+    card.appendChild(exerciseItem(exercise, null, slots[i], i ? '<i class="icon">call_merge</i>' : "S" + (index + 1)));
   });
   markDim(card);
   return card;
@@ -238,12 +238,12 @@ function stallPrompt(exercise, slot, prior){
       changes.notify();
     }));
   }
-  actions.push(stallAction("hold", "stall-hold:" + exercise.id, () => { holdLift(exercise.id); changes.notify(); }));
+  actions.push(stallAction("hold", "stall-hold:" + exercise.id, () => { holdExercise(exercise.id); changes.notify(); }));
   return callout("warning", "warning", "Stalled", `Same numbers ${STALL_EXPOSURES} sessions running.`, actions);
 }
 
 function holdNotice(exercise){
-  const release = stallAction("push", "stall-release:" + exercise.id, () => { releaseLift(exercise.id); changes.notify(); });
+  const release = stallAction("push", "stall-release:" + exercise.id, () => { releaseExercise(exercise.id); changes.notify(); });
   return callout("secondary", "anchor", "Holding", "Match it. Beat it by 10% and the push comes back.", [release]);
 }
 

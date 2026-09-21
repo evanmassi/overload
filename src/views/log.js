@@ -14,7 +14,7 @@ import {exerciseCard, corePairCard} from "./exerciseCard.js";
 export function renderLog(main){
   const current = state.current;
   const offDay = isOffDay(current.day);
-  const plan = workoutFor(current.block, current.day);
+  const workout = workoutFor(current.block, current.day);
 
   const date = el("input", "date-input");
   date.type = "date";
@@ -36,8 +36,8 @@ export function renderLog(main){
   main.append(dayRow("blockset sessions", DAY_KEYS, done), dayRow("blockset offdays", OFF_KEYS, new Set()));
 
   const head = el("div", "dayhead");
-  head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>${offDay ? "Version" : "Week"} ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2></div>`;
-  if(plan.travel) head.appendChild(placeSwitch(plan));
+  head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>${offDay ? "Version" : "Week"} ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${workout.focus}">${workout.focus}</h2></div>`;
+  if(workout.travel) head.appendChild(placeSwitch(workout));
   main.appendChild(head);
 
   const legend = el("div", "legend");
@@ -47,22 +47,22 @@ export function renderLog(main){
   let position = 0;
   const addCards = slots => slots.forEach(slot =>
     main.appendChild(exerciseCard(resolveSlot(slot, current.swaps), ++position, slot)));
-  if(plan.sections){
-    plan.sections.forEach(section => {
+  if(workout.sections){
+    workout.sections.forEach(section => {
       main.appendChild(el("p", "section-label", sectionLabel(section)));
       addCards(section.ex);
     });
   } else {
-    addCards(plan.ex);
+    addCards(workout.ex);
   }
 
-  if(plan.core){
+  if(workout.core){
     main.appendChild(el("p", "section-label", "Core finisher · 3 supersets, 2 rounds each"));
-    plan.core.forEach((pair, i) =>
+    workout.core.forEach((pair, i) =>
       main.appendChild(corePairCard(pair.map(slot => resolveSlot(slot, current.swaps)), i, pair)));
   }
 
-  const strays = strayExercises(plan);
+  const strays = strayExercises(workout);
   if(strays.length){
     main.appendChild(el("p", "section-label", "Not in this session"));
     strays.forEach(exercise => main.appendChild(exerciseCard(exercise, null, null)));
@@ -94,21 +94,21 @@ function sectionLabel(section){
   return section.name;
 }
 
-function placeSwitch(plan){
-  const away = isAway(plan);
+function placeSwitch(workout){
+  const away = isAway(workout);
   const wrap = el("div", "place-wrap");
   wrap.append(el("p", "eyebrow", "Location"), choiceRow("blockset place", [
     {label: "gym", key: "place:gym", title: "The gym versions", chosen: !away,
-     onPick: () => { if(away) setTravel(plan, false); }},
+     onPick: () => { if(away) setTravel(workout, false); }},
     {label: "away", key: "place:away", title: "No-equipment versions for travel", chosen: away,
-     onPick: () => { if(!away) setTravel(plan, true); }}
+     onPick: () => { if(!away) setTravel(workout, true); }}
   ], {ghost: true}));
   return wrap;
 }
 
-function strayExercises(plan){
+function strayExercises(workout){
   const entries = state.current.entries;
-  return strayIds(state.current, plan)
+  return strayIds(state.current, workout)
     .map(id => Object.assign(
       {id, n: exerciseName(id), s: entries[id].length, r: "", rest: DEFAULT_REST},
       findExercise(id) || {},
