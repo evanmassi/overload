@@ -21,7 +21,7 @@ export const PROGRAM = {
     legs: {focus:"Legs & Back", ex:[
       {id:"goblet_squat", n:"DB Goblet Squat", s:4, r:"10-12"},
       {id:"db_rdl", n:"DB Romanian Deadlift", s:4, r:"8-10"},
-      {id:"back_extension", n:"Weighted Back Extension", s:3, r:"12"},
+      {id:"back_extension", n:"Back Extension", s:3, r:"12"},
       {id:"bulgarian", n:"Bulgarian Split Squat", s:3, r:"10"},
       {id:"single_arm_row", n:"Single-arm DB Row", s:3, r:"10"},
       {id:"walking_lunge", n:"DB Walking Lunge", s:3, r:"12"},
@@ -37,12 +37,12 @@ export const PROGRAM = {
        {id:"flutter_kicks", n:"Flutter Kicks", s:2, r:"40", unit:"sec", bw:1}]
     ]},
     arms: {focus:"Shoulders & Arms", ex:[
-      {id:"seated_db_press", n:"Seated DB Shoulder Press", s:4, r:"8-10"},
+      {id:"seated_db_press", n:"Seated Shoulder Press", s:4, r:"8-10"},
       {id:"lateral_raise", n:"DB Lateral Raise", s:4, r:"12-15"},
       {id:"ez_curl", n:"EZ-Bar Curl", s:3, r:"10-12"},
       {id:"ez_skullcrusher", n:"EZ-Bar Skullcrusher", s:3, r:"10-12"},
       {id:"hammer_curl", n:"DB Hammer Curl", s:3, r:"12"},
-      {id:"oh_tri_ext", n:"Overhead DB Tricep Extension", s:3, r:"12"},
+      {id:"oh_tri_ext", n:"Overhead DB Extension", s:3, r:"12"},
       {id:"rear_delt_fly", n:"Rear-delt DB Flye", s:3, r:"15"},
       {id:"cable_curl", n:"Cable Rope Curl", s:3, r:"15"}
     ], core:[
@@ -76,28 +76,28 @@ export const PROGRAM = {
     legs: {focus:"Legs & Back", ex:[
       {id:"db_front_squat", n:"DB Front Squat", s:4, r:"8-10"},
       {id:"single_leg_rdl", n:"Single-leg DB RDL", s:3, r:"10"},
-      {id:"back_extension", n:"Weighted Back Extension", s:3, r:"12"},
+      {id:"back_extension", n:"Back Extension", s:3, r:"12"},
       {id:"db_step_up", n:"DB Step-up", s:3, r:"10"},
       {id:"seated_row", n:"Seated Cable Row", s:4, r:"10-12"},
       {id:"reverse_lunge", n:"DB Reverse Lunge", s:3, r:"12"},
       {id:"leg_curl", n:"Seated Leg Curl", s:3, r:"12"},
-      {id:"seated_calf", n:"Seated Calf Raise w/ DB", s:4, r:"20"},
+      {id:"seated_calf", n:"Seated Calf Raise", s:4, r:"20"},
       {id:"db_good_morning", n:"DB Good Morning", s:3, r:"12"}
     ], core:[
       [{id:"decline_situp", n:"Decline Sit-up w/ DB", s:2, r:"12"},
        {id:"side_plank_reach", n:"Side Plank w/ Reach", s:2, r:"30", unit:"sec", bw:1}],
-      [{id:"oblique_knee_raise", n:"Hanging Oblique Knee Raise", s:2, r:"10", bw:1},
+      [{id:"oblique_knee_raise", n:"Oblique Knee Raise", s:2, r:"10", bw:1},
        {id:"weighted_dead_bug", n:"Dead Bug w/ DB", s:2, r:"12"}],
       [{id:"plank_up_down", n:"Plank Up-Downs", s:2, r:"12", bw:1},
        {id:"flutter_kicks", n:"Flutter Kicks", s:2, r:"40", unit:"sec", bw:1}]
     ]},
     arms: {focus:"Shoulders & Arms", ex:[
-      {id:"standing_ohp", n:"Standing DB Overhead Press", s:4, r:"8-10"},
+      {id:"standing_ohp", n:"Overhead Press", s:4, r:"8-10"},
       {id:"arnold_press", n:"DB Arnold Press", s:3, r:"10-12"},
       {id:"lateral_raise", n:"DB Lateral Raise", s:4, r:"15"},
       {id:"face_pull", n:"Face Pull", s:3, r:"15"},
       {id:"incline_curl", n:"Incline DB Curl", s:3, r:"10-12"},
-      {id:"close_grip_press", n:"EZ-Bar Close-Grip Press", s:3, r:"10"},
+      {id:"close_grip_press", n:"Close-Grip EZ Press", s:3, r:"10"},
       {id:"concentration_curl", n:"DB Concentration Curl", s:3, r:"12"},
       {id:"bench_dip", n:"Bench Dips", s:3, r:"AMRAP", bw:1}
     ], core:[
@@ -120,7 +120,7 @@ export const PROGRAM = {
       {id:"diamond_pushup", n:"Diamond Push-ups", s:3, r:"AMRAP", bw:1},
       {id:"db_shrug", n:"Heavy DB Shrug", s:3, r:"12-15"}
     ], core:[
-      [{id:"weighted_leg_raise", n:"Weighted Hanging Leg Raise", s:2, r:"10"},
+      [{id:"weighted_leg_raise", n:"Weighted Leg Raise", s:2, r:"10"},
        {id:"hollow_hold", n:"Hollow Body Hold", s:2, r:"40", unit:"sec", bw:1}],
       [{id:"woodchop", n:"Cable Woodchop", s:2, r:"12"},
        {id:"bicycle_crunch", n:"Bicycle Crunch", s:2, r:"24", bw:1}],
@@ -130,13 +130,13 @@ export const PROGRAM = {
     legs: {focus:"Legs & Back", ex:[
       {id:"bulgarian", n:"Bulgarian Split Squat", s:4, r:"8"},
       {id:"stiff_leg_dl", n:"DB Stiff-leg Deadlift", s:4, r:"10"},
-      {id:"back_extension", n:"Weighted Back Extension", s:3, r:"12"},
+      {id:"back_extension", n:"Back Extension", s:3, r:"12"},
       {id:"sumo_squat", n:"DB Sumo Squat", s:3, r:"12"},
       {id:"hip_thrust", n:"DB Hip Thrust", s:4, r:"8-10"},
       {id:"inverted_row", n:"Inverted Row", s:3, r:"AMRAP", bw:1},
       {id:"lateral_lunge", n:"DB Lateral Lunge", s:3, r:"10"},
       {id:"single_leg_calf", n:"Single-leg Calf Raise", s:3, r:"15"},
-      {id:"hanging_knee_twist", n:"Hanging Knee Raise w/ Twist", s:3, r:"12", bw:1}
+      {id:"hanging_knee_twist", n:"Twisting Knee Raise", s:3, r:"12", bw:1}
     ], core:[
       [{id:"toes_to_bar", n:"Toes-to-Bar", s:2, r:"8", bw:1},
        {id:"pallof_press", n:"Pallof Press", s:2, r:"15"}],
@@ -147,11 +147,11 @@ export const PROGRAM = {
     ]},
     arms: {focus:"Shoulders & Arms", ex:[
       {id:"push_press", n:"DB Push Press", s:4, r:"6-8"},
-      {id:"seated_lateral_raise", n:"Seated DB Lateral Raise", s:4, r:"15"},
+      {id:"seated_lateral_raise", n:"Seated Lateral Raise", s:4, r:"15"},
       {id:"ez_upright_row", n:"EZ-Bar Upright Row", s:3, r:"12"},
-      {id:"rear_delt_raise", n:"Bent-over Rear-delt Raise", s:3, r:"15"},
+      {id:"rear_delt_raise", n:"Bent-over Rear Raise", s:3, r:"15"},
       {id:"ez_21s", n:"EZ-Bar 21s", s:3, r:"21"},
-      {id:"ez_oh_ext", n:"Overhead EZ-Bar Extension", s:3, r:"12"},
+      {id:"ez_oh_ext", n:"Overhead EZ Extension", s:3, r:"12"},
       {id:"cross_hammer_curl", n:"Cross-body Hammer Curl", s:3, r:"12"},
       {id:"tri_kickback", n:"DB Tricep Kickback", s:3, r:"15"}
     ], core:[

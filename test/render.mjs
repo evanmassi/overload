@@ -64,6 +64,8 @@ section("The log view renders a full session");
   const metas = els.main.find("meta");
   check("every exercise states its load convention", metas.length === 15 && metas.every(m => /per dumbbell|one dumbbell|total w|stack|bodyweight/.test(m.innerHTML)), metas.length);
   check("per-side moves are tagged", metas.some(m => m.innerHTML.includes("per leg")) || state.current.day !== "legs");
+  check("every card names the muscles it works", metas.every(m => m.innerHTML.includes("tag muscle")));
+  check("chips and prescription sit on separate lines", metas.every(m => m.innerHTML.includes("meta-chips") && m.innerHTML.includes("meta-line")));
   check("the session tabs render", els.main.find("sessions").length === 1);
   check("a notes box renders", els.main.find("notes").length === 1);
   check("the legend renders", els.main.find("legend").length === 1);

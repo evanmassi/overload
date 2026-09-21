@@ -51,6 +51,8 @@ Because of the A/B/C rotation, "last time" for most lifts is a full cycle ago. L
 
 Session volume accounts for both: a walking lunge holding two 40s for 12 per leg counts 40 × 2 dumbbells × 12 reps × 2 legs.
 
+**Every card names the muscles it works** in a muted tag on the chip line, primary movers only, so `PER DUMBBELL · CHEST · TRICEPS` reads as one glance. The how-to sheet lists the secondary ones too. Card text never wraps: display names are capped at 22 characters, and the meta is two fixed lines on every card, chips above and prescription below.
+
 **Tap an exercise name** for a how-to: 3-4 numbered steps and the one thing people get wrong, for all 165 movements. It ships in the page, so it opens instantly with no signal. A YouTube search link sits at the bottom of the sheet for when you want to see it moving.
 
 The write-ups are plain-language descriptions of standard technique, not a trainer's instruction. For the fussier moves (Copenhagen plank, Z-press, ab wheel) watch a video the first time and use the steps as a reminder afterwards.
@@ -186,6 +188,7 @@ Static files, ES modules, no build step.
 | `src/progression.js` | scoring, volume, target suggestions |
 | `src/swaps.js` | substitutions and custom exercises |
 | `src/holds.js` | lifts you are holding on purpose |
+| `src/muscles.js` | what each movement works, primary and secondary |
 | `src/session.js` | the session being edited, autosave |
 | `src/format.js` | set summaries and durations, shared by every view |
 | `src/render.js` | the log view, the save bar |

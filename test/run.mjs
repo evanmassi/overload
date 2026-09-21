@@ -1,7 +1,7 @@
 import {
   section, check, equal, report, reset, logged, setsOf, everyMovement, prescribedMovements, offDayMovements,
   clearStorage, state, hydrate, constants, movements, progression, rotation, swaps, backup,
-  HOWTO, PATTERNS, LOAD, PER, EXTRAS
+  HOWTO, PATTERNS, LOAD, PER, EXTRAS, MUSCLES
 } from "./harness.mjs";
 
 const {BLOCKS, DAY_KEYS, OFF_KEYS, IMPLEMENTS_PER_LOAD} = constants;
@@ -36,6 +36,14 @@ section("Program data");
 
   const ghosts = Object.keys(HOWTO).filter(id => !moves.has(id));
   equal("no how-to for a movement that does not exist", ghosts, []);
+
+  const unworked = [...moves.keys()].filter(id => !MUSCLES[id] || !MUSCLES[id].p.length);
+  equal("every movement names what it works", unworked, []);
+  const muscleGhosts = Object.keys(MUSCLES).filter(id => !moves.has(id));
+  equal("no muscle entry for a movement that does not exist", muscleGhosts, []);
+
+  const longNames = [...moves.values()].map(e => e.n).filter(n => n.length > 22);
+  equal("every display name fits on one line", longNames, []);
 
   const unfactored = [...moves.values()].filter(e => !e.sides || e.implements == null || !e.load);
   equal("every movement carries load and side factors", unfactored.map(e => e.id), []);

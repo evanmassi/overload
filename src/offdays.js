@@ -24,7 +24,7 @@ export const OFFDAYS = {
         move("mountain_climber", "Mountain Climbers"),
         move("pushup_burnout", "Push-ups")
       ]),
-      finish([machine("stair_intervals", "Stair Machine · 30s hard / 30s easy", 8)])
+      finish([machine("stair_intervals", "Stair Intervals", 8)])
     ], travel: {
       thruster: "backpack_thruster", bench_stepover: "chair_stepup", renegade_row: "backpack_row",
       burpee_over_bells: "burpee", stair_intervals: "stairwell_climb"
@@ -55,7 +55,7 @@ export const OFFDAYS = {
       ]),
       circuit("Bar & bench", 2, 15, [
         hold("dead_hang", "Dead Hang", 30),
-        reps("thoracic_ext_bench", "Thoracic Extension over Bench", 10),
+        reps("thoracic_ext_bench", "Bench Thoracic Stretch", 10),
         reps("band_pull_apart", "Band Pull-apart", 15),
         reps("wall_slide", "Wall Slide", 10)
       ]),
@@ -78,10 +78,10 @@ export const OFFDAYS = {
         move("plank_up_down", "Plank Up-Downs"),
         move("squat_thrust", "Squat Thrust")
       ]),
-      finish([hold("battle_ropes", "Battle Ropes · 20s on / 40s off", 20, 8)], 40)
+      finish([machine("incline_power_walk", "Incline Power Walk", 10)])
     ], travel: {
       alt_snatch: "backpack_thruster", goblet_squat: "backpack_squat", push_press: "pike_pushup",
-      man_maker: "burpee", battle_ropes: "stairwell_climb"
+      man_maker: "burpee", incline_power_walk: "stairwell_climb"
     }},
     functional: {focus: "Function", sections: [
       circuit("Dumbbells", 4, 30, [
@@ -93,7 +93,7 @@ export const OFFDAYS = {
       circuit("Cables", 4, 30, [
         loaded("half_kneel_woodchop", "Half-kneeling Woodchop", 12),
         loaded("face_pull", "Face Pull", 15),
-        loaded("cable_rotation", "Standing Cable Rotation", 12)
+        loaded("cable_rotation", "Cable Rotation", 12)
       ]),
       finish([hold("bear_crawl", "Bear Crawl", 30, 3), hold("hollow_hold", "Hollow Body Hold", 30, 3)])
     ], travel: {
@@ -103,7 +103,7 @@ export const OFFDAYS = {
     mobility: {focus: "Mobility", sections: [
       circuit("Floor", 2, 15, [
         hold("pigeon", "Pigeon", 45),
-        reps("worlds_greatest", "World's Greatest Stretch", 5),
+        reps("worlds_greatest", "World's Greatest", 5),
         reps("cat_cow", "Cat-Cow", 10),
         reps("adductor_rockback", "Adductor Rock-back", 10)
       ]),
@@ -131,7 +131,7 @@ export const OFFDAYS = {
         move("bicycle_crunch", "Bicycle Crunch"),
         move("hand_release_pushup", "Hand-release Push-up")
       ]),
-      finish([machine("stair_intervals_long", "Stair Machine · 1 min hard / 1 min easy", 10)])
+      finish([machine("stair_intervals_long", "Long Stair Intervals", 10)])
     ], travel: {
       devil_press: "burpee", hang_clean: "backpack_thruster", db_bent_row: "backpack_row",
       stair_intervals_long: "stairwell_climb"
@@ -144,8 +144,8 @@ export const OFFDAYS = {
         loaded("suitcase_deadlift", "Suitcase Deadlift", 8)
       ]),
       circuit("Cables", 4, 30, [
-        timed("cable_antirotation_hold", "Cable Anti-rotation Hold", 20),
-        loaded("half_kneel_pulldown", "Half-kneeling Single-arm Pulldown", 10),
+        timed("cable_antirotation_hold", "Anti-rotation Hold", 20),
+        loaded("half_kneel_pulldown", "Half-kneel Pulldown", 10),
         loaded("cable_crunch", "Cable Crunch", 15)
       ]),
       finish([hold("copenhagen", "Copenhagen Plank", 20, 2), hold("wall_sit", "Wall Sit", 45, 2)])
@@ -158,12 +158,12 @@ export const OFFDAYS = {
       circuit("Floor", 2, 15, [
         hold("frog_stretch", "Frog Stretch", 45),
         loaded("jefferson_curl", "Jefferson Curl", 8),
-        reps("quadruped_t_rotation", "Quadruped Thoracic Rotation", 8),
+        reps("quadruped_t_rotation", "Thoracic Rotation", 8),
         reps("ankle_rock", "Ankle Rock", 10)
       ]),
       circuit("Bar & bench", 2, 15, [
         hold("active_hang", "Active Hang", 20),
-        reps("hanging_knee_raise", "Slow Hanging Knee Raise", 8),
+        reps("hanging_knee_raise", "Slow Knee Raise", 8),
         reps("band_pull_apart", "Band Pull-apart", 15)
       ]),
       finish([machine("incline_walk", "Incline Walk", 15)])

@@ -19,6 +19,7 @@ const backup = await import("../src/backup.js");
 const {HOWTO} = await import("../src/howto.js");
 const {PATTERNS, LOAD, PER} = await import("../src/taxonomy.js");
 const {EXTRAS} = await import("../src/extras.js");
+const {MUSCLES} = await import("../src/muscles.js");
 
 export function reset(){
   clearStorage();
@@ -86,4 +87,4 @@ export function report(){
   return failed === 0;
 }
 
-export {state, hydrate, constants, movements, progression, rotation, swaps, backup, HOWTO, PATTERNS, LOAD, PER, EXTRAS};
+export {state, hydrate, constants, movements, progression, rotation, swaps, backup, HOWTO, PATTERNS, LOAD, PER, EXTRAS, MUSCLES};

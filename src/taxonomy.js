@@ -107,7 +107,6 @@ export const LOAD = {
     "stairwell_climb",
     "skater_hop",
     "squat_thrust",
-    "battle_ropes",
     "pike_pushup",
     "broad_jump",
     "hand_release_pushup",
@@ -173,6 +172,7 @@ export const LOAD = {
   "level": [
     "stair_intervals",
     "stair_intervals_long",
+    "incline_power_walk",
     "stair_easy",
     "incline_walk"
   ]
@@ -246,9 +246,9 @@ export const PATTERNS = {
   "Core flexion":["hanging_knee_raise","hanging_leg_raise","bicycle_crunch","reverse_crunch","decline_situp","flutter_kicks","v_up","toes_to_bar","cable_crunch","weighted_leg_raise","hanging_knee_twist","oblique_knee_raise"],
   "Core bracing":["turkish_getup","bear_crawl","plank","side_plank","dead_bug","hollow_hold","shoulder_taps","ab_wheel","bird_dog","copenhagen","hollow_rock","side_plank_reach","weighted_dead_bug","plank_up_down","mountain_climber"],
   "Core rotation":["half_kneel_woodchop","cable_rotation","cable_antirotation_hold","russian_twist","woodchop","pallof_press","db_side_bend","twist_lunge"],
-  "Conditioning":["thruster","bench_stepover","burpee_over_bells","punch_out","alt_snatch","man_maker","devil_press","hang_clean","clean_and_press","backpack_thruster","burpee","squat_thrust","battle_ropes"],
+  "Conditioning":["thruster","bench_stepover","burpee_over_bells","punch_out","alt_snatch","man_maker","devil_press","hang_clean","clean_and_press","backpack_thruster","burpee","squat_thrust"],
   "Plyometrics":["jump_squat","skater_hop","broad_jump"],
-  "Machine cardio":["stair_intervals","stair_intervals_long","stair_easy","incline_walk","stairwell_climb","walk"],
+  "Machine cardio":["stair_intervals","stair_intervals_long","incline_power_walk","stair_easy","incline_walk","stairwell_climb","walk"],
   "Mobility":["cossack_squat","hip_9090","deep_squat_pry","deep_squat_hold","couch_stretch","thoracic_ext_bench","wall_slide","band_dislocate","childs_pose","pigeon","worlds_greatest","cat_cow","adductor_rockback","frog_stretch","jefferson_curl","quadruped_t_rotation","ankle_rock","standing_forward_fold"],
   "Carries":["overhead_carry","backpack_carry","suitcase_carry","farmer_carry"]
 };

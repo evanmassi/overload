@@ -6,6 +6,7 @@ import {state, notify} from "./state.js";
 import {score, loggedCount, priorSets, sessionVolume, suggestTarget,
         prescribedCount, hasStalled, topSet, num} from "./progression.js";
 import {isHeld, holdLift, releaseLift, beatsHold} from "./holds.js";
+import {MUSCLES} from "./muscles.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
 import {resolveSlot, exerciseName} from "./swaps.js";
 import {loadDate, setBlockIndex, setDay, setsFor, queueSave, previousSameWorkout,
@@ -322,12 +323,16 @@ function fillCard(card, exercise, position, slot, notch){
 
   const meta = document.createElement("div");
   meta.className = "meta";
-  if(exercise.per) meta.innerHTML += `<span class="tag side">per ${exercise.per}</span>`;
-  if(LOAD_LABEL[exercise.load]) meta.innerHTML += `<span class="tag">${LOAD_LABEL[exercise.load]}</span>`;
+  let chips = "";
+  if(exercise.per) chips += `<span class="tag side">per ${exercise.per}</span>`;
+  if(LOAD_LABEL[exercise.load]) chips += `<span class="tag">${LOAD_LABEL[exercise.load]}</span>`;
+  const worked = MUSCLES[exercise.id];
+  if(worked) chips += `<span class="tag muscle">${worked.p.join(" · ")}</span>`;
   const prescription = exercise.r ? `${exercise.s} × ${exercise.r}${suffix}` : `${exercise.s} logged`;
-  meta.innerHTML += exercise.win
+  const line = exercise.win
       ? `<span>${exercise.s} rounds × ${exercise.win}s on</span><span class="dot">·</span><span>${exercise.rest}s off</span>`
       : `<span>${prescription}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
+  meta.innerHTML = `<div class="meta-chips">${chips}</div><div class="meta-line">${line}</div>`;
   card.appendChild(meta);
 
   const held = isHeld(exercise.id);

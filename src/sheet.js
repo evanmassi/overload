@@ -1,6 +1,7 @@
 import {PATTERNS} from "./taxonomy.js";
 import {PATTERN_OF, workoutFor, allExercises} from "./movements.js";
 import {HOWTO} from "./howto.js";
+import {MUSCLES} from "./muscles.js";
 import {CONFIRM_WINDOW_MS} from "./constants.js";
 import {state, notify} from "./state.js";
 import {priorSets} from "./progression.js";
@@ -50,6 +51,15 @@ export function openHowTo(exercise){
   const guide = HOWTO[exercise.id];
   title.textContent = exercise.n;
   body.innerHTML = "";
+
+  const worked = MUSCLES[exercise.id];
+  if(worked){
+    const works = document.createElement("p");
+    works.className = "howto-works";
+    works.innerHTML = "<b>Works</b>";
+    works.appendChild(document.createTextNode(worked.p.join(", ") + (worked.s.length ? " · also " + worked.s.join(", ") : "")));
+    body.appendChild(works);
+  }
 
   if(guide){
     const steps = document.createElement("ol");
