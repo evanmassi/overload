@@ -941,18 +941,16 @@ section("A superset reads as an alternating pair");
 {
   fresh();
   render();
-  const badge = els.main.find("superset")[0];
-  check("the badge says to alternate", badge.innerHTML.includes("alternate"), badge.innerHTML);
+  check("no superset badge", els.main.find("superset").length === 0);
 
   const blocks = els.main.find("ex-move");
   const first = blocks[9], second = blocks[10];
+  check("the first move carries the S1 notch", first.find("ex-head")[0].innerHTML.includes(">S1<"), first.find("ex-head")[0].innerHTML);
+  check("the second move has no notch", !second.find("ex-head")[0].innerHTML.includes("ex-num"));
   const firstMeta = first.find("meta")[0].innerHTML;
   const secondMeta = second.find("meta")[0].innerHTML;
-  check("the first move points at its partner", /straight into \w/.test(firstMeta), firstMeta);
-  check("it counts rounds, not sets", firstMeta.includes("rounds"), firstMeta);
-  check("the second move states the round rest",
-    secondMeta.includes("rest 45s between rounds"), secondMeta);
-  check("no core move claims a 15s rest", !firstMeta.includes("rest 15s"), firstMeta);
+  check("the first move reads like any other card", firstMeta.includes("2 × 12") && firstMeta.includes("rest 15s"), firstMeta);
+  check("the second move states the round rest", secondMeta.includes("rest 45s"), secondMeta);
 
   const coreRows = first.find("set").filter(r => !r.classList.contains("head"));
   equal("core rows are numbered by round",

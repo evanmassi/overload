@@ -154,15 +154,10 @@ button{cursor:pointer;border:none;background:none}
   font-family:var(--font-ui);font-size:var(--size-micro);letter-spacing:var(--track-meta);
   text-transform:uppercase;color:var(--ink-4);text-align:center;white-space:nowrap;
 }
-.superset{
-  display:flex;align-items:center;gap:8px;padding:0 13px 2px calc(var(--tag-w) + 10px);min-height:var(--notch-h);
-}
-.superset span{
-  font-family:var(--font-ui);font-size:10.5px;color:var(--faint);
-  letter-spacing:.08em;text-transform:uppercase;
-}
-.ex.core .ex-head{padding:8px 10px 8px 13px;min-height:0}
-.ex.core .rule{height:1px;background:var(--line);margin:4px 13px 0}
+.ex.core .rule{height:1px;background:var(--line);margin:0 13px}
+.ex.core .ex-move{position:relative}
+.ex.core .ex-num .icon{font-size:15px;color:inherit}
+.ex.core .ex-move:last-child .sets{padding-bottom:20px}
 .set-n{
   font-family:var(--font-ui);font-size:12px;color:var(--faint);
   text-align:center;font-variant-numeric:tabular-nums;
@@ -546,8 +541,7 @@ button{cursor:pointer;border:none;background:none}
 
 
 .hist-day{--tag-w:40px}
-.ex.core{--tag-w:98px}
-.ex-num,.superset b,.hist-day .chip.live,.notes label{
+.ex-num,.hist-day .chip.live,.notes label{
   position:absolute;top:0;left:0;z-index:1;margin:0;border:none;
   width:var(--tag-w);height:var(--notch-h);padding:0 0 0 1px;
   display:flex;align-items:center;justify-content:center;
@@ -573,13 +567,13 @@ button{cursor:pointer;border:none;background:none}
   content:"";position:absolute;inset:0;pointer-events:none;
   background:var(--scanlines);mix-blend-mode:multiply;
 }
-.ex-num::before,.superset b::before,.hist-day .chip.live::before,.notes label::before{
+.ex-num::before,.hist-day .chip.live::before,.notes label::before{
   content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
   background:color-mix(in oklab,var(--accent-deep) 55%,var(--bg-panel));
   clip-path:polygon(1px 1px,calc(100% - 1px) 1px,calc(100% - 1px) calc(100% - var(--cut) + .5px),
     calc(100% - var(--cut) + .5px) calc(100% - 1px),1px calc(100% - 1px));
 }
-.ex-num::after,.superset b::after,.hist-day .chip.live::after,.notes label::after{
+.ex-num::after,.hist-day .chip.live::after,.notes label::after{
   content:"";position:absolute;inset:0;pointer-events:none;color:var(--accent);
   background:repeating-linear-gradient(0deg,currentColor 0 1px,transparent 1px 4px);
   background-size:100% 4px;opacity:.1;

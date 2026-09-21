@@ -234,11 +234,11 @@ function isComplete(exercise){
   return done >= exercise.s;
 }
 
-function moveBlock(exercise, position, slot, partnerName){
+function moveBlock(exercise, position, slot, notch){
   const move = document.createElement("div");
   move.className = "ex-move";
   move.id = "card-" + exercise.id;
-  fillCard(move, exercise, position, slot, partnerName);
+  fillCard(move, exercise, position, slot, notch || (position ? String(position).padStart(2, "0") : ""));
   if(isFolded(exercise)) move.classList.add("done");
   return move;
 }
@@ -267,19 +267,15 @@ function corePairCard(pair, index, slots){
   card.className = "ex core";
   strandPanel(card);
   card.id = "card-core-" + index;
-  const badge = document.createElement("div");
-  badge.className = "superset";
-  badge.innerHTML = `<b>Superset ${index + 1}</b><span>alternate the two moves</span>`;
-  card.appendChild(badge);
   pair.forEach((exercise, i) => {
     if(i) card.appendChild(Object.assign(document.createElement("div"), {className: "rule"}));
-    ownMove(card, moveBlock(exercise, null, slots[i], i ? null : pair[1].n));
+    ownMove(card, moveBlock(exercise, null, slots[i], i ? '<i class="icon">call_merge</i>' : "S" + (index + 1)));
   });
   markDim(card);
   return card;
 }
 
-function fillCard(card, exercise, position, slot, partnerName){
+function fillCard(card, exercise, position, slot, notch){
   slot = slot || exercise;
   const prior = priorSets(state.sessions, exercise.id, state.current.date);
   const unit = unitName(exercise);
@@ -287,7 +283,7 @@ function fillCard(card, exercise, position, slot, partnerName){
 
   const head = document.createElement("div");
   head.className = "ex-head";
-  head.innerHTML = `${position ? `<span class="ex-num">${String(position).padStart(2, "0")}</span>` : ""}<h3 class="ex-name">${exercise.n}</h3>`;
+  head.innerHTML = `${notch ? `<span class="ex-num">${notch}</span>` : ""}<h3 class="ex-name">${exercise.n}</h3>`;
   head.querySelector(".ex-name").addEventListener("click", () => openHowTo(exercise));
 
   const summary = document.createElement("span");
@@ -329,9 +325,7 @@ function fillCard(card, exercise, position, slot, partnerName){
   if(exercise.per) meta.innerHTML += `<span class="tag side">per ${exercise.per}</span>`;
   if(LOAD_LABEL[exercise.load]) meta.innerHTML += `<span class="tag">${LOAD_LABEL[exercise.load]}</span>`;
   const prescription = exercise.r ? `${exercise.s} × ${exercise.r}${suffix}` : `${exercise.s} logged`;
-  meta.innerHTML += exercise.core
-    ? `<span>${exercise.s} rounds × ${exercise.r}${suffix}</span><span class="dot">·</span><span>${partnerName ? "straight into " + partnerName : `rest ${exercise.rest}s between rounds`}</span>`
-    : exercise.win
+  meta.innerHTML += exercise.win
       ? `<span>${exercise.s} rounds × ${exercise.win}s on</span><span class="dot">·</span><span>${exercise.rest}s off</span>`
       : `<span>${prescription}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
   card.appendChild(meta);
