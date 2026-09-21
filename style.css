@@ -497,9 +497,9 @@ button{cursor:pointer;border:none;background:none}
 .callout-text{position:relative;display:flex;flex-direction:column;gap:6px;min-width:0}
 .callout-title{font-size:var(--size-meta);letter-spacing:.26em;text-transform:uppercase;color:var(--ink-1);text-shadow:0 0 10px var(--c-glow)}
 .callout-body{font-size:var(--size-body);line-height:var(--leading-body);color:var(--ink-3)}
-.stall-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.stall-actions .sbtn{flex:none;--pad:10px 8px 10px 13px}
-.stall-actions .sbtn .sbtn-label,.stall-actions .sbtn .sbtn-word{font-size:var(--size-meta)}
+.stall-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.stall-actions .sbtn{flex:none;--pad:5px 5px 5px 8px}
+.stall-actions .sbtn .sbtn-label,.stall-actions .sbtn .sbtn-word{font-size:var(--size-micro);letter-spacing:var(--track-meta)}
 
 .effort{
   display:flex;align-items:center;gap:6px;padding:0 13px 12px;

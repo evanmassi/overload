@@ -304,7 +304,7 @@ section("A stalled lift offers swap, drop and hold");
   const curl = els.main.find("ex-move").find(m => m.id === "card-ez_curl");
   check("the stall prompt shows as a warning callout", curl.find("stall").length === 1 && curl.find("stall")[0].dataset.tone === "warning");
   const actions = curl.find("stall-actions")[0].children.map(b => b.dataset.label);
-  equal("with three ways out", actions, ["swap it", "drop to 55", "hold here"]);
+  equal("with three ways out", actions, ["swap", "drop to 55", "hold"]);
 
   curl.find("stall-actions")[0].children[2].fire("click");
   render();
@@ -312,7 +312,7 @@ section("A stalled lift offers swap, drop and hold");
   check("holding is remembered", isHeld("ez_curl"));
   check("the target asks for a match", heldCurl.find("target")[0].innerHTML.includes("match it"), heldCurl.find("target")[0].innerHTML);
   check("the stall prompt becomes a hold notice", heldCurl.find("stall")[0].dataset.tone === "secondary");
-  equal("with a way back", heldCurl.find("stall-actions")[0].children.map(b => b.dataset.label), ["push again"]);
+  equal("with a way back", heldCurl.find("stall-actions")[0].children.map(b => b.dataset.label), ["push"]);
 
   const rows = heldCurl.find("set").filter(r => !r.classList.contains("head"));
   wt(rows[0]).value = "60";

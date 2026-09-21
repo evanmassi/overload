@@ -399,7 +399,7 @@ function callout(tone, icon, title, body, actions){
 
 function stallPrompt(exercise, slot, prior){
   const top = topSet(prior.sets, exercise.bw);
-  const actions = [stallAction("swap it", "stall-swap:" + exercise.id, () => openSwapSheet(slot))];
+  const actions = [stallAction("swap", "stall-swap:" + exercise.id, () => openSwapSheet(slot))];
   if(top && num(top.w)){
     const dropped = Math.max(WEIGHT_STEP_LB, Math.round(num(top.w) * (1 - STALL_BACKOFF_PERCENT / 100) / WEIGHT_STEP_LB) * WEIGHT_STEP_LB);
     actions.push(stallAction(`drop to ${dropped}`, "stall-drop:" + exercise.id, () => {
@@ -409,13 +409,13 @@ function stallPrompt(exercise, slot, prior){
       notify();
     }));
   }
-  actions.push(stallAction("hold here", "stall-hold:" + exercise.id, () => { holdLift(exercise.id); notify(); }));
-  return callout("warning", "warning", "Signal loss", `Flat for ${STALL_EXPOSURES} sessions running.`, actions);
+  actions.push(stallAction("hold", "stall-hold:" + exercise.id, () => { holdLift(exercise.id); notify(); }));
+  return callout("warning", "warning", "Stalled", `Same numbers ${STALL_EXPOSURES} sessions running.`, actions);
 }
 
 function holdNotice(exercise){
-  const release = stallAction("push again", "stall-release:" + exercise.id, () => { releaseLift(exercise.id); notify(); });
-  return callout("secondary", "anchor", "Holding", "On purpose. Beat it by 10% and the push comes back on its own.", [release]);
+  const release = stallAction("push", "stall-release:" + exercise.id, () => { releaseLift(exercise.id); notify(); });
+  return callout("secondary", "anchor", "Holding", "Match it. Beat it by 10% and the push comes back.", [release]);
 }
 
 function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
