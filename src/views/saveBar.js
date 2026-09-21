@@ -1,4 +1,4 @@
-import {workoutFor} from "../rules/exercises.js";
+import {workoutFor} from "../rules/workouts.js";
 import {state} from "../store/state.js";
 import {loggedCount, sessionVolume, prescribedCount} from "../rules/progression.js";
 import {resolvedExercises} from "../store/slots.js";

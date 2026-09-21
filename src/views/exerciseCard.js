@@ -1,6 +1,6 @@
 import {LOAD_LABEL, TREND_ICON, EFFORT_LEVELS, STALL_EXPOSURES} from "../data/constants.js";
-import {MUSCLES} from "../data/muscles.js";
-import {restAfterSet} from "../rules/exercises.js";
+import {musclesOf} from "../rules/exercises.js";
+import {restAfterSet} from "../rules/workouts.js";
 import {priorSets, suggestTarget, hasStalled, trend, backoffWeight} from "../rules/progression.js";
 import {isLogged} from "../rules/sets.js";
 import {setRuns, setSummary, unitSuffix, unitName} from "../rules/format.js";
@@ -135,7 +135,7 @@ function fillCard(card, exercise, position, slot, notch){
   let chips = "";
   if(exercise.per) chips += `<span class="tag side">per ${exercise.per}</span>`;
   if(LOAD_LABEL[exercise.load]) chips += `<span class="tag">${LOAD_LABEL[exercise.load]}</span>`;
-  const worked = MUSCLES[exercise.id];
+  const worked = musclesOf(exercise.id);
   if(worked) chips += `<span class="tag muscle">${worked.p.join(" · ")}</span>`;
   const prescription = exercise.r ? `${exercise.s} × ${exercise.r}${suffix}` : `${exercise.s} logged`;
   const line = exercise.win

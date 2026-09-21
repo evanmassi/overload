@@ -1,4 +1,5 @@
-import {findExercise, workoutSlots} from "../rules/exercises.js";
+import {findExercise} from "../rules/exercises.js";
+import {workoutSlots} from "../rules/workouts.js";
 import {isLogged} from "../rules/sets.js";
 import {exerciseName} from "./customs.js";
 
@@ -6,12 +7,8 @@ export function resolveSlot(slot, swaps){
   const substituteId = swaps && swaps[slot.id];
   if(!substituteId || substituteId === slot.id) return slot;
   const known = findExercise(substituteId);
-  const factors = known
-    ? {bw: known.bw, unit: known.unit, load: known.load,
-       per: known.per, sides: known.sides, implements: known.implements}
-    : {};
-  if(known && known.unit !== slot.unit) factors.r = known.r;
-  return Object.assign({}, slot, factors, {
+  const identity = known && known.unit !== slot.unit ? Object.assign({}, known, {r: known.target}) : known;
+  return Object.assign({}, slot, identity, {
     id: substituteId,
     n: exerciseName(substituteId),
     swappedFrom: slot.id

@@ -1,5 +1,5 @@
-import {PATTERNS} from "../../data/taxonomy.js";
-import {PATTERN_OF, workoutFor} from "../../rules/exercises.js";
+import {findExercise, IDS_BY_PATTERN} from "../../rules/exercises.js";
+import {workoutFor} from "../../rules/workouts.js";
 import {priorSets} from "../../rules/progression.js";
 import {state, changes} from "../../store/state.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor} from "../../store/customs.js";
@@ -85,18 +85,18 @@ export function openSwapSheet(slot){
     mine.forEach(id => body.appendChild(customRow(slot, id, taken)));
   }
 
-  const pattern = PATTERN_OF[slot.id];
+  const pattern = (findExercise(slot.id) || {}).pattern;
   if(pattern){
     sheetGroup("Same movement · " + pattern);
-    offer(PATTERNS[pattern]);
+    offer(IDS_BY_PATTERN[pattern]);
   }
 
   sheetGroup("Type your own");
   body.appendChild(typedEntry(slot));
 
   sheetGroup("Everything else");
-  Object.keys(PATTERNS).filter(p => p !== pattern).forEach(other => {
+  Object.keys(IDS_BY_PATTERN).filter(p => p !== pattern).forEach(other => {
     sheetGroup(other);
-    offer(PATTERNS[other]);
+    offer(IDS_BY_PATTERN[other]);
   });
 }

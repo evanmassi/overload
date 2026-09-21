@@ -15,7 +15,7 @@ overload/
 ├── manifest.json
 ├── src/
 │   ├── main.js       # Entry: mounts the views, subscribes the app view, registers the service worker
-│   ├── data/         # The program, off days, extras, how-tos, taxonomy, muscles, constants
+│   ├── data/         # The exercise catalog, the program, off days, how-tos, constants
 │   ├── rules/        # Pure rules over exercises and sets: scoring, rotation, formatting
 │   ├── store/        # Saved state and every edit to it: storage, sessions, custom exercises, holds, backup
 │   ├── views/        # DOM and audio: one file per screen or piece of one
@@ -72,14 +72,17 @@ The folder is the layer. A file imports only from its own layer or the ones list
 
 ## Data Contracts
 
-**Exercise `id` is identity.** History, holds, swaps, how-tos and muscles all key on it. Renaming an id orphans every
-logged set. Changing the display name `n` is safe; names are capped at 22 characters so card text never wraps.
+**Exercise `id` is identity.** History, holds, swaps and how-tos all key on it. Renaming an id orphans every logged
+set. Changing the display name `n` in `data/catalog.js` is safe; names are capped at 22 characters so card text never
+wraps.
 
-**Adding a movement touches four places.** `test/logic.mjs` fails when the pattern, how-to or muscles are missing:
-1. The workout or `data/extras.js` entry (`id`, `n`, `s`, `r`, plus `bw` or `unit` when they apply)
-2. `taxonomy.js`: its pattern; its load kind unless it is a single dumbbell or `bw`; its side if it is unilateral
-3. `howto.js`: 3+ steps and a watch-out line
-4. `muscles.js`: primary movers, secondary if any
+**An exercise is one record in `data/catalog.js`**: `n`, `pattern`, `load`, `per` if it is unilateral, `unit` if it is
+timed, a default `target` for when it is swapped into a slot measured differently, and `muscles`. Its how-to goes in
+`data/howto.js`. `test/logic.mjs` fails when either is missing.
+
+**A workout slot holds only the prescription**: the exercise `id` plus `s`, `r` and `unit` when timed. Everything
+about the exercise itself comes from the catalog, and `rules/workouts.js` joins the two without editing either file.
+A swap changes the id and keeps the prescription.
 
 **Stored session shape** comes from `snapshot()` in `session.js`: `date`, `day`, `block`, `blockIndex`, `entries`
 (`{id: [{w, r}]}`, strings as typed), and optional `notes`, `effort`, `startedAt`, `lastLoggedAt`, `swaps`. Keys are
@@ -136,7 +139,7 @@ localhost, `main.js` unregisters the worker and clears caches so development alw
 
 ### Pre-Implementation Checklist
 
-1. **Read the data** the change touches (`program.js`, `offdays.js`, the session shape above) before writing code.
+1. **Read the data** the change touches (`catalog.js`, `program.js`, `offdays.js`, the session shape above) before writing code.
 2. **Verify exact field names.** Sets are `{w, r}`, a workout's moves are `ex`, sections are `sections[].ex`.
 3. **Find the owner.** Search for the module that already does the job before writing a new function.
 4. **Check the README section** for the behavior you are changing. It records decisions and why they were made.
@@ -227,7 +230,8 @@ no storage key before something writes it.
 | Rest after a set | `restAfterSet` in `rules/exercises.js` | Rewriting the ternary |
 | Which move fills a slot, and strays | `resolveSlot(slot, swaps)`, `strayIds` in `store/slots.js` | Reading `swaps` by hand |
 | Week and version rotation | `rotation.js` | Counting sessions in a view |
-| Exercise lookup and derived fields | `rules/exercises.js` (`findExercise`, `workoutFor`) | Walking `PROGRAM` by hand |
+| Exercise lookup and derived fields | `findExercise` in `rules/exercises.js` | Reading `CATALOG` by hand |
+| A workout and its slots | `workoutFor`, `workoutSlots` in `rules/workouts.js` | Walking `PROGRAM` by hand |
 | Buttons, inputs, panels | `ui/` | Hand-built markup |
 | Opening a pop-up | `openSheet` in `views/sheets/sheet.js` | Touching the sheet elements directly |
 | Making an element | `el()` in `views/dom.js` | `createElement`, `className` and `textContent` by hand |

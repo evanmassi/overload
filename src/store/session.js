@@ -2,7 +2,7 @@ import {AUTOSAVE_DELAY_MS} from "../data/constants.js";
 import {state, changes, channel, persistSessions} from "./state.js";
 import {loggedCount, priorSets} from "../rules/progression.js";
 import {blockIndexOf, blockLetter, activeBlockIndex, nextSessionIn, nextOffBlockIndex} from "../rules/rotation.js";
-import {isOffDay, workoutFor, restAfterSet} from "../rules/exercises.js";
+import {isOffDay, workoutFor, restAfterSet} from "../rules/workouts.js";
 import {idsTakenElsewhere, resolvedExercises} from "./slots.js";
 import {releaseIfBeaten} from "./holds.js";
 import {isLogged} from "../rules/sets.js";

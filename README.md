@@ -178,14 +178,13 @@ layer or the ones before it: `data`, `rules`, `store`, then `views`.
 
 | | |
 |---|---|
-| `src/data/program.js` | the nine workouts |
+| `src/data/catalog.js` | all 165 exercises: name, pattern, load, sides, muscles, nicknames |
+| `src/data/program.js` | the nine workouts, as exercise ids with sets and reps |
 | `src/data/offdays.js` | the nine off-day workouts and their no-gym substitutes |
-| `src/data/extras.js` | moves the program never prescribes but the swap sheet offers, including the no-gym substitutes |
-| `src/data/howto.js` | 165 movement write-ups |
-| `src/data/taxonomy.js` | movement patterns, load conventions, per-side table |
-| `src/data/muscles.js` | what each movement works, primary and secondary |
+| `src/data/howto.js` | 165 exercise write-ups |
 | `src/data/constants.js` | every tunable number |
-| `src/rules/exercises.js` | finds an exercise, derives its rest times and load factors, parses rep ranges |
+| `src/rules/exercises.js` | finds an exercise and derives its load factors |
+| `src/rules/workouts.js` | joins workouts to the catalog, derives rest times, parses rep ranges |
 | `src/rules/sets.js` | whether a set counts as logged |
 | `src/rules/format.js` | dates, set summaries and durations, shared by every view |
 | `src/rules/progression.js` | scoring, volume, target suggestions, beat/match/below, stall back-off |
@@ -248,4 +247,4 @@ Session keys in `PROGRAM` are `chest` / `legs` / `arms`; sessions carry a `block
 
 Exercise how-tos live in `src/data/howto.js`, keyed by exercise id: `s` is the step array, `w` is the watch-out line. A move with no entry still opens the sheet and shows the YouTube link.
 
-Editing the program means editing `src/data/program.js`. Exercise `id` values are what link a lift to its history, so renaming an id orphans its past data; changing the display name `n` is safe.
+Editing the program means editing `src/data/program.js`, which lists exercise ids with sets and reps. Everything about an exercise itself lives once in `src/data/catalog.js`. Exercise `id` values are what link a lift to its history, so renaming an id orphans its past data; changing the display name `n` in the catalog is safe.

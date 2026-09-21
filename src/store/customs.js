@@ -1,5 +1,5 @@
+import {CATALOG} from "../data/catalog.js";
 import {findExercise, exerciseIds} from "../rules/exercises.js";
-import {ALIASES} from "../data/taxonomy.js";
 import {state, persistCustomNames, persistSessions, persistHolds} from "./state.js";
 import {loggedCount} from "../rules/progression.js";
 import {isLogged} from "../rules/sets.js";
@@ -7,7 +7,7 @@ import {isLogged} from "../rules/sets.js";
 const squash = text => String(text).toLowerCase().replace(/[^a-z0-9]/g, "").replace(/s$/, "");
 
 const ALIAS_OF = {};
-for(const id in ALIASES) ALIASES[id].forEach(name => { ALIAS_OF[squash(name)] = id; });
+for(const id in CATALOG) (CATALOG[id].aliases || []).forEach(name => { ALIAS_OF[squash(name)] = id; });
 
 export function exerciseName(id){
   const known = findExercise(id);

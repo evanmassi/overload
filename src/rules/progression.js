@@ -1,4 +1,5 @@
-import {findExercise, workoutSlots, workoutFor, repRange, isOffDay} from "./exercises.js";
+import {findExercise} from "./exercises.js";
+import {workoutSlots, workoutFor, repRange, isOffDay} from "./workouts.js";
 import {unitSuffix} from "./format.js";
 import {isLogged} from "./sets.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,

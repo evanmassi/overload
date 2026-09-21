@@ -5,15 +5,15 @@ installStorage();
 const {state, hydrate} = await import("../src/store/state.js");
 const constants = await import("../src/data/constants.js");
 const exercises = await import("../src/rules/exercises.js");
+const workouts = await import("../src/rules/workouts.js");
 const progression = await import("../src/rules/progression.js");
 const rotation = await import("../src/rules/rotation.js");
 const customs = await import("../src/store/customs.js");
 const slots = await import("../src/store/slots.js");
 const backup = await import("../src/store/backup.js");
 const {HOWTO} = await import("../src/data/howto.js");
-const {PATTERNS, LOAD, PER} = await import("../src/data/taxonomy.js");
-const {EXTRAS} = await import("../src/data/extras.js");
-const {MUSCLES} = await import("../src/data/muscles.js");
+const {CATALOG, PATTERNS} = await import("../src/data/catalog.js");
+const {PROGRAM} = await import("../src/data/program.js");
 
 export function reset(){
   localStorage.clear();
@@ -38,22 +38,19 @@ export function setsOf(pairs){
 export function prescribedExercises(){
   const seen = new Map();
   for(const block of constants.BLOCKS) for(const day of constants.DAY_KEYS)
-    exercises.workoutSlots(exercises.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
+    workouts.workoutSlots(workouts.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
   return seen;
 }
 
 export function offDayExercises(){
   const seen = new Map();
   for(const block of constants.BLOCKS) for(const day of constants.OFF_KEYS)
-    exercises.workoutSlots(exercises.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
+    workouts.workoutSlots(workouts.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
   return seen;
 }
 
 export function everyExercise(){
-  const seen = prescribedExercises();
-  offDayExercises().forEach((e, id) => { if(!seen.has(id)) seen.set(id, e); });
-  EXTRAS.forEach(e => seen.set(e.id, e));
-  return seen;
+  return new Map(exercises.exerciseIds().map(id => [id, exercises.findExercise(id)]));
 }
 
-export {state, hydrate, constants, exercises, progression, rotation, customs, slots, backup, HOWTO, PATTERNS, LOAD, PER, EXTRAS, MUSCLES};
+export {state, hydrate, constants, exercises, workouts, progression, rotation, customs, slots, backup, HOWTO, CATALOG, PATTERNS, PROGRAM};

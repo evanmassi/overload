@@ -1,5 +1,6 @@
 import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON, DEFAULT_REST} from "../data/constants.js";
-import {workoutFor, findExercise, isOffDay} from "../rules/exercises.js";
+import {findExercise} from "../rules/exercises.js";
+import {workoutFor, isOffDay} from "../rules/workouts.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "../rules/rotation.js";
 import {state} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
@@ -110,7 +111,7 @@ function strayExercises(workout){
   const entries = state.current.entries;
   return strayIds(state.current, workout)
     .map(id => Object.assign(
-      {id, n: exerciseName(id), s: entries[id].length, r: "", rest: DEFAULT_REST},
+      {id, n: exerciseName(id), s: entries[id].length, r: "", rest: DEFAULT_REST, restAfter: DEFAULT_REST},
       findExercise(id) || {},
       {stray: true}
     ));

@@ -1,5 +1,5 @@
 import {HOWTO} from "../../data/howto.js";
-import {MUSCLES} from "../../data/muscles.js";
+import {musclesOf} from "../../rules/exercises.js";
 import {el} from "../dom.js";
 import {openSheet} from "./sheet.js";
 
@@ -22,7 +22,7 @@ export function openHowTo(exercise){
   const guide = HOWTO[exercise.id];
   const body = openSheet(exercise.n);
 
-  const worked = MUSCLES[exercise.id];
+  const worked = musclesOf(exercise.id);
   if(worked)
     body.appendChild(labelled("howto-works", "Works",
       worked.p.join(", ") + (worked.s.length ? " · also " + worked.s.join(", ") : "")));

@@ -1,5 +1,6 @@
 import {DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
-import {workoutFor, findExercise, isOffDay} from "../rules/exercises.js";
+import {findExercise} from "../rules/exercises.js";
+import {workoutFor, isOffDay} from "../rules/workouts.js";
 import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
 import {blockIndexOf, cycleNumber} from "../rules/rotation.js";
 import {isLogged} from "../rules/sets.js";

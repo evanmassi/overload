@@ -1,8 +1,8 @@
 import {section, check, equal, report} from "./checks.mjs";
 import {
   reset, logged, setsOf, everyExercise, prescribedExercises, offDayExercises,
-  state, hydrate, constants, exercises, progression, rotation, customs, slots, backup,
-  HOWTO, PATTERNS, LOAD, PER, EXTRAS, MUSCLES
+  state, hydrate, constants, exercises, workouts, progression, rotation, customs, slots, backup,
+  HOWTO, CATALOG, PATTERNS, PROGRAM
 } from "./fixtures.mjs";
 
 const {BLOCKS, DAY_KEYS, OFF_KEYS, IMPLEMENTS_PER_LOAD} = constants;
@@ -15,54 +15,48 @@ const prescribedCountFor = (block, day) => progression.prescribedCount(block, da
 section("Program data");
 {
   const known = everyExercise();
-  equal("three week blocks", Object.keys(exercises.PROGRAM), BLOCKS);
-  check("165 distinct movements", known.size === 165, known.size);
+  equal("three week blocks", Object.keys(PROGRAM), BLOCKS);
+  check("165 catalogued exercises", known.size === 165, known.size);
 
   const prescribed = prescribedExercises();
   check("9 lifting sessions prescribe 93 of them", prescribed.size === 93, prescribed.size);
   const offDay = offDayExercises();
   check("9 off-day sessions prescribe 74", offDay.size === 74, offDay.size);
 
-  const leaked = EXTRAS.filter(e => prescribed.has(e.id));
-  equal("extras are swappable but never prescribed", leaked.map(e => e.id), []);
+  const uncatalogued = [...prescribed.keys(), ...offDay.keys()].filter(id => !CATALOG[id]);
+  equal("every slot names a catalogued exercise", uncatalogued, []);
+  const swapOnly = [...known.keys()].filter(id => !prescribed.has(id) && !offDay.has(id));
+  check("17 exercises are only offered as swaps", swapOnly.length === 17, swapOnly.length);
 
-  const untagged = [...known.keys()].filter(id => !exercises.PATTERN_OF[id]);
-  equal("every movement belongs to a pattern", untagged, []);
+  const unpatterned = Object.keys(CATALOG).filter(id => !PATTERNS[CATALOG[id].pattern]);
+  equal("every exercise belongs to a known pattern", unpatterned, []);
 
   const missingHowTo = [...known.keys()].filter(id => !HOWTO[id]);
-  equal("every movement has a how-to", missingHowTo, []);
+  equal("every exercise has a how-to", missingHowTo, []);
 
   const badSteps = Object.keys(HOWTO).filter(id => !HOWTO[id].s || HOWTO[id].s.length < 3 || !HOWTO[id].w);
   equal("every how-to has 3+ steps and a watch-out", badSteps, []);
 
   const ghosts = Object.keys(HOWTO).filter(id => !known.has(id));
-  equal("no how-to for a movement that does not exist", ghosts, []);
+  equal("no how-to for an exercise that does not exist", ghosts, []);
 
-  const unworked = [...known.keys()].filter(id => !MUSCLES[id] || !MUSCLES[id].p.length);
-  equal("every movement names what it works", unworked, []);
-  const muscleGhosts = Object.keys(MUSCLES).filter(id => !known.has(id));
-  equal("no muscle entry for a movement that does not exist", muscleGhosts, []);
+  const unworked = Object.keys(CATALOG).filter(id => !CATALOG[id].muscles.p.length);
+  equal("every exercise names what it works", unworked, []);
 
   const longNames = [...known.values()].map(e => e.n).filter(n => n.length > 22);
   equal("every display name fits on one line", longNames, []);
 
-  const unfactored = [...known.values()].filter(e => !e.sides || e.implements == null || !e.load);
-  equal("every movement carries load and side factors", unfactored.map(e => e.id), []);
+  const unknownLoad = Object.keys(CATALOG).filter(id => !(CATALOG[id].load in IMPLEMENTS_PER_LOAD));
+  equal("every exercise has a known load", unknownLoad, []);
 
-  const bwMismatch = [...known.values()].filter(e => !!e.bw !== (LOAD.bw.includes(e.id) || LOAD.level.includes(e.id)));
-  equal("bodyweight flag agrees with the bodyweight and level load tags", bwMismatch.map(e => e.id), []);
+  const badSide = Object.keys(CATALOG).filter(id => CATALOG[id].per && !["leg", "arm", "side"].includes(CATALOG[id].per));
+  equal("a per-side exercise names leg, arm or side", badSide, []);
 
-  const perIds = new Set(Object.values(PER).flat());
-  const perMismatch = [...known.values()].filter(e => !!e.per !== perIds.has(e.id));
-  equal("per-side flag agrees with the per-side table", perMismatch.map(e => e.id), []);
-
-  let dupes = [];
-  const seen = new Set();
-  for(const kind in LOAD) for(const id of LOAD[kind]){ if(seen.has(id)) dupes.push(id); seen.add(id); }
-  equal("no movement carries two load tags", dupes, []);
+  const untargeted = Object.keys(CATALOG).filter(id => !CATALOG[id].target);
+  equal("every exercise has a default target for swaps", untargeted, []);
 
   for(const block of BLOCKS) for(const day of DAY_KEYS){
-    const workout = exercises.workoutFor(block, day);
+    const workout = workouts.workoutFor(block, day);
     check(`${block}/${day} has 8 or 9 main moves`, workout.ex.length === 8 || workout.ex.length === 9, workout.ex.length);
     check(`${block}/${day} has 3 core supersets of 2`, workout.core.length === 3 && workout.core.every(p => p.length === 2));
   }
@@ -104,9 +98,9 @@ section("Rotation follows work done, not the calendar");
 
 section("Progression targets");
 {
-  equal("a hyphenated rep range parses", exercises.repRange("8-10"), {min: 8, max: 10});
-  equal("a single rep count parses", exercises.repRange("12"), {min: 12, max: 12});
-  equal("AMRAP has no range", exercises.repRange("AMRAP"), null);
+  equal("a hyphenated rep range parses", workouts.repRange("8-10"), {min: 8, max: 10});
+  equal("a single rep count parses", workouts.repRange("12"), {min: 12, max: 12});
+  equal("AMRAP has no range", workouts.repRange("AMRAP"), null);
 
   const press = {r: "8-10", bw: 0};
   const target = (ex, pairs) => {
@@ -181,7 +175,7 @@ section("Custom exercises keep one identity");
 section("Swapping keeps history with the movement");
 {
   reset();
-  const slot = exercises.findExercise("leg_curl");
+  const slot = prescribedExercises().get("leg_curl");
   equal("no swap returns the slot untouched", slots.resolveSlot(slot, state.current.swaps).id, "leg_curl");
 
   state.current.swaps = {leg_curl: "db_rdl"};
@@ -221,9 +215,9 @@ section("Removing a custom exercise takes its sets with it");
 
 section("Rest comes from the movement, not its place in the list");
 {
-  const {restFor} = exercises;
+  const {restFor} = workouts;
   const rest = (block, day, name) =>
-    exercises.workoutFor(block, day).ex.find(e => e.n === name).rest;
+    workouts.workoutFor(block, day).ex.find(e => e.n === name).rest;
 
   equal("a heavy five gets the long rest", rest("C", "chest", "Flat DB Bench Press"), 180);
   equal("the day's lead compound gets two minutes", rest("A", "chest", "Flat DB Bench Press"), 120);
@@ -238,12 +232,12 @@ section("Rest comes from the movement, not its place in the list");
   equal("an AMRAP lead is still a lead", rest("A", "chest", "Pull-ups"), 120);
   equal("an AMRAP finisher is not", rest("A", "chest", "Push-ups to Failure"), 90);
 
-  const slot = exercises.findExercise("hip_thrust");
+  const slot = prescribedExercises().get("hip_thrust");
   equal("restFor reads the prescription, not the program", restFor(slot), 120);
   equal("dropping it to three sets drops the rest",
     restFor({id: slot.id, s: 3, r: slot.r}), 90);
 
-  const positional = exercises.workoutFor("C", "chest").ex
+  const positional = workouts.workoutFor("C", "chest").ex
     .map((e, i) => e.rest === (i < 2 ? 120 : 60));
   check("the old positional rule no longer describes the day",
     positional.some(same => !same));
@@ -340,18 +334,18 @@ section("Rules the views share live below them");
   equal("the back-off drops 10% to the nearest plate", backoffWeight(setsOf([[60, 10]]), false), 55);
   equal("a lift with no weight has no back-off", backoffWeight(setsOf([["", 12]]), true), null);
 
-  const press = exercises.findExercise("flat_db_press");
-  equal("rest between sets is the move's own", exercises.restAfterSet(press, 0), press.rest);
-  equal("the last set rests into the next move", exercises.restAfterSet(press, press.s - 1), press.restAfter);
+  const press = prescribedExercises().get("flat_db_press");
+  equal("rest between sets is the move's own", workouts.restAfterSet(press, 0), press.rest);
+  equal("the last set rests into the next move", workouts.restAfterSet(press, press.s - 1), press.restAfter);
 
-  const workout = exercises.workoutFor("A", "chest");
+  const workout = workouts.workoutFor("A", "chest");
   const session = {
     swaps: {flat_db_press: "db_rdl"},
     entries: {db_rdl: setsOf([[95, 10]]), leg_curl: setsOf([[40, 12]]), hammer_curl: [{w: "", r: ""}]}
   };
   equal("only a logged move the plan does not hold is a stray", slots.strayIds(session, workout), ["leg_curl"]);
 
-  const incline = exercises.findExercise("incline_db_press");
+  const incline = prescribedExercises().get("incline_db_press");
   const taken = slots.idsTakenElsewhere(incline, workout, {flat_db_press: "db_rdl"});
   check("another slot's substitute counts as taken", taken.has("db_rdl") && !taken.has("flat_db_press"));
   check("the slot's own move does not", !taken.has("incline_db_press"));
@@ -423,7 +417,7 @@ section("Holding a lift");
 section("Stall detection");
 {
   reset();
-  const press = exercises.findExercise("flat_db_press");
+  const press = prescribedExercises().get("flat_db_press");
   const flat = {};
   ["2026-08-04", "2026-08-11", "2026-08-18"].forEach(date => {
     flat[date] = {date, day: "chest", block: "A", blockIndex: 0,
@@ -446,27 +440,27 @@ section("Stall detection");
 section("Off days sit beside the program, not inside it");
 {
   for(const block of BLOCKS) for(const day of OFF_KEYS){
-    const workout = exercises.workoutFor(block, day);
+    const workout = workouts.workoutFor(block, day);
     check(`${block}/${day} has three sections`, workout.sections.length === 3, workout.sections.length);
     check(`${block}/${day} prescribes 15-36 sets`,
       progression.prescribedCount(block, day) >= 15 && progression.prescribedCount(block, day) <= 36,
       progression.prescribedCount(block, day));
-    const ids = exercises.workoutSlots(workout).map(e => e.id);
+    const ids = workouts.workoutSlots(workout).map(e => e.id);
     equal(`${block}/${day} lists no move twice`, ids.filter((id, i) => ids.indexOf(id) !== i), []);
     const badTravel = Object.keys(workout.travel).filter(id =>
       !ids.includes(id) || !exercises.findExercise(workout.travel[id]) || ids.includes(workout.travel[id]));
     equal(`${block}/${day} travel swaps point at real moves not already in the session`, badTravel, []);
   }
 
-  const thruster = exercises.workoutFor("A", "conditioning").sections[0].ex[0];
+  const thruster = workouts.workoutFor("A", "conditioning").sections[0].ex[0];
   equal("an interval move takes its shape from its section",
     [thruster.s, thruster.r, thruster.win, thruster.rest, thruster.restAfter], [4, "AMRAP", 40, 20, 20]);
-  const hang = exercises.workoutFor("A", "functional").sections[2].ex[0];
+  const hang = workouts.workoutFor("A", "functional").sections[2].ex[0];
   equal("a finisher keeps its own set count", [hang.s, hang.r, hang.unit, hang.rest], [2, "30", "sec", 60]);
-  const stairs = exercises.workoutFor("A", "conditioning").sections[2].ex[0];
+  const stairs = workouts.workoutFor("A", "conditioning").sections[2].ex[0];
   equal("a machine finisher logs level and minutes", [stairs.load, stairs.unit, stairs.implements, !!stairs.bw], ["level", "min", 0, true]);
 
-  const liftingGoblet = exercises.findExercise("goblet_squat");
+  const liftingGoblet = prescribedExercises().get("goblet_squat");
   equal("a lift reused on an off day keeps its lifting definition", [liftingGoblet.r, liftingGoblet.win], ["10-12", undefined]);
 
   equal("a machine finisher that hit its minutes goes up a level",
@@ -509,7 +503,7 @@ section("Prescribed set counts");
   }
   equal("main work plus core makes up the total",
     prescribedCountFor("A", "chest"),
-    exercises.workoutFor("A", "chest").ex.reduce((n, e) => n + e.s, 0) + 12);
+    workouts.workoutFor("A", "chest").ex.reduce((n, e) => n + e.s, 0) + 12);
 }
 
 section("Last time is looked up within the same kind of session");
