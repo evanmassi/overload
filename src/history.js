@@ -13,7 +13,7 @@ import {strandButton} from "./strand/button.js";
 import {strandPanel} from "./strand/panel.js";
 
 function deltaMark(key, id, sets, isBodyweight){
-  const prior = priorSets(state.sessions, id, key);
+  const prior = priorSets(state.sessions, id, key, state.sessions[key].day);
   if(!prior) return `<i class="hist-delta up" title="First time logged">new</i>`;
   const now = score(topSet(sets, isBodyweight), isBodyweight);
   const then = score(topSet(prior.sets, isBodyweight), isBodyweight);
@@ -283,6 +283,6 @@ function soundControls(){
 function soundNote(){
   const note = document.createElement("p");
   note.className = "sound-note";
-  note.textContent = "Three short beeps in the last seconds, a rising three-note one when the rest is up. The screen stays awake while a rest runs. Switching apps pauses the clock; come back and it shows GO.";
+  note.textContent = "Three short beeps in the last seconds, one long high one when the rest is up. The screen stays awake while a rest runs. Switching apps pauses the clock; come back and it shows GO.";
   return note;
 }

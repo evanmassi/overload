@@ -51,12 +51,27 @@ export function setDay(day){
   openSession(existing || newSessionKey(current.date), current.date, day);
 }
 
+function sessionsExcept(key){
+  const rest = {};
+  for(const other in state.sessions) if(other !== key) rest[other] = state.sessions[other];
+  return rest;
+}
+
 export function relabelSession(key, day){
   const session = state.sessions[key];
   if(!session) return;
+  const crossing = isOffDay(day) !== isOffDay(session.day);
   session.day = day;
+  if(isOffDay(day) || crossing){
+    const others = sessionsExcept(key);
+    session.blockIndex = isOffDay(day) ? nextOffBlockIndex(others, day) : activeBlockIndex(others);
+    session.block = blockLetter(session.blockIndex);
+  }
   persistSessions();
-  if(key === state.current.key) state.current.day = day;
+  if(key === state.current.key){
+    state.current.day = day;
+    setBlockIndex(session.blockIndex);
+  }
   notify();
 }
 

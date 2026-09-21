@@ -12,13 +12,14 @@ globalThis.localStorage = {
 
 const {state} = await import("../src/state.js");
 const {render} = await import("../src/render.js");
-const {mountSheet, openSwapSheet, openHowTo} = await import("../src/sheet.js");
+const {mountSheet, openSwapSheet, openHowTo, openTimerSheet} = await import("../src/sheet.js");
 const {mountTimer} = await import("../src/timer.js");
 const {mountSaveState} = await import("../src/savestate.js");
 const {findExercise} = await import("../src/movements.js");
 const {loadDate, setDay, iso} = await import("../src/session.js");
+const {clockFace} = await import("../src/format.js");
 
-mountTimer(els.timer, els.clock);
+mountTimer(els.timer, {onHold: openTimerSheet});
 mountSaveState(els.status);
 mountSheet(els.sheet, els.sheettitle, els.sheetbody, els.sheetclose, els.sheetback);
 
@@ -943,6 +944,161 @@ section("Effort is asked once per main move");
   equal("nine prompts, not fifteen", els.main.find("effort").length, 9);
   const coreCards = els.main.find("core");
   check("no core superset asks", coreCards.every(c => c.find("effort").length === 0));
+}
+
+const realNow = Date.now;
+const comeBackAfter = ms => {
+  Date.now = () => realNow() + ms;
+  document.visibilityState = "visible";
+  document.fire("visibilitychange");
+  Date.now = realNow;
+};
+const timedCards = () => els.main.find("ex-move").filter(card => card.find("ex-time").length);
+const longPress = async () => {
+  const {LONG_PRESS_MS} = await import("../src/constants.js");
+  els.timer.fire("pointerdown");
+  await new Promise(resolve => setTimeout(resolve, LONG_PRESS_MS + 60));
+  els.timer.fire("pointerup");
+  els.timer.fire("click");
+};
+
+section("A work window times the set and rolls into the rest");
+{
+  const {stop} = await import("../src/timer.js");
+  fresh();
+  render();
+  stop();
+  const timed = timedCards();
+  check("only seconds-based cards get a timer button", timed.length > 0 &&
+    timed.every(card => /\d+s<\/span>/.test(card.find("meta")[0].innerHTML)), timed.length);
+  const card = timed[0];
+  const seconds = +card.find("ex-time")[0].title.match(/(\d+)s/)[1];
+  const restSeconds = +card.find("meta")[0].innerHTML.match(/rest (\d+)s/)[1];
+  const rows = card.find("set").filter(r => !r.classList.contains("head"));
+  check("the button names the prescribed seconds",
+    card.find("meta")[0].innerHTML.includes(`× ${seconds}s`), card.find("meta")[0].innerHTML);
+
+  card.find("ex-time")[0].fire("click");
+  check("tapping it counts the prescribed seconds", els.timer.dataset.label === clockFace(seconds), els.timer.dataset.label);
+  check("on the secondary tone, not the rest tone", els.timer.dataset.tone === "secondary", els.timer.dataset.tone);
+
+  comeBackAfter((seconds + 1) * 1000);
+  check("when it ends the set is logged as the prescribed seconds", rp(rows[0]).value === String(seconds), rp(rows[0]).value);
+  check("and the rest starts by itself", els.timer.dataset.label === clockFace(restSeconds), els.timer.dataset.label);
+  check("on the rest tone", els.timer.dataset.tone === "primary", els.timer.dataset.tone);
+  stop();
+
+  card.find("ex-time")[0].fire("click");
+  comeBackAfter((seconds + 1) * 1000);
+  check("the next tap fills the next open set", rp(rows[1]).value === String(seconds), rp(rows[1]).value);
+  stop();
+
+  const before = els.timer.dataset.label;
+  card.find("ex-time")[0].fire("click");
+  check("with every set logged the button does nothing", els.timer.dataset.label === before, els.timer.dataset.label);
+  stop();
+
+  fresh();
+  render();
+  stop();
+  const away = timedCards()[0];
+  away.find("ex-time")[0].fire("click");
+  state.view = "history";
+  render();
+  comeBackAfter((seconds + 1) * 1000);
+  const loggedWhileAway = Object.values(state.current.entries).find(sets => sets[0] && sets[0].r === String(seconds));
+  check("a window that ends on another tab still logs the set", !!loggedWhileAway, JSON.stringify(state.current.entries));
+  check("and still starts the rest", /^\d+:\d\d$/.test(els.timer.dataset.label) && els.timer.dataset.tone === "primary", els.timer.dataset.label);
+  state.view = "log";
+  stop();
+}
+
+section("A cardio round runs the window then the rest without a restart");
+{
+  const {stop} = await import("../src/timer.js");
+  fresh();
+  setDay("conditioning");
+  render();
+  stop();
+  const card = timedCards()[0];
+  const rows = card.find("set").filter(r => !r.classList.contains("head"));
+  card.find("ex-time")[0].fire("click");
+  check("go runs the 40s window", els.timer.dataset.label === "0:40", els.timer.dataset.label);
+  comeBackAfter(41000);
+  check("the window rolls into the 20s off", els.timer.dataset.label === "0:20", els.timer.dataset.label);
+  check("and leaves the reps box for you", rp(rows[0]).value === "", rp(rows[0]).value);
+  comeBackAfter(46000);
+  check("five seconds into the rest", els.timer.dataset.label === "0:15", els.timer.dataset.label);
+  rp(rows[0]).value = "14";
+  rp(rows[0]).fire("change");
+  check("typing the count does not restart the rest", els.timer.dataset.label === "0:15", els.timer.dataset.label);
+  rp(rows[1]).value = "13";
+  rp(rows[1]).fire("change");
+  check("logging the next round by hand still starts its own rest", els.timer.dataset.label === "0:20", els.timer.dataset.label);
+  stop();
+}
+
+section("Long-pressing the clock opens a picker with presets and a stopwatch");
+{
+  const {stop} = await import("../src/timer.js");
+  const {LONG_PRESS_MS, TIMER_PRESETS} = await import("../src/constants.js");
+  fresh();
+  render();
+  stop();
+  const idle = els.timer.dataset.label;
+
+  els.timer.fire("pointerdown");
+  els.timer.fire("pointerup");
+  await new Promise(resolve => setTimeout(resolve, LONG_PRESS_MS + 60));
+  check("a short tap does not open the picker", els.sheet.hidden === true);
+
+  await longPress();
+  check("a long press opens it", els.sheet.hidden === false);
+  check("titled Timer", els.sheettitle.textContent === "Timer", els.sheettitle.textContent);
+  check("the click that follows the press is swallowed", els.timer.dataset.label === idle, els.timer.dataset.label);
+  await new Promise(resolve => setTimeout(resolve, LONG_PRESS_MS + 60));
+  els.timer.fire("click");
+  comeBackAfter(1000);
+  check("a later tap is not swallowed even if no click followed the press", els.timer.dataset.label === "1:59", els.timer.dataset.label);
+  stop();
+  els.sheet.hidden = false;
+
+  const presets = els.sheetbody.find("sheet-presets")[0].children;
+  equal("the presets read as clock faces", presets.map(b => b.dataset.label), TIMER_PRESETS.map(clockFace));
+  presets[1].fire("click");
+  check("tapping one starts that countdown", els.timer.dataset.label === clockFace(TIMER_PRESETS[1]), els.timer.dataset.label);
+  check("and closes the sheet", els.sheet.hidden === true);
+  stop();
+
+  const {parseClock} = await import("../src/format.js");
+  equal("a typed length reads seconds, m:ss or a unit",
+    ["90", "1:30", "1.30", "2m", "45s", "2 min", "1.75", "abc", ""].map(parseClock), [90, 90, 90, 120, 45, 120, 0, 0, 0]);
+  await longPress();
+  const custom = els.sheetbody.find("sheet-custom")[0];
+  const box = custom.find("sfield-input")[0] || custom.children[0];
+  box.value = "nope";
+  custom.find("sbtn")[0].fire("click");
+  check("a bad entry keeps the sheet open", els.sheet.hidden === false);
+  check("clears the box", box.value === "", box.value);
+  check("and hints at the format", box.placeholder === "Try 90 or 1.30", box.placeholder);
+  box.value = "7.30";
+  box.fire("keydown", {key: "Enter"});
+  check("a typed length starts on Enter", els.timer.dataset.label === "7:30", els.timer.dataset.label);
+  check("and closes the sheet", els.sheet.hidden === true);
+  stop();
+
+  await longPress();
+  els.sheetbody.find("sheet-item")[0].fire("click");
+  check("the stopwatch starts at zero", els.timer.dataset.label === "0:00", els.timer.dataset.label);
+  check("on the secondary tone", els.timer.dataset.tone === "secondary", els.timer.dataset.tone);
+  comeBackAfter(65000);
+  check("and counts up", els.timer.dataset.label === "1:05", els.timer.dataset.label);
+  Date.now = () => realNow() + 65000;
+  els.timer.fire("click");
+  Date.now = realNow;
+  check("tapping the clock stops it on the elapsed time", els.timer.dataset.label === "1:05", els.timer.dataset.label);
+  check("in the success tone", els.timer.dataset.tone === "success", els.timer.dataset.tone);
+  stop();
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

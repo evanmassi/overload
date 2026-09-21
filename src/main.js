@@ -1,7 +1,7 @@
 import {state, hydrate, subscribe, notify} from "./state.js";
 import {loadDate, iso, flushNow} from "./session.js";
 import {render} from "./render.js";
-import {mountSheet} from "./sheet.js";
+import {mountSheet, openTimerSheet} from "./sheet.js";
 import {mountTimer} from "./timer.js";
 import {mountSaveState} from "./savestate.js";
 import {loadSoundPreference, unlockAudio} from "./sound.js";
@@ -13,7 +13,7 @@ loadSoundPreference();
 document.addEventListener("pointerdown", unlockAudio);
 
 mountSaveState(el("status"));
-mountTimer(el("timer"));
+mountTimer(el("timer"), {onHold: openTimerSheet});
 mountSheet(el("sheet"), el("sheettitle"), el("sheetbody"), el("sheetclose"), el("sheetback"));
 
 el("tabs").querySelectorAll(".tab").forEach(tab =>

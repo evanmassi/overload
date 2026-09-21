@@ -1,4 +1,4 @@
-import {findExercise, allExercises, workoutFor, repRange} from "./movements.js";
+import {findExercise, allExercises, workoutFor, repRange, isOffDay} from "./movements.js";
 import {unitSuffix} from "./format.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
         EFFORT_STEPS, STALL_EXPOSURES} from "./constants.js";
@@ -47,9 +47,15 @@ export function topSet(sets, isBodyweight){
   return logged.reduce((best, set) => score(set, isBodyweight) > score(best, isBodyweight) ? set : best);
 }
 
-export function priorSets(sessions, exerciseId, beforeKey){
-  const keys = Object.keys(sessions).filter(key => key < beforeKey).sort().reverse();
-  for(const key of keys){
+function earlierKeysOfSameKind(sessions, beforeKey, day){
+  const offDay = day === undefined ? null : isOffDay(day);
+  return Object.keys(sessions)
+    .filter(key => key < beforeKey && (offDay === null || isOffDay(sessions[key].day) === offDay))
+    .sort().reverse();
+}
+
+export function priorSets(sessions, exerciseId, beforeKey, day){
+  for(const key of earlierKeysOfSameKind(sessions, beforeKey, day)){
     const session = sessions[key];
     const sets = session.entries && session.entries[exerciseId];
     if(sets && sets.some(set => set && set.r))
@@ -58,10 +64,9 @@ export function priorSets(sessions, exerciseId, beforeKey){
   return null;
 }
 
-export function exposures(sessions, exerciseId, beforeKey, limit){
-  const keys = Object.keys(sessions).filter(key => key < beforeKey).sort().reverse();
+export function exposures(sessions, exerciseId, beforeKey, limit, day){
   const found = [];
-  for(const key of keys){
+  for(const key of earlierKeysOfSameKind(sessions, beforeKey, day)){
     const sets = sessions[key].entries && sessions[key].entries[exerciseId];
     if(sets && sets.some(set => set && set.r)) found.push({date: sessions[key].date || key, sets});
     if(found.length === limit) break;
@@ -69,8 +74,8 @@ export function exposures(sessions, exerciseId, beforeKey, limit){
   return found;
 }
 
-export function hasStalled(sessions, exercise, beforeKey){
-  const recent = exposures(sessions, exercise.id, beforeKey, STALL_EXPOSURES);
+export function hasStalled(sessions, exercise, beforeKey, day){
+  const recent = exposures(sessions, exercise.id, beforeKey, STALL_EXPOSURES, day);
   if(recent.length < STALL_EXPOSURES) return false;
   const best = recent.map(entry => score(topSet(entry.sets, exercise.bw), exercise.bw));
   const oldest = best[best.length - 1];

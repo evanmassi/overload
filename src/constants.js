@@ -42,9 +42,8 @@ export const FINAL_COUNTDOWN_SECONDS = 3;
 export const VIBRATE_PATTERN = [200, 100, 200];
 export const BEEP_PULSE_GAP_SECONDS = 0.06;
 export const BEEP_LATE_TOLERANCE_SECONDS = 0.25;
-export const BEEP_COUNTDOWN = {wave: "square", volume: 1, pulses: [{freq: 880, seconds: 0.16}]};
-export const BEEP_GO = {wave: "square", volume: 1,
-  pulses: [{freq: 880, seconds: 0.14}, {freq: 1100, seconds: 0.14}, {freq: 1320, seconds: 0.7}]};
+export const BEEP_COUNTDOWN = {wave: "triangle", volume: 1, pulses: [{freq: 880, seconds: 0.12}]};
+export const BEEP_GO = {wave: "triangle", volume: 1, pulses: [{freq: 1320, seconds: 1}]};
 
 export const AUTOSAVE_DELAY_MS = 1200;
 export const CONFIRM_WINDOW_MS = 4000;
@@ -76,3 +75,6 @@ export const STALL_BACKOFF_PERCENT = 10;
 export const HOLD_RELEASE_MARGIN = 0.1;
 export const CONSISTENCY_WEEKS = 26;
 
+export const LONG_PRESS_MS = 500;
+export const TIMER_PRESETS = [15, 30, 45, 60, 90, 120, 180, 300, 600];
+export const BEEP_RELEASE_SECONDS = 0.12;

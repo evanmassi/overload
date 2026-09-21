@@ -15,11 +15,13 @@ import {setRuns, setSummary, elapsedLabel, unitSuffix, unitName} from "./format.
 import {renderHistory} from "./history.js";
 import {renderProgress} from "./progress.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
-import {start as startTimer, setIdleRest} from "./timer.js";
+import {start as startTimer, startWork, setIdleRest} from "./timer.js";
 import {strandButton, strandIconButton} from "./strand/button.js";
 import {strandField} from "./strand/field.js";
 import {strandPanel} from "./strand/panel.js";
 const el = id => document.getElementById(id);
+
+let restAlreadyRunningFor = null;
 
 function isFolded(exercise){
   return isComplete(exercise) !== state.foldFlips.has(exercise.id);
@@ -278,7 +280,7 @@ function corePairCard(pair, index, slots){
 
 function fillCard(card, exercise, position, slot, notch){
   slot = slot || exercise;
-  const prior = priorSets(state.sessions, exercise.id, state.current.key);
+  const prior = priorSets(state.sessions, exercise.id, state.current.key, state.current.day);
   const unit = unitName(exercise);
   const suffix = unitSuffix(exercise);
 
@@ -345,7 +347,7 @@ function fillCard(card, exercise, position, slot, notch){
   }
 
   if(held) card.appendChild(holdNotice(exercise));
-  else if(!exercise.stray && hasStalled(state.sessions, exercise, state.current.key))
+  else if(!exercise.stray && hasStalled(state.sessions, exercise, state.current.key, state.current.day))
     card.appendChild(stallPrompt(exercise, slot, prior));
 
   const sets = document.createElement("div");
@@ -354,7 +356,11 @@ function fillCard(card, exercise, position, slot, notch){
 
   const columns = document.createElement("div");
   columns.className = "set head";
-  columns.innerHTML = `<div>${exercise.core || exercise.win ? "rd" : "#"}</div><div>${exercise.load === "level" ? "level" : "weight (lbs)"}</div><div></div><div>${unit}</div><div></div><div></div>`;
+  columns.innerHTML = `<div>${exercise.core || exercise.win ? "rd" : "#"}</div><div>${exercise.load === "level" ? "level" : "weight (lbs)"}</div><div></div><div>${unit}</div>`;
+  const timeCell = document.createElement("div");
+  const windowSeconds = workWindowSeconds(exercise);
+  if(windowSeconds) timeCell.appendChild(workWindowButton(exercise, windowSeconds));
+  columns.append(timeCell, document.createElement("div"));
   sets.appendChild(columns);
 
   const refreshers = [];
@@ -370,6 +376,52 @@ function fillCard(card, exercise, position, slot, notch){
     foot.textContent = `${prior.date} — ${setSummary(prior.sets, suffix)}`;
     card.appendChild(foot);
   }
+}
+
+function workWindowSeconds(exercise){
+  if(exercise.win) return exercise.win;
+  return exercise.unit === "sec" ? Number(exercise.r) || 0 : 0;
+}
+
+function liveRows(exercise){
+  const card = el("main").querySelector("#card-" + exercise.id) || document.getElementById("card-" + exercise.id);
+  if(!card || !card.querySelectorAll) return [];
+  return [...card.querySelectorAll(".set")].filter(row => row.logSeconds);
+}
+
+function workWindowButton(exercise, seconds){
+  const button = document.createElement("button");
+  button.className = "ex-time";
+  const label = `Time ${seconds}s`;
+  strandIconButton(button, {
+    icon: "timer", label, tone: "primary", ghost: true, size: 30, glyph: 18,
+    key: "time:" + exercise.id
+  });
+  button.title = label;
+  button.addEventListener("click", () => {
+    const index = liveRows(exercise).findIndex(row => !row.hasReps());
+    if(index < 0) return;
+    restAlreadyRunningFor = null;
+    startWork(seconds, () => {
+      if(!exercise.win){ logSecondsInto(exercise, index, seconds); return; }
+      restAlreadyRunningFor = exercise.id + ":" + index;
+      startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
+    });
+  });
+  return button;
+}
+
+function logSecondsInto(exercise, index, seconds){
+  const row = liveRows(exercise)[index];
+  if(row){ row.logSeconds(seconds); return; }
+  const sets = setsFor(exercise.id);
+  while(sets.length <= index) sets.push({w: "", r: ""});
+  if(sets[index].r) return;
+  sets[index].r = String(seconds);
+  markLogged();
+  queueSave();
+  notify();
+  startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
 }
 
 function stallAction(label, key, act){
@@ -480,9 +532,14 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
     updateFooter();
     refreshRepeats();
     queueSave();
-    if(!hadReps && sets[index].r)
-      startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
+    if(hadReps || !sets[index].r) return;
+    const restRunning = restAlreadyRunningFor === exercise.id + ":" + index;
+    restAlreadyRunningFor = null;
+    if(!restRunning) startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
   };
+
+  row.hasReps = () => !!reps.value.trim();
+  row.logSeconds = seconds => { reps.value = String(seconds); commit(); };
 
   [weight, reps].forEach(input => {
     input.addEventListener("input", paint);

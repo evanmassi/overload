@@ -2,11 +2,13 @@ import {PATTERNS} from "./taxonomy.js";
 import {PATTERN_OF, workoutFor, allExercises} from "./movements.js";
 import {HOWTO} from "./howto.js";
 import {MUSCLES} from "./muscles.js";
-import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS} from "./constants.js";
+import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS, TIMER_PRESETS} from "./constants.js";
 import {state, notify} from "./state.js";
 import {priorSets} from "./progression.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor, resolveSlot} from "./swaps.js";
 import {queueSave, relabelSession} from "./session.js";
+import {start as startTimer, startStopwatch} from "./timer.js";
+import {clockFace, parseClock} from "./format.js";
 import {strandButton} from "./strand/button.js";
 import {strandField} from "./strand/field.js";
 
@@ -45,6 +47,50 @@ function youtubeLink(name){
   link.rel = "noopener noreferrer";
   link.textContent = "Watch it on YouTube";
   return link;
+}
+
+function customCountdown(){
+  const row = document.createElement("div");
+  row.className = "sheet-custom";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.inputMode = "decimal";
+  input.placeholder = "Seconds or m.ss";
+  const use = document.createElement("button");
+  strandButton(use, {label: "Start", tone: "primary"});
+  const submit = () => {
+    const seconds = parseClock(input.value);
+    if(!seconds){ input.value = ""; input.placeholder = "Try 90 or 1.30"; return; }
+    startTimer(seconds);
+    closeSheet();
+  };
+  use.addEventListener("click", submit);
+  input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
+  row.append(strandField(input), use);
+  return row;
+}
+
+export function openTimerSheet(){
+  title.textContent = "Timer";
+  body.innerHTML = "";
+  group("Count down");
+  const presets = document.createElement("div");
+  presets.className = "sheet-presets";
+  TIMER_PRESETS.forEach(seconds => {
+    const button = document.createElement("button");
+    strandButton(button, {label: clockFace(seconds), tone: "primary", key: "preset:" + seconds});
+    button.addEventListener("click", () => { startTimer(seconds); closeSheet(); });
+    presets.appendChild(button);
+  });
+  body.appendChild(presets);
+  body.appendChild(customCountdown());
+  group("Count up");
+  const watch = document.createElement("button");
+  watch.className = "sheet-item";
+  watch.innerHTML = "<span>Stopwatch</span><em>tap the clock to stop</em>";
+  watch.addEventListener("click", () => { startStopwatch(); closeSheet(); });
+  body.appendChild(watch);
+  show();
 }
 
 export function openRelabelSheet(key){
@@ -136,7 +182,7 @@ function pick(slot, id){
 function movementRow(slot, id){
   const button = document.createElement("button");
   button.className = "sheet-item" + (id === slot.id ? " current" : "");
-  const last = priorSets(state.sessions, id, state.current.key);
+  const last = priorSets(state.sessions, id, state.current.key, state.current.day);
   button.innerHTML = `<span>${exerciseName(id)}</span>${last ? `<em>${last.date.slice(5)}</em>` : ""}`;
   button.addEventListener("click", () => pick(slot, id));
   return button;
@@ -153,7 +199,7 @@ function customRow(slot, id, taken){
   if(use.disabled) use.title = "Already in this session";
   use.addEventListener("click", () => pick(slot, id));
 
-  const last = priorSets(state.sessions, id, state.current.key);
+  const last = priorSets(state.sessions, id, state.current.key, state.current.day);
   const when = document.createElement("em");
   when.textContent = last ? last.date.slice(5) : "";
 

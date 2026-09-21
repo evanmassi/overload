@@ -1,4 +1,4 @@
-import {BEEP_COUNTDOWN, BEEP_GO, BEEP_PULSE_GAP_SECONDS, FINAL_COUNTDOWN_SECONDS,
+import {BEEP_COUNTDOWN, BEEP_GO, BEEP_PULSE_GAP_SECONDS, BEEP_RELEASE_SECONDS, FINAL_COUNTDOWN_SECONDS,
         BEEP_LATE_TOLERANCE_SECONDS} from "./constants.js";
 import {loadSoundOn, saveSoundOn} from "./storage.js";
 
@@ -61,7 +61,7 @@ function schedule({wave, volume, pulses}, startAt){
     osc.frequency.setValueAtTime(freq, at);
     gain.gain.setValueAtTime(0.0001, at);
     gain.gain.exponentialRampToValueAtTime(volume, at + 0.01);
-    gain.gain.setValueAtTime(volume, at + seconds - 0.03);
+    gain.gain.setValueAtTime(volume, at + seconds - Math.min(BEEP_RELEASE_SECONDS, seconds / 4));
     gain.gain.exponentialRampToValueAtTime(0.0001, at + seconds);
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -73,18 +73,27 @@ function schedule({wave, volume, pulses}, startAt){
   return nodes;
 }
 
+const silence = groups => groups.forEach(group => group.nodes.forEach(osc => { try{ osc.stop(); }catch(e){} }));
+
 function dropPlaced(){
-  placed.forEach(osc => { try{ osc.stop(); }catch(e){} });
+  silence(placed);
   placed = [];
 }
 
+function dropPending(){
+  const now = ctx.currentTime;
+  silence(placed.filter(group => group.at > now));
+  placed = placed.filter(group => group.at <= now);
+}
+
 function place(){
-  dropPlaced();
+  dropPending();
   const untilEnd = (restEndsAt - Date.now()) / 1000;
   for(let left = FINAL_COUNTDOWN_SECONDS; left >= 0; left--){
     const offset = untilEnd - left;
     if(offset < -BEEP_LATE_TOLERANCE_SECONDS) continue;
-    placed.push(...schedule(left ? BEEP_COUNTDOWN : BEEP_GO, ctx.currentTime + Math.max(0, offset)));
+    const at = ctx.currentTime + Math.max(0, offset);
+    placed.push({at, nodes: schedule(left ? BEEP_COUNTDOWN : BEEP_GO, at)});
   }
 }
 

@@ -243,7 +243,10 @@ button{cursor:pointer;border:none;background:none}
   display:block;font-size:11px;color:var(--faint);letter-spacing:.03em;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.timer{flex:none;font-variant-numeric:tabular-nums;--pad:10px 10px 10px 16px}
+.timer{
+  flex:none;font-variant-numeric:tabular-nums;--pad:10px 10px 10px 16px;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;
+}
 .timer .sbtn-label,.timer .sbtn-word{box-sizing:content-box;width:6ch;text-align:center}
 .timer[data-urgent="on"]{animation:tick-pulse 1s ease-in-out infinite}
 .timer[data-urgent="on"] .sbtn-frame,.timer[data-urgent="on"] .sbtn-glow{
@@ -394,6 +397,7 @@ button{cursor:pointer;border:none;background:none}
 .tag.muscle{color:var(--muted)}
 .tag.side{background:var(--ui-accent-soft);color:var(--ui-accent);border-color:transparent;font-weight:700}
 .ex-swap,.ex-fold{flex:none;align-self:flex-start}
+.set.head .ex-time{margin:-6px auto}
 .ex-swap{margin-left:auto}
 .ex-swapped .ex-name{color:var(--ui-accent)}
 .target{
@@ -503,6 +507,9 @@ button{cursor:pointer;border:none;background:none}
 }
 .sheet-custom{display:flex;gap:7px;padding:6px 6px 4px}
 .sheet-custom .sfield{flex:1;min-width:0;--f-pad:13px 12px 13px 15px}
+.sheet-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:6px 6px 10px}
+.sheet-presets .sbtn{min-width:0;--pad:12px 6px 12px 9px}
+.sheet-presets .sbtn-label,.sheet-presets .sbtn-word{text-align:center}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 .ex-summary{

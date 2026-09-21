@@ -469,4 +469,44 @@ section("Prescribed set counts");
     movements.workoutFor("A", "chest").ex.reduce((n, e) => n + e.s, 0) + 12);
 }
 
+section("Last time is looked up within the same kind of session");
+{
+  reset();
+  state.sessions["2026-08-20"] = logged("2026-08-20", "arms", 2, {push_press: setsOf([[40, 8], [40, 8]])});
+  state.sessions["2026-08-30"] = logged("2026-08-30", "conditioning", 0, {push_press: setsOf([[20, 22]])});
+  const onArms = priorSets(state.sessions, "push_press", "2026-09-01", "arms");
+  check("an arms card looks past the cardio interval", onArms && onArms.date === "2026-08-20", onArms && onArms.date);
+  const onCardio = priorSets(state.sessions, "push_press", "2026-09-01", "conditioning");
+  check("a cardio card sees the interval", onCardio && onCardio.date === "2026-08-30", onCardio && onCardio.date);
+  const unscoped = priorSets(state.sessions, "push_press", "2026-09-01");
+  check("without a day it still finds the latest of either", unscoped && unscoped.date === "2026-08-30", unscoped && unscoped.date);
+  const heavy = {id: "push_press", bw: 0};
+  ["2026-08-01", "2026-08-08", "2026-08-15"].forEach(date => {
+    state.sessions[date] = logged(date, "arms", 1, {push_press: setsOf([[40, 8]])});
+  });
+  state.sessions["2026-08-20"].entries.push_press = setsOf([[40, 8]]);
+  check("a stall counts only lifting sessions", progression.hasStalled(state.sessions, heavy, "2026-09-01", "arms"));
+}
+
+section("Relabelling a session gives it the right week index");
+{
+  const {relabelSession} = await import("../src/session.js");
+  reset();
+  for(let i = 0; i < 7; i++){
+    const date = `2026-07-0${i + 1}`;
+    state.sessions[date] = logged(date, "conditioning", i);
+  }
+  state.sessions["2026-08-03"] = logged("2026-08-03", "chest", 3);
+  state.sessions["2026-08-05"] = logged("2026-08-05", "legs", 3);
+  state.sessions["2026-08-08"] = logged("2026-08-08", "conditioning", 7);
+  relabelSession("2026-08-08", "chest");
+  const refiled = state.sessions["2026-08-08"];
+  check("a cardio session refiled as lifting joins the open week", refiled.blockIndex === 3 && refiled.block === "A", refiled.blockIndex);
+  check("so the active week stays put", activeBlockIndex(state.sessions) === 3, activeBlockIndex(state.sessions));
+  relabelSession("2026-08-08", "mobility");
+  check("refiled back to an off-day it takes that day's next version", state.sessions["2026-08-08"].blockIndex === 0, state.sessions["2026-08-08"].blockIndex);
+  relabelSession("2026-08-05", "arms");
+  check("lifting to lifting keeps its week", state.sessions["2026-08-05"].blockIndex === 3, state.sessions["2026-08-05"].blockIndex);
+}
+
 process.exit(report() ? 0 : 1);
