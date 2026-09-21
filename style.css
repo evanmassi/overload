@@ -241,7 +241,7 @@ button{cursor:pointer;border:none;background:none}
   display:block;font-size:11px;color:var(--faint);letter-spacing:.03em;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.timer{flex:none;font-variant-numeric:tabular-nums;--pad:var(--pad-control-quiet)}
+.timer{flex:none;font-variant-numeric:tabular-nums;--pad:10px 10px 10px 16px}
 .timer .sbtn-label,.timer .sbtn-word{box-sizing:content-box;width:6ch;text-align:center}
 .timer[data-urgent="on"]{animation:tick-pulse 1s ease-in-out infinite}
 .timer[data-urgent="on"] .sbtn-frame,.timer[data-urgent="on"] .sbtn-glow{
