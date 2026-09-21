@@ -487,7 +487,8 @@ button{cursor:pointer;border:none;background:none}
 .ex-summary b i{font-style:normal;color:var(--ui-accent);margin-right:4px}
 .ex-summary em{color:var(--muted);border-style:dashed;background:none;text-transform:uppercase;font-size:10px;letter-spacing:.1em}
 .ex-move.done .ex-summary{display:flex}
-.ex-move.done .meta,.ex-move.done .target,.ex-move.done .sets,.ex-move.done .effort,.ex-move.done .ex-cue,.ex-move.done .stall{margin:0 13px 11px}
+.ex-move.done .meta,.ex-move.done .target,.ex-move.done .sets,.ex-move.done .effort,.ex-move.done .ex-cue,.ex-move.done .stall{display:none}
+.stall{margin:0 13px 11px}
 .callout{position:relative;font-family:var(--font-ui);--c-line:var(--warning);--c-glow:var(--warning-glow);--c-plate:var(--warning-deep)}
 .callout[data-tone="secondary"]{--c-line:var(--secondary);--c-glow:var(--secondary-glow);--c-plate:var(--secondary-mid)}
 .callout-echo{position:absolute;inset:0;border:1px solid var(--c-plate);transform:translate(3px,3px);opacity:.5;pointer-events:none}
