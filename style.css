@@ -93,7 +93,7 @@ button{cursor:pointer;border:none;background:none}
 
 .dayhead{padding:14px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 .dayhead-text{min-width:0;flex:1}
-.dayhead .place-wrap{flex:none;margin-bottom:3px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.dayhead .place-wrap{flex:none;margin-bottom:3px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .dayhead .place-wrap .eyebrow{margin:0;letter-spacing:.1em}
 .dayhead .place-wrap .eyebrow::before{content:none}
 .dayhead .place .sbtn{--pad:9px 10px 9px 11px}
