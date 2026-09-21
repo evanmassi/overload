@@ -82,7 +82,7 @@ function renderLog(main){
   const plan = workoutFor(current.block, current.day);
   const head = document.createElement("div");
   head.className = "dayhead";
-  head.innerHTML = `<p class="eyebrow"><b>${offDay ? "Version" : "Week"} ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2>`;
+  head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>${offDay ? "Version" : "Week"} ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2></div>`;
   if(plan.travel) head.appendChild(placeSwitch(plan));
   main.appendChild(head);
 

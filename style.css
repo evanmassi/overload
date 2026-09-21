@@ -91,8 +91,9 @@ button{cursor:pointer;border:none;background:none}
 .blockset.sessions .sbtn-meta,.blockset.offdays .sbtn-meta{padding:0 8px 10px 10px;text-align:center}
 .blockset.offdays .sbtn-label,.blockset.offdays .sbtn-word{font-size:calc(var(--size-control) - 1px)}
 
-.dayhead{padding:14px 0 6px;position:relative}
-.dayhead .place{position:absolute;right:0;top:12px}
+.dayhead{padding:14px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.dayhead-text{min-width:0;flex:1}
+.dayhead .place{flex:none;margin-bottom:3px}
 .dayhead .place .sbtn{--pad:9px 10px 9px 11px}
 .eyebrow{
   font-family:var(--font-ui);font-size:11px;letter-spacing:.14em;
