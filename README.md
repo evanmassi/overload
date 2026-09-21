@@ -25,17 +25,17 @@ Equipment assumed: dumbbells, EZ bar, pull-up bar, adjustable bench, cable stack
 
 ## Off days
 
-Three more session types sit under the lifting buttons for the days between: **Conditioning**, **Functional** and **Mobility**. Each has its own A/B/C rotation that advances every time you log one, independent of the lifting week, so tapping Conditioning on a Saturday gives you whichever version is next and never moves the lifting week along. Each version comes back every third time, so there is still a number to beat.
+Three more session types sit under the lifting buttons for the days between: **Cardio**, **Function** and **Mobility**. Each has its own A/B/C rotation that advances every time you log one, independent of the lifting week, so tapping Cardio on a Saturday gives you whichever version is next and never moves the lifting week along. Each version comes back every third time, so there is still a number to beat.
 
 Every off-day session is three sections named for where you stand. You pick up a pair of dumbbells and stay in that corner, then move to the floor or the cables, then close on one machine or a pair of holds. Nothing asks you to run from the stair machine to the rack and back.
 
 | | Dumbbells | Floor or cables | Finish |
 |---|---|---|---|
-| **Conditioning** | 4 rounds, 40s on / 20s off | 3 rounds of 45s on, 1 min off | 8-10 min on the stairs |
-| **Functional** | 4-round circuit of carries, get-ups, single-arm work | 4-round cable circuit | hangs, holds, crawls |
+| **Cardio** | 4 rounds, 40s on / 20s off | 3 rounds of 45s on, 1 min off | 8-10 min on the stairs |
+| **Function** | 4-round circuit of carries, get-ups, single-arm work | 4-round cable circuit | hangs, holds, crawls |
 | **Mobility** | 2 rounds of floor stretches | 2 rounds at the bar and bench | 12-15 min walk |
 
-Conditioning cards log **reps inside the window** and the set rows read `R1`..`R4`, so the comparison is how many thrusters you got in 40 seconds against last time. Machine finishers log **level × minutes**: hit the minutes and the target asks for one more level, fall short and it asks for another minute at the same level. They add nothing to the session's tonnage.
+Cardio cards log **reps inside the window** and the set rows read `R1`..`R4`, so the comparison is how many thrusters you got in 40 seconds against last time. Machine finishers log **level × minutes**: hit the minutes and the target asks for one more level, fall short and it asks for another minute at the same level. They add nothing to the session's tonnage.
 
 **Gym / Away** sits in the session header, gym lit by default. Tap Away and every move that needs equipment becomes a backpack, chair or bodyweight version; tap Gym to put them back. It uses the same swap mechanism as the `swap` button, so each card can still be undone on its own and history follows the movement: a backpack row is compared against the last backpack row, not the last cable row.
 

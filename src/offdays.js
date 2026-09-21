@@ -11,7 +11,7 @@ const move = (id, n) => ({id, n});
 
 export const OFFDAYS = {
   A: {
-    conditioning: {focus: "Conditioning", sections: [
+    conditioning: {focus: "Cardio", sections: [
       interval("Dumbbells", 4, 40, 20, [
         move("thruster", "DB Thruster"),
         move("bench_stepover", "Bench Step-over"),
@@ -29,7 +29,7 @@ export const OFFDAYS = {
       thruster: "backpack_thruster", bench_stepover: "chair_stepup", renegade_row: "backpack_row",
       burpee_over_bells: "burpee", stair_intervals: "stairwell_climb"
     }},
-    functional: {focus: "Functional", sections: [
+    functional: {focus: "Function", sections: [
       circuit("Dumbbells", 4, 30, [
         timed("farmer_carry", "Farmer Carry", 40),
         loaded("turkish_getup", "Turkish Get-up", 2),
@@ -65,7 +65,7 @@ export const OFFDAYS = {
     }}
   },
   B: {
-    conditioning: {focus: "Conditioning", sections: [
+    conditioning: {focus: "Cardio", sections: [
       interval("Dumbbells", 4, 40, 20, [
         move("alt_snatch", "Alternating DB Snatch"),
         move("goblet_squat", "DB Goblet Squat"),
@@ -83,7 +83,7 @@ export const OFFDAYS = {
       alt_snatch: "backpack_thruster", goblet_squat: "backpack_squat", push_press: "pike_pushup",
       man_maker: "burpee", battle_ropes: "stairwell_climb"
     }},
-    functional: {focus: "Functional", sections: [
+    functional: {focus: "Function", sections: [
       circuit("Dumbbells", 4, 30, [
         timed("suitcase_carry", "Suitcase Carry", 40),
         loaded("single_leg_rdl", "Single-leg DB RDL", 8),
@@ -118,7 +118,7 @@ export const OFFDAYS = {
     }}
   },
   C: {
-    conditioning: {focus: "Conditioning", sections: [
+    conditioning: {focus: "Cardio", sections: [
       interval("Dumbbells", 4, 40, 20, [
         move("devil_press", "Devil Press"),
         move("reverse_lunge", "DB Reverse Lunge"),
@@ -136,7 +136,7 @@ export const OFFDAYS = {
       devil_press: "burpee", hang_clean: "backpack_thruster", db_bent_row: "backpack_row",
       stair_intervals_long: "stairwell_climb"
     }},
-    functional: {focus: "Functional", sections: [
+    functional: {focus: "Function", sections: [
       circuit("Dumbbells", 4, 30, [
         timed("overhead_carry", "Overhead Carry", 30),
         loaded("goblet_cossack", "Goblet Cossack Squat", 6),

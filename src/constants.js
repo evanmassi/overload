@@ -7,8 +7,8 @@ export const DAYS = {
   chest: {short: "Chest", label: "Chest & Back"},
   legs: {short: "Legs", label: "Legs & Back"},
   arms: {short: "Arms", label: "Shoulders & Arms"},
-  conditioning: {short: "Cardio", label: "Conditioning"},
-  functional: {short: "Function", label: "Functional"},
+  conditioning: {short: "Cardio", label: "Cardio"},
+  functional: {short: "Function", label: "Function"},
   mobility: {short: "Mobility", label: "Mobility"}
 };
 
