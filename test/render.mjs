@@ -1,14 +1,8 @@
-import {installDom} from "./dom.mjs";
+import {installDom, installStorage} from "./dom.mjs";
+import {section, check, equal, report} from "./checks.mjs";
 
 const els = installDom();
-
-const store = {};
-globalThis.localStorage = {
-  getItem: k => (k in store ? store[k] : null),
-  setItem: (k, v) => { store[k] = String(v); },
-  removeItem: k => { delete store[k]; },
-  clear: () => { for(const k in store) delete store[k]; }
-};
+installStorage();
 
 const {state} = await import("../src/state.js");
 const {render} = await import("../src/render.js");
@@ -26,17 +20,6 @@ mountSheet(els.sheet, els.sheettitle, els.sheetbody, els.sheetclose, els.sheetba
 const cell = (row, i) => row.children[i].find("sfield-input")[0] || row.children[i];
 const wt = row => cell(row, 1);
 const rp = row => cell(row, 3);
-
-let passed = 0, failed = 0;
-const check = (label, cond, detail) => {
-  if(cond){ passed++; console.log("  PASS  " + label); }
-  else { failed++; console.log("  FAIL  " + label + (detail === undefined ? "" : "  -> " + detail)); }
-};
-const equal = (label, got, want) => {
-  const same = JSON.stringify(got) === JSON.stringify(want);
-  check(label, same, same ? undefined : `got ${JSON.stringify(got)} want ${JSON.stringify(want)}`);
-};
-const section = name => console.log("\n" + name);
 
 function fresh(){
   localStorage.clear();
@@ -1101,5 +1084,4 @@ section("Long-pressing the clock opens a picker with presets and a stopwatch");
   stop();
 }
 
-console.log(`\n${passed} passed, ${failed} failed`);
-process.exit(failed ? 1 : 0);
+process.exit(report() ? 0 : 1);

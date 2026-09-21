@@ -9,6 +9,11 @@ const ASSETS = [
   './src/rotation.js', './src/progression.js', './src/swaps.js', './src/holds.js', './src/muscles.js',
   './src/movements.js', './src/constants.js',
   './src/program.js', './src/offdays.js', './src/extras.js', './src/howto.js', './src/taxonomy.js',
+  './src/strand/button.js', './src/strand/field.js', './src/strand/panel.js',
+  './styles/strand/index.css', './styles/strand/stripe.css', './styles/strand/button.css',
+  './styles/strand/field.css', './styles/strand/panel.css',
+  './styles/strand/tokens/colors.css', './styles/strand/tokens/typography.css', './styles/strand/tokens/motion.css',
+  './styles/strand/tokens/space.css', './styles/strand/tokens/animations.css', './styles/strand/tokens/fonts.css',
   './icons/icon-192.png', './icons/icon-512.png',
   './icons/maskable-512.png', './icons/apple-touch-180.png',
 ];

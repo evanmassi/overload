@@ -1,6 +1,7 @@
+import {section, check, equal, report} from "./checks.mjs";
 import {
-  section, check, equal, report, reset, logged, setsOf, everyMovement, prescribedMovements, offDayMovements,
-  clearStorage, state, hydrate, constants, movements, progression, rotation, swaps, backup,
+  reset, logged, setsOf, everyMovement, prescribedMovements, offDayMovements,
+  state, hydrate, constants, movements, progression, rotation, swaps, backup,
   HOWTO, PATTERNS, LOAD, PER, EXTRAS, MUSCLES
 } from "./harness.mjs";
 
@@ -310,14 +311,14 @@ section("Backup import merges rather than overwrites");
 
 section("Storage round trip and legacy migration");
 {
-  clearStorage();
+  localStorage.clear();
   localStorage.setItem("ironledger.v1", JSON.stringify({
     "2026-08-30": {date: "2026-08-30", day: "mon", block: "A", entries: {pullup: setsOf([["", 8]])}}
   }));
   hydrate();
   equal("a session saved under the old app name still loads", state.sessions["2026-08-30"].day, "chest");
 
-  clearStorage();
+  localStorage.clear();
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
   const {saveSessions, loadSessions} = await import("../src/storage.js");
   saveSessions(state.sessions);

@@ -167,8 +167,6 @@ The sound preference lives in `overload.sound.v1` and held lifts in `overload.ho
 
 **Save state is a single dot in the header**, green when written and amber while writing. It was a line of text in the bottom bar, but the text changed width as it changed state, which shoved the countdown sideways on every autosave. Backup results (`merged 3`, `bad file`) print under the Export and Import buttons instead, where the action happened.
 
-The page also looks for a `claude.use("db")` runtime and will sync through it when one exists. On GitHub Pages it doesn't, so it stays local and the header chip reads `this device`.
-
 ## Type
 
 Two families, no more. **Lato** for everything written (titles, labels, buttons, prose). **IBM Plex Mono** for anything numeric or technical: weights, reps, set numbers, rest times, tags, dates. If a value is something you read as data, it is mono; if it is something you read as language, it is Lato.
@@ -214,7 +212,7 @@ node test/all.mjs
 
 Three suites, no dependencies.
 
-- `modules.mjs` loads every module against a DOM stub, fails on a dead export, and fails on any class the renderers emit that has no rule in `style.css`. That last check exists because a stylesheet edit once deleted the consistency grid's rules along with the ones it meant to remove, and every DOM test still passed while the grid rendered invisible.
+- `modules.mjs` loads every module against a DOM stub, fails on a dead export, and fails on any class the renderers emit that has no rule in `style.css`. That last check exists because a stylesheet edit once deleted the consistency grid's rules along with the ones it meant to remove, and every DOM test still passed while the grid rendered invisible. It also fails when a shipped file is missing from the `sw.js` precache list, or the list names a file that no longer exists; the whole strand design system once shipped outside that list without any test noticing.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
 - `render.mjs` boots the real views against a fake DOM and asserts what renders, including the sheet's hidden state.
 
@@ -232,7 +230,7 @@ python -m http.server 8000
 
 Service workers need HTTPS or localhost, so opening `index.html` as a `file://` URL will work but won't install or cache offline.
 
-`sw.js` caches with stale-while-revalidate: the app launches instantly from cache and picks up a new deploy on the next launch. Bump `CACHE` only to recover from a bad cache, not per deploy.
+`sw.js` caches with stale-while-revalidate: the app launches instantly from cache and picks up a new deploy on the next launch. Bump `CACHE` only to recover from a bad cache, not per deploy. A new file the page loads goes into its `ASSETS` list in the same change.
 
 Session keys in `PROGRAM` are `chest` / `legs` / `arms`; sessions carry a `blockIndex` that drives the A/B/C rotation, and `block` is derived from it.
 

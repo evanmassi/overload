@@ -1,13 +1,6 @@
-const store = {};
+import {installStorage} from "./dom.mjs";
 
-globalThis.localStorage = {
-  getItem: key => (key in store ? store[key] : null),
-  setItem: (key, value) => { store[key] = String(value); },
-  removeItem: key => { delete store[key]; },
-  clear: () => { for(const key in store) delete store[key]; }
-};
-
-export function clearStorage(){ globalThis.localStorage.clear(); }
+installStorage();
 
 const {state, hydrate} = await import("../src/state.js");
 const constants = await import("../src/constants.js");
@@ -22,7 +15,7 @@ const {EXTRAS} = await import("../src/extras.js");
 const {MUSCLES} = await import("../src/muscles.js");
 
 export function reset(){
-  clearStorage();
+  localStorage.clear();
   state.sessions = {};
   state.customNames = {};
   state.view = "log";
@@ -60,31 +53,6 @@ export function everyMovement(){
   offDayMovements().forEach((e, id) => { if(!seen.has(id)) seen.set(id, e); });
   EXTRAS.forEach(e => seen.set(e.id, e));
   return seen;
-}
-
-let passed = 0;
-let failed = 0;
-let current = "";
-
-export function section(name){
-  current = name;
-  console.log("\n" + name);
-}
-
-export function check(label, condition, detail){
-  if(condition){ passed++; console.log("  PASS  " + label); return; }
-  failed++;
-  console.log("  FAIL  " + label + (detail === undefined ? "" : "  -> " + detail));
-}
-
-export function equal(label, got, want){
-  const same = JSON.stringify(got) === JSON.stringify(want);
-  check(label, same, same ? undefined : `got ${JSON.stringify(got)} want ${JSON.stringify(want)}`);
-}
-
-export function report(){
-  console.log(`\n${passed} passed, ${failed} failed`);
-  return failed === 0;
 }
 
 export {state, hydrate, constants, movements, progression, rotation, swaps, backup, HOWTO, PATTERNS, LOAD, PER, EXTRAS, MUSCLES};

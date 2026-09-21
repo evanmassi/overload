@@ -104,4 +104,14 @@ export function installDom(){
   return byId;
 }
 
+export function installStorage(){
+  const store = {};
+  globalThis.localStorage = {
+    getItem: key => (key in store ? store[key] : null),
+    setItem: (key, value) => { store[key] = String(value); },
+    removeItem: key => { delete store[key]; },
+    clear: () => { for(const key in store) delete store[key]; }
+  };
+}
+
 export {FakeNode};

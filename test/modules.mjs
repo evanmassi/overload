@@ -1,108 +1,71 @@
 import fs from "node:fs";
 import path from "node:path";
+import {fileURLToPath} from "node:url";
+import {installDom, installStorage} from "./dom.mjs";
+import {section, check, equal, report} from "./checks.mjs";
 
-const SRC = new URL("../src/", import.meta.url);
-const dir = path.fromFileURL ? path.fromFileURL(SRC) : new URL("../src/", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
-const files = fs.readdirSync(dir).filter(f => f.endsWith(".js"));
+installDom();
+installStorage();
 
-const noop = () => {};
-const element = () => ({
-  style: {}, dataset: {}, classList: {add: noop, remove: noop, toggle: noop, contains: () => false},
-  append: noop, appendChild: noop, remove: noop, addEventListener: noop, setAttribute: noop,
-  querySelector: () => element(), querySelectorAll: () => [], scrollTo: noop,
-  innerHTML: "", textContent: "", value: "", hidden: false, scrollTop: 0
-});
+const root = fileURLToPath(new URL("../", import.meta.url));
+const at = (...parts) => path.join(root, ...parts);
+const read = file => fs.readFileSync(file, "utf8");
 
-globalThis.document = {
-  getElementById: () => element(),
-  createElement: element,
-  createElementNS: element,
-  querySelectorAll: () => [],
-  addEventListener: noop,
-  body: element(),
-  activeElement: null,
-  visibilityState: "visible"
-};
-globalThis.window = {addEventListener: noop, scrollTo: noop};
-if(!globalThis.navigator) Object.defineProperty(globalThis, "navigator", {value: {}, configurable: true});
-globalThis.Blob = function(){};
-globalThis.URL.createObjectURL = () => "blob:";
-globalThis.URL.revokeObjectURL = noop;
-globalThis.FileReader = function(){};
-if(!globalThis.localStorage){
-  const store = {};
-  globalThis.localStorage = {
-    getItem: k => (k in store ? store[k] : null),
-    setItem: (k, v) => { store[k] = String(v); },
-    removeItem: k => { delete store[k]; },
-    clear: () => { for(const k in store) delete store[k]; }
-  };
+function filesUnder(dir, extension){
+  return fs.readdirSync(dir, {withFileTypes: true}).flatMap(entry => {
+    const full = path.join(dir, entry.name);
+    if(entry.isDirectory()) return filesUnder(full, extension);
+    return entry.name.endsWith(extension) ? [full] : [];
+  });
 }
 
-let failed = 0;
-const exportsByFile = {};
+const modules = fs.readdirSync(at("src")).filter(file => file.endsWith(".js"));
+const sourceOf = file => read(at("src", file));
 
-for(const file of files){
+section("Every module loads");
+const exportsByFile = {};
+for(const file of modules){
   if(file === "main.js") continue;
   try{
-    const mod = await import(new URL(file, SRC));
-    exportsByFile[file] = Object.keys(mod);
-    console.log("  PASS  " + file.padEnd(18) + Object.keys(mod).length + " exports");
+    exportsByFile[file] = Object.keys(await import(new URL("../src/" + file, import.meta.url)));
+    check(file.padEnd(18) + exportsByFile[file].length + " exports", true);
   }catch(err){
-    failed++;
-    console.log("  FAIL  " + file.padEnd(18) + err.message);
+    check(file, false, err.message);
   }
 }
 
-console.log("\nDead exports (declared, imported nowhere):");
-const allSource = files.map(f => fs.readFileSync(path.join(dir, f), "utf8")).join("\n");
-const testSource = fs.readdirSync(path.join(dir, "..", "test"))
-  .filter(f => f.endsWith(".mjs"))
-  .map(f => fs.readFileSync(path.join(dir, "..", "test", f), "utf8")).join("\n");
-
-let dead = 0;
+section("Dead exports");
+const testSource = filesUnder(at("test"), ".mjs").map(read).join("\n");
+const dead = [];
 for(const file in exportsByFile){
-  for(const name of exportsByFile[file]){
-    const importedSomewhere = new RegExp(`\\b${name}\\b`).test(
-      allSource.split(fs.readFileSync(path.join(dir, file), "utf8")).join("")
-    );
-    const usedInTests = new RegExp(`\\b${name}\\b`).test(testSource);
-    if(!importedSomewhere && !usedInTests){
-      console.log("  " + file + " → " + name);
-      dead++;
-    }
-  }
+  const elsewhere = modules.filter(other => other !== file).map(sourceOf).join("\n") + "\n" + testSource;
+  exportsByFile[file].filter(name => !new RegExp(`\\b${name}\\b`).test(elsewhere))
+    .forEach(name => dead.push(file + " → " + name));
 }
-if(!dead) console.log("  none");
+equal("every export is imported somewhere", dead, []);
 
-console.log("\nRendered classes with no rule in any stylesheet:");
-const sheets = [path.join(dir, "..", "style.css")];
-const collectSheets = at => fs.readdirSync(at, {withFileTypes: true}).forEach(entry => {
-  const full = path.join(at, entry.name);
-  if(entry.isDirectory()) collectSheets(full);
-  else if(entry.name.endsWith(".css")) sheets.push(full);
-});
-collectSheets(path.join(dir, "..", "styles"));
-const css = sheets.map(file => fs.readFileSync(file, "utf8")).join("\n");
+section("Rendered classes");
+const css = [at("style.css"), ...filesUnder(at("styles"), ".css")].map(read).join("\n");
 const rendered = new Set();
 const collect = (text, pattern, split) => {
   for(const match of text.matchAll(pattern))
     (split ? match[1].split(/\s+/) : [match[1]]).forEach(name => name && rendered.add(name));
 };
-for(const file of files.concat(["../index.html"])){
-  const text = fs.readFileSync(path.join(dir, file), "utf8");
+for(const text of modules.map(sourceOf).concat(read(at("index.html")))){
   collect(text, /className\s*[=:]\s*"([^"]+)"/g, true);
   collect(text, /class="([^"$]+)"/g, true);
   collect(text, /classList\.(?:add|toggle)\("([^"]+)"/g, false);
 }
+const unstyled = [...rendered].sort().filter(name => !new RegExp("\\." + name + "[^a-zA-Z0-9_-]").test(css));
+equal("every rendered class has a CSS rule", unstyled, []);
 
-let unstyled = 0;
-for(const name of [...rendered].sort()){
-  if(new RegExp("\\." + name + "[^a-zA-Z0-9_-]").test(css)) continue;
-  console.log("  ." + name);
-  unstyled++;
-  failed++;
-}
-if(!unstyled) console.log("  none");
+section("Service worker precache");
+const assets = read(at("sw.js")).match(/const ASSETS = \[([\s\S]*?)\];/)[1];
+const precached = [...assets.matchAll(/'\.\/([^']*)'/g)].map(match => match[1]);
+const relative = file => path.relative(root, file).split(path.sep).join("/");
+const shipped = ["", "index.html", "style.css", "manifest.json"].concat(
+  [...filesUnder(at("src"), ".js"), ...filesUnder(at("styles"), ".css"), ...filesUnder(at("icons"), ".png")].map(relative));
+equal("every shipped file is precached", shipped.filter(file => !precached.includes(file)), []);
+equal("every precached file exists", precached.filter(file => !shipped.includes(file)), []);
 
-process.exit(failed ? 1 : 0);
+process.exit(report() ? 0 : 1);
