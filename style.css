@@ -167,7 +167,7 @@ button{cursor:pointer;border:none;background:none}
   text-align:center;font-variant-numeric:tabular-nums;
 }
 .set-n.done{color:var(--ui-accent);font-weight:600}
-.set .sfield{--f-pad:13px 6px 13px 6px;--f-size:20px}
+.set .sfield{--f-pad:10px 6px 10px 6px;--f-size:26px}
 .set .sfield-input{
   min-height:48px;text-align:center;text-indent:var(--f-track);
   font-variant-numeric:tabular-nums;
