@@ -175,6 +175,10 @@ button{cursor:pointer;border:none;background:none}
 }
 .set .sfield-input::placeholder{opacity:.5}
 .set .sfield .sfield-frame{animation:none}
+.set .sfield:not([data-state="focus"]):has(.sfield-input:not(.filled)) .sfield-frame{
+  opacity:1;box-shadow:none;border-color:color-mix(in oklab,var(--f-line) 34%,transparent);
+}
+.set .sfield:not([data-state="focus"]):has(.sfield-input:not(.filled)) .sfield-plate{opacity:.3}
 .sfield .sfield-wash{
   inset:var(--border);color:var(--f-line);
   background:repeating-linear-gradient(0deg,currentColor 0 1px,transparent 1px 4px);
