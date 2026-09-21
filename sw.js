@@ -8,7 +8,7 @@ const ASSETS = [
   './src/sheet.js', './src/timer.js', './src/backup.js', './src/storage.js',
   './src/rotation.js', './src/progression.js', './src/swaps.js',
   './src/movements.js', './src/constants.js',
-  './src/program.js', './src/extras.js', './src/howto.js', './src/taxonomy.js',
+  './src/program.js', './src/offdays.js', './src/extras.js', './src/howto.js', './src/taxonomy.js',
   './icons/icon-192.png', './icons/icon-512.png',
   './icons/maskable-512.png', './icons/apple-touch-180.png',
 ];
