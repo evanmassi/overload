@@ -187,11 +187,12 @@ Static files, ES modules, no build step.
 | `src/state.js` | shared state and a subscribe/notify pair |
 | `src/storage.js` | localStorage read and write |
 | `src/rotation.js` | which week and which session comes next |
-| `src/progression.js` | scoring, volume, target suggestions |
+| `src/sets.js` | whether a set counts as logged |
+| `src/progression.js` | scoring, volume, target suggestions, beat/match/below, stall back-off |
 | `src/swaps.js` | substitutions and custom exercises |
 | `src/holds.js` | lifts you are holding on purpose |
 | `src/muscles.js` | what each movement works, primary and secondary |
-| `src/session.js` | the session being edited, autosave |
+| `src/session.js` | the session being edited: every edit to it, and autosave |
 | `src/format.js` | set summaries and durations, shared by every view |
 | `src/render.js` | the log view, the save bar |
 | `src/history.js` | the history view, backup and sound controls |

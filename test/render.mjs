@@ -10,8 +10,8 @@ const {mountSheet, openSwapSheet, openHowTo, openTimerSheet} = await import("../
 const {mountTimer} = await import("../src/timer.js");
 const {mountSaveState} = await import("../src/savestate.js");
 const {findExercise} = await import("../src/movements.js");
-const {loadDate, setDay, iso} = await import("../src/session.js");
-const {clockFace} = await import("../src/format.js");
+const {loadDate, setDay} = await import("../src/session.js");
+const {clockFace, iso} = await import("../src/format.js");
 
 mountTimer(els.timer, {onHold: openTimerSheet});
 mountSaveState(els.status);
@@ -496,10 +496,10 @@ section("The idle countdown tracks the next unlogged set");
 
 section("Save state is a dot, not a shifting line");
 {
-  const {queueSave} = await import("../src/session.js");
+  const {setNotes} = await import("../src/session.js");
   fresh();
   render();
-  queueSave();
+  setNotes("");
   check("saving marks the dot", els.status.classList.contains("saving"), els.status._class);
   check("the dot carries no text", !els.status.textContent, els.status.textContent);
   check("it explains itself to a screen reader",

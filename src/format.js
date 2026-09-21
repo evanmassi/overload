@@ -1,5 +1,10 @@
+import {isLogged} from "./sets.js";
+
+export const iso = date =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
 export function setRuns(sets, suffix){
-  const parts = (sets || []).filter(set => set && set.r)
+  const parts = (sets || []).filter(isLogged)
     .map(set => set.w ? `${set.w}×${set.r}${suffix}` : `${set.r}${suffix}`);
 
   const runs = [];

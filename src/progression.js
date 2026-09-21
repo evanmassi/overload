@@ -1,26 +1,36 @@
 import {findExercise, allExercises, workoutFor, repRange, isOffDay} from "./movements.js";
 import {unitSuffix} from "./format.js";
+import {isLogged} from "./sets.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
-        EFFORT_STEPS, STALL_EXPOSURES} from "./constants.js";
+        EFFORT_STEPS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT} from "./constants.js";
 
-export function num(value){
+function num(value){
   const parsed = parseFloat(value);
   return isFinite(parsed) ? parsed : 0;
 }
 
 export function score(set, isBodyweight){
-  if(!set || !set.r) return 0;
+  if(!isLogged(set)) return 0;
   return isBodyweight
     ? num(set.r) * (1 + num(set.w) / BODYWEIGHT_LOAD_EQUIVALENT_LB)
     : num(set.w) * num(set.r);
+}
+
+export function trend(set, prior, isBodyweight){
+  const now = score(set, isBodyweight);
+  const then = score(prior, isBodyweight);
+  return now > then ? "up" : now === then ? "same" : "down";
+}
+
+export function loggedAsBodyweight(exercise, sets){
+  return exercise ? !!exercise.bw : !sets.some(set => set.w);
 }
 
 function estimatedMax(weight, reps){ return weight * (1 + reps / EPLEY_DIVISOR); }
 
 export function loggedCount(session){
   let n = 0;
-  for(const id in (session.entries || {}))
-    for(const set of session.entries[id]) if(set && set.r) n++;
+  for(const id in (session.entries || {})) n += session.entries[id].filter(isLogged).length;
   return n;
 }
 
@@ -30,21 +40,29 @@ export function prescribedCount(block, day){
 }
 
 export function estimateFor(set, isBodyweight){
-  if(!set || !set.r) return 0;
+  if(!isLogged(set)) return 0;
   return isBodyweight ? score(set, true) : estimatedMax(num(set.w), num(set.r));
 }
 
 export function bestEstimate(sets, isBodyweight){
-  const logged = (sets || []).filter(set => set && set.r);
+  const logged = (sets || []).filter(isLogged);
   if(!logged.length) return null;
   return logged.reduce((best, set) =>
     estimateFor(set, isBodyweight) > estimateFor(best, isBodyweight) ? set : best);
 }
 
 export function topSet(sets, isBodyweight){
-  const logged = sets.filter(set => set && set.r);
+  const logged = sets.filter(isLogged);
   if(!logged.length) return null;
   return logged.reduce((best, set) => score(set, isBodyweight) > score(best, isBodyweight) ? set : best);
+}
+
+export function backoffWeight(sets, isBodyweight){
+  const top = topSet(sets, isBodyweight);
+  const weight = top ? num(top.w) : 0;
+  if(!weight) return null;
+  const stepped = Math.round(weight * (1 - STALL_BACKOFF_PERCENT / 100) / WEIGHT_STEP_LB) * WEIGHT_STEP_LB;
+  return Math.max(WEIGHT_STEP_LB, stepped);
 }
 
 function earlierKeysOfSameKind(sessions, beforeKey, day){
@@ -58,8 +76,8 @@ export function priorSets(sessions, exerciseId, beforeKey, day){
   for(const key of earlierKeysOfSameKind(sessions, beforeKey, day)){
     const session = sessions[key];
     const sets = session.entries && session.entries[exerciseId];
-    if(sets && sets.some(set => set && set.r))
-      return {date: session.date || key, key, sets, effort: session.effort && session.effort[exerciseId]};
+    if(sets && sets.some(isLogged))
+      return {date: session.date, key, sets, effort: session.effort && session.effort[exerciseId]};
   }
   return null;
 }
@@ -68,7 +86,7 @@ export function exposures(sessions, exerciseId, beforeKey, limit, day){
   const found = [];
   for(const key of earlierKeysOfSameKind(sessions, beforeKey, day)){
     const sets = sessions[key].entries && sessions[key].entries[exerciseId];
-    if(sets && sets.some(set => set && set.r)) found.push({date: sessions[key].date || key, sets});
+    if(sets && sets.some(isLogged)) found.push({date: sessions[key].date, sets});
     if(found.length === limit) break;
   }
   return found;
@@ -82,8 +100,8 @@ export function hasStalled(sessions, exercise, beforeKey, day){
   return best.every(value => value <= oldest);
 }
 
-export function sessionVolume(session, block, day){
-  const plan = workoutFor(block, day);
+export function sessionVolume(session){
+  const plan = workoutFor(session.block, session.day);
   const byId = {};
   for(const e of allExercises(plan)) byId[e.id] = e;
   let volume = 0;
@@ -92,7 +110,7 @@ export function sessionVolume(session, block, day){
     if(exercise && exercise.bw) continue;
     const reach = exercise ? (exercise.sides || 1) * (exercise.implements || 1) : 1;
     for(const set of session.entries[id])
-      if(set && set.r) volume += num(set.w) * num(set.r) * reach;
+      if(isLogged(set)) volume += num(set.w) * num(set.r) * reach;
   }
   return Math.round(volume);
 }
@@ -102,7 +120,7 @@ export function suggestTarget(exercise, prior, held){
   const top = topSet(prior.sets, exercise.bw);
   if(!top) return null;
 
-  const sets = prior.sets.filter(set => set && set.r);
+  const sets = prior.sets.filter(isLogged);
   const topReps = num(top.r);
   const topWeight = num(top.w);
   const unit = unitSuffix(exercise);

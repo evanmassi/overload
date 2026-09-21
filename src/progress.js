@@ -2,25 +2,25 @@ import {CONSISTENCY_WEEKS} from "./constants.js";
 import {findExercise} from "./movements.js";
 import {state} from "./state.js";
 import {exerciseName} from "./swaps.js";
-import {loggedCount, bestEstimate, estimateFor} from "./progression.js";
-import {iso} from "./session.js";
+import {loggedCount, bestEstimate, estimateFor, loggedAsBodyweight} from "./progression.js";
+import {iso} from "./format.js";
+import {isLogged} from "./sets.js";
 import {strandPanel} from "./strand/panel.js";
 
 export function renderProgress(main){
   const byExercise = {};
   Object.keys(state.sessions).sort().forEach(key => {
     const session = state.sessions[key];
-    const date = session.date || key;
     for(const id in (session.entries || {})){
-      const sets = session.entries[id].filter(set => set && set.r);
+      const sets = session.entries[id].filter(isLogged);
       if(!sets.length) continue;
       const known = findExercise(id);
-      const bw = known ? !!known.bw : !sets.some(set => set.w);
+      const bw = loggedAsBodyweight(known, sets);
       const top = bestEstimate(sets, bw);
       const value = Math.round(estimateFor(top, bw));
       const level = !!known && known.load === "level";
       (byExercise[id] = byExercise[id] || {name: exerciseName(id), bw, level, points: []})
-        .points.push({date, value, top});
+        .points.push({date: session.date, value, top});
     }
   });
 
@@ -83,8 +83,7 @@ function consistencyGrid(){
   const setsByDate = {};
   for(const key in state.sessions){
     const session = state.sessions[key];
-    const date = session.date || key;
-    setsByDate[date] = (setsByDate[date] || 0) + loggedCount(session);
+    setsByDate[session.date] = (setsByDate[session.date] || 0) + loggedCount(session);
   }
 
   for(let i = 0; i < weeks * 7; i++){

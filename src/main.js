@@ -1,5 +1,6 @@
 import {state, hydrate, subscribe, notify} from "./state.js";
-import {loadDate, iso, flushNow} from "./session.js";
+import {loadDate, flushNow} from "./session.js";
+import {iso} from "./format.js";
 import {render} from "./render.js";
 import {mountSheet, openTimerSheet} from "./sheet.js";
 import {mountTimer} from "./timer.js";

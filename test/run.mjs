@@ -135,7 +135,7 @@ section("Progression targets");
 
 section("Session volume counts implements and sides");
 {
-  const volume = (day, block, entries) => sessionVolume({day, block, entries}, block, day);
+  const volume = (day, block, entries) => sessionVolume({day, block, entries});
 
   equal("a pair of dumbbells doubles the load",
     volume("chest", "A", {flat_db_press: setsOf([[50, 10]])}), 1000);
@@ -182,10 +182,10 @@ section("Swapping keeps history with the movement");
 {
   reset();
   const slot = movements.findExercise("leg_curl");
-  equal("no swap returns the slot untouched", swaps.resolveSlot(slot).id, "leg_curl");
+  equal("no swap returns the slot untouched", swaps.resolveSlot(slot, state.current.swaps).id, "leg_curl");
 
   state.current.swaps = {leg_curl: "db_rdl"};
-  const resolved = swaps.resolveSlot(slot);
+  const resolved = swaps.resolveSlot(slot, state.current.swaps);
   equal("a swap adopts the substitute's identity", resolved.id, "db_rdl");
   equal("the substitute records where it came from", resolved.swappedFrom, "leg_curl");
   equal("the slot's prescription is kept", [resolved.s, resolved.r], [slot.s, slot.r]);
@@ -319,10 +319,52 @@ section("Storage round trip and legacy migration");
   equal("a session saved under the old app name still loads", state.sessions["2026-08-30"].day, "chest");
 
   localStorage.clear();
+  localStorage.setItem("overload.v1", JSON.stringify({"2026-07-01": {day: "legs", block: "A", entries: {}}}));
+  hydrate();
+  equal("a session keyed by date alone gets that date on load", state.sessions["2026-07-01"].date, "2026-07-01");
+
+  localStorage.clear();
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
   const {saveSessions, loadSessions} = await import("../src/storage.js");
   saveSessions(state.sessions);
   equal("sessions survive a save and load", loadSessions()["2026-09-01"].day, "chest");
+}
+
+section("Rules the views share live below them");
+{
+  reset();
+  const {trend, backoffWeight} = progression;
+  equal("more weight reads as up", trend({w: "50", r: "10"}, {w: "45", r: "10"}, false), "up");
+  equal("the same set reads as same", trend({w: "45", r: "10"}, {w: "45", r: "10"}, false), "same");
+  equal("fewer reps reads as down", trend({w: "45", r: "8"}, {w: "45", r: "10"}, false), "down");
+  equal("the back-off drops 10% to the nearest plate", backoffWeight(setsOf([[60, 10]]), false), 55);
+  equal("a lift with no weight has no back-off", backoffWeight(setsOf([["", 12]]), true), null);
+
+  const press = movements.findExercise("flat_db_press");
+  equal("rest between sets is the move's own", movements.restAfterSet(press, 0), press.rest);
+  equal("the last set rests into the next move", movements.restAfterSet(press, press.s - 1), press.restAfter);
+
+  const plan = movements.workoutFor("A", "chest");
+  const session = {
+    swaps: {flat_db_press: "db_rdl"},
+    entries: {db_rdl: setsOf([[95, 10]]), leg_curl: setsOf([[40, 12]]), hammer_curl: [{w: "", r: ""}]}
+  };
+  equal("only a logged move the plan does not hold is a stray", swaps.strayIds(session, plan), ["leg_curl"]);
+
+  const incline = movements.findExercise("incline_db_press");
+  const taken = swaps.idsTakenElsewhere(incline, plan, {flat_db_press: "db_rdl"});
+  check("another slot's substitute counts as taken", taken.has("db_rdl") && !taken.has("flat_db_press"));
+  check("the slot's own move does not", !taken.has("incline_db_press"));
+
+  const {logSet, swapSlot, flushNow} = await import("../src/session.js");
+  check("reps logged for the first time count as a new set", logSet(press, 0, {w: "50", r: "10"}));
+  check("editing a logged set does not", !logSet(press, 0, {w: "55", r: "10"}));
+  equal("the set is written in its place", state.current.entries.flat_db_press, [{w: "55", r: "10"}]);
+  check("a move already in the session cannot fill another slot", !swapSlot(incline, "flat_db_press"));
+  check("a free move can", swapSlot(incline, "squeeze_press") && state.current.swaps.incline_db_press === "squeeze_press");
+  check("choosing the slot's own move undoes the swap",
+    swapSlot(incline, "incline_db_press") && !state.current.swaps.incline_db_press);
+  flushNow();
 }
 
 section("Effort tunes the next target");

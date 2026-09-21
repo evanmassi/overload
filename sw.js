@@ -7,7 +7,7 @@ const ASSETS = [
   './src/history.js', './src/progress.js',
   './src/sheet.js', './src/timer.js', './src/backup.js', './src/storage.js',
   './src/rotation.js', './src/progression.js', './src/swaps.js', './src/holds.js', './src/muscles.js',
-  './src/movements.js', './src/constants.js',
+  './src/movements.js', './src/constants.js', './src/sets.js',
   './src/program.js', './src/offdays.js', './src/extras.js', './src/howto.js', './src/taxonomy.js',
   './src/strand/button.js', './src/strand/field.js', './src/strand/panel.js',
   './styles/strand/index.css', './styles/strand/stripe.css', './styles/strand/button.css',

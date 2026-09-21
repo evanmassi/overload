@@ -64,9 +64,11 @@ export const LOAD_LABEL = {
 export const IMPLEMENTS_PER_LOAD = {pair: 2, single: 1, bar: 1, stack: 1, bw: 1, level: 0};
 
 export const ICON_SWAP = '<i class="icon">swap_horiz</i>';
-export const ICON_UP = '<i class="icon">keyboard_double_arrow_up</i>';
-export const ICON_SAME = '<i class="icon">radio_button_checked</i>';
-export const ICON_DOWN = '<i class="icon">keyboard_double_arrow_down</i>';
+export const TREND_ICON = {
+  up: '<i class="icon">keyboard_double_arrow_up</i>',
+  same: '<i class="icon">radio_button_checked</i>',
+  down: '<i class="icon">keyboard_double_arrow_down</i>'
+};
 
 export const EFFORT_LEVELS = ["easy", "medium", "hard"];
 export const EFFORT_STEPS = {easy: 2, medium: 1, hard: 0};

@@ -1,7 +1,8 @@
 import {state, notify, persistSessions} from "./state.js";
 import {loggedCount} from "./progression.js";
-import {migrateDayKeys} from "./storage.js";
-import {loadDate, iso} from "./session.js";
+import {migrateLegacySessions} from "./storage.js";
+import {loadDate} from "./session.js";
+import {iso} from "./format.js";
 
 let statusHandler = () => {};
 export function onBackupStatus(fn){ statusHandler = fn; }
@@ -28,7 +29,7 @@ export function mergeSessions(incoming){
       merged++;
     }
   }
-  migrateDayKeys(state.sessions);
+  migrateLegacySessions(state.sessions);
   return merged;
 }
 

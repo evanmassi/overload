@@ -1,7 +1,8 @@
-import {findExercise, programIds} from "./movements.js";
+import {findExercise, programIds, allExercises} from "./movements.js";
 import {ALIASES} from "./taxonomy.js";
 import {state, persistCustomNames, persistSessions, persistHolds} from "./state.js";
 import {loggedCount} from "./progression.js";
+import {isLogged} from "./sets.js";
 
 const squash = text => String(text).toLowerCase().replace(/[^a-z0-9]/g, "").replace(/s$/, "");
 
@@ -13,8 +14,8 @@ export function exerciseName(id){
   return known ? known.n : (state.customNames[id] || id);
 }
 
-export function resolveSlot(slot){
-  const substituteId = state.current.swaps[slot.id];
+export function resolveSlot(slot, swaps){
+  const substituteId = swaps && swaps[slot.id];
   if(!substituteId || substituteId === slot.id) return slot;
   const known = findExercise(substituteId);
   const factors = known
@@ -27,6 +28,22 @@ export function resolveSlot(slot){
     n: exerciseName(substituteId),
     swappedFrom: slot.id
   });
+}
+
+export function resolvedExercises(plan, swaps){
+  return allExercises(plan).map(slot => resolveSlot(slot, swaps));
+}
+
+export function idsTakenElsewhere(slot, plan, swaps){
+  const taken = new Set(resolvedExercises(plan, swaps).map(exercise => exercise.id));
+  taken.delete(resolveSlot(slot, swaps).id);
+  return taken;
+}
+
+export function strayIds(session, plan){
+  const planned = new Set(resolvedExercises(plan, session.swaps).map(exercise => exercise.id));
+  const entries = session.entries || {};
+  return Object.keys(entries).filter(id => !planned.has(id) && entries[id].some(isLogged));
 }
 
 export function customIdFor(name){
@@ -42,7 +59,7 @@ export function setsLoggedFor(id){
   let n = 0;
   for(const date in state.sessions){
     const sets = (state.sessions[date].entries || {})[id];
-    if(sets) n += sets.filter(set => set && set.r).length;
+    if(sets) n += sets.filter(isLogged).length;
   }
   return n;
 }

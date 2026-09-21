@@ -1,9 +1,10 @@
-import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, ICON_UP, ICON_SAME, ICON_DOWN} from "./constants.js";
-import {workoutFor, allExercises, findExercise, isOffDay} from "./movements.js";
+import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "./constants.js";
+import {workoutFor, findExercise, isOffDay} from "./movements.js";
 import {state, notify} from "./state.js";
-import {loggedCount, sessionVolume, score, topSet, priorSets} from "./progression.js";
+import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "./progression.js";
 import {blockIndexOf, cycleNumber} from "./rotation.js";
-import {exerciseName} from "./swaps.js";
+import {exerciseName, resolveSlot, strayIds} from "./swaps.js";
+import {isLogged} from "./sets.js";
 import {loadSession, deleteSession} from "./session.js";
 import {openRelabelSheet} from "./sheet.js";
 import {setSummary, elapsedLabel, unitSuffix} from "./format.js";
@@ -12,33 +13,31 @@ import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
 import {strandButton} from "./strand/button.js";
 import {strandPanel} from "./strand/panel.js";
 
+const TREND_WORD = {up: "Beat", same: "Matched", down: "Below"};
+
 function deltaMark(key, id, sets, isBodyweight){
   const prior = priorSets(state.sessions, id, key, state.sessions[key].day);
   if(!prior) return `<i class="hist-delta up" title="First time logged">new</i>`;
-  const now = score(topSet(sets, isBodyweight), isBodyweight);
-  const then = score(topSet(prior.sets, isBodyweight), isBodyweight);
-  if(now > then) return `<i class="hist-delta up" title="Beat ${prior.date}">${ICON_UP}</i>`;
-  if(now === then) return `<i class="hist-delta same" title="Matched ${prior.date}">${ICON_SAME}</i>`;
-  return `<i class="hist-delta down" title="Below ${prior.date}">${ICON_DOWN}</i>`;
+  const direction = trend(topSet(sets, isBodyweight), topSet(prior.sets, isBodyweight), isBodyweight);
+  return `<i class="hist-delta ${direction}" title="${TREND_WORD[direction]} ${prior.date}">${TREND_ICON[direction]}</i>`;
 }
 
 function exerciseLine(key, id, sets, name, exercise, extraClass, mark){
   const line = document.createElement("div");
   line.className = "hist-line" + (extraClass ? " " + extraClass : "");
-  const isBodyweight = exercise ? !!exercise.bw : !sets.some(set => set.w);
+  const isBodyweight = loggedAsBodyweight(exercise, sets);
   line.innerHTML = `<span>${name}${mark || ""}</span><b>${setSummary(sets, exercise ? unitSuffix(exercise) : "")}</b>${deltaMark(key, id, sets, isBodyweight)}`;
   return line;
 }
 
 function slotLine(key, session, slot){
-  const swapped = session.swaps && session.swaps[slot.id];
-  const id = swapped || slot.id;
-  const sets = (session.entries || {})[id];
-  if(!sets || !sets.some(set => set && set.r)) return null;
-  const mark = swapped
+  const exercise = resolveSlot(slot, session.swaps);
+  const sets = (session.entries || {})[exercise.id];
+  if(!sets || !sets.some(isLogged)) return null;
+  const mark = exercise.swappedFrom
     ? `<i class="hist-swap" title="Swapped in for ${slot.n}" aria-label="Swapped in for ${slot.n}">${ICON_SWAP}</i>`
     : "";
-  return exerciseLine(key, id, sets, swapped ? exerciseName(id) : slot.n, (swapped && findExercise(id)) || slot, "", mark);
+  return exerciseLine(key, exercise.id, sets, exercise.n, exercise, "", mark);
 }
 
 function subLabel(text){
@@ -84,10 +83,7 @@ function sessionBody(key, session, plan){
     });
   }
 
-  const planned = new Set(allExercises(plan).map(slot => (session.swaps && session.swaps[slot.id]) || slot.id));
-  const strays = Object.keys(session.entries || {})
-    .filter(id => !planned.has(id))
-    .filter(id => session.entries[id].some(set => set && set.r));
+  const strays = strayIds(session, plan);
   if(strays.length){
     body.appendChild(subLabel("Not in this session"));
     strays.forEach(id =>
@@ -123,7 +119,7 @@ function sessionBody(key, session, plan){
 }
 
 function sessionCard(key, session, plan){
-  const date = session.date || key;
+  const date = session.date;
   const open = state.historyOpen.has(key);
   const card = document.createElement("div");
   card.className = "hist-day" + (open ? " hist-expanded" : "");

@@ -1,16 +1,16 @@
-import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, LOAD_LABEL, ICON_UP, ICON_SAME, ICON_DOWN,
-        EFFORT_LEVELS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT,
-        DEFAULT_REST, WEIGHT_STEP_LB} from "./constants.js";
-import {workoutFor, allExercises, findExercise, isOffDay} from "./movements.js";
+import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, LOAD_LABEL, TREND_ICON,
+        EFFORT_LEVELS, STALL_EXPOSURES, DEFAULT_REST} from "./constants.js";
+import {workoutFor, findExercise, isOffDay, restAfterSet} from "./movements.js";
 import {state, notify} from "./state.js";
-import {score, loggedCount, priorSets, sessionVolume, suggestTarget,
-        prescribedCount, hasStalled, topSet, num} from "./progression.js";
-import {isHeld, holdLift, releaseLift, beatsHold} from "./holds.js";
+import {loggedCount, priorSets, sessionVolume, suggestTarget,
+        prescribedCount, hasStalled, trend, backoffWeight} from "./progression.js";
+import {isHeld, holdLift, releaseLift} from "./holds.js";
 import {MUSCLES} from "./muscles.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
-import {resolveSlot, exerciseName} from "./swaps.js";
-import {loadDate, setBlockIndex, setDay, setsFor, queueSave, previousSameWorkout,
-        setEffort, markLogged} from "./session.js";
+import {resolveSlot, resolvedExercises, strayIds, exerciseName} from "./swaps.js";
+import {isLogged} from "./sets.js";
+import {loadDate, chooseBlock, setDay, setsFor, previousSameWorkout,
+        setEffort, setNotes, logSet, swapSlot, isAway, setTravel} from "./session.js";
 import {setRuns, setSummary, elapsedLabel, unitSuffix, unitName} from "./format.js";
 import {renderHistory} from "./history.js";
 import {renderProgress} from "./progress.js";
@@ -69,11 +69,7 @@ function renderLog(main){
     strandButton(button, {label: letter, tone: "secondary", key: "block:" + letter});
     button.dataset.chosen = letter === current.block ? "on" : "off";
     button.setAttribute("aria-pressed", String(letter === current.block));
-    button.addEventListener("click", () => {
-      setBlockIndex(start + i);
-      queueSave();
-      notify();
-    });
+    button.addEventListener("click", () => chooseBlock(start + i));
     blocks.appendChild(button);
   });
   bar.append(dateField, blocks);
@@ -92,7 +88,7 @@ function renderLog(main){
 
   const legend = document.createElement("div");
   legend.className = "legend";
-  legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">${ICON_UP}</em> beat it</span><span><em class="same">${ICON_SAME}</em> matched</span><span><em class="down">${ICON_DOWN}</em> below</span>`;
+  legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">${TREND_ICON.up}</em> beat it</span><span><em class="same">${TREND_ICON.same}</em> matched</span><span><em class="down">${TREND_ICON.down}</em> below</span>`;
   main.appendChild(legend);
 
   if(plan.sections){
@@ -102,10 +98,10 @@ function renderLog(main){
       label.className = "section-label";
       label.textContent = sectionLabel(section);
       main.appendChild(label);
-      section.ex.forEach(slot => main.appendChild(exerciseCard(resolveSlot(slot), ++position, slot)));
+      section.ex.forEach(slot => main.appendChild(exerciseCard(resolveSlot(slot, current.swaps), ++position, slot)));
     });
   } else {
-    plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot), i + 1, slot)));
+    plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot, current.swaps), i + 1, slot)));
   }
 
   if(plan.core){
@@ -113,7 +109,8 @@ function renderLog(main){
     label.className = "section-label";
     label.textContent = "Core finisher · 3 supersets, 2 rounds each";
     main.appendChild(label);
-    plan.core.forEach((pair, i) => main.appendChild(corePairCard(pair.map(resolveSlot), i, pair)));
+    plan.core.forEach((pair, i) =>
+      main.appendChild(corePairCard(pair.map(slot => resolveSlot(slot, current.swaps)), i, pair)));
   }
 
   const strays = strayExercises(plan);
@@ -144,11 +141,7 @@ function dayRow(className, keys, done){
     }
     button.dataset.chosen = day === current.day ? "on" : "off";
     button.setAttribute("aria-pressed", String(day === current.day));
-    button.addEventListener("click", () => {
-      setDay(day);
-      queueSave();
-      notify();
-    });
+    button.addEventListener("click", () => setDay(day));
     row.appendChild(button);
   });
   return row;
@@ -160,11 +153,6 @@ function sectionLabel(section){
   return section.name;
 }
 
-function travelOn(plan){
-  const ids = Object.keys(plan.travel);
-  return ids.every(id => state.current.swaps[id] === plan.travel[id]);
-}
-
 function placeSwitch(plan){
   const wrap = document.createElement("div");
   wrap.className = "place-wrap";
@@ -173,22 +161,14 @@ function placeSwitch(plan){
   label.textContent = "Location";
   const row = document.createElement("div");
   row.className = "blockset place";
-  const away = travelOn(plan);
+  const away = isAway(plan);
   [["gym", !away], ["away", away]].forEach(([place, chosen]) => {
     const button = document.createElement("button");
     strandButton(button, {label: place, tone: "secondary", ghost: true, key: "place:" + place});
     button.dataset.chosen = chosen ? "on" : "off";
     button.setAttribute("aria-pressed", String(chosen));
     button.title = place === "gym" ? "The gym versions" : "No-equipment versions for travel";
-    button.addEventListener("click", () => {
-      if(chosen) return;
-      for(const id in plan.travel){
-        if(place === "gym") delete state.current.swaps[id];
-        else state.current.swaps[id] = plan.travel[id];
-      }
-      queueSave();
-      notify();
-    });
+    button.addEventListener("click", () => { if(!chosen) setTravel(plan, place === "away"); });
     row.appendChild(button);
   });
   wrap.append(label, row);
@@ -196,10 +176,8 @@ function placeSwitch(plan){
 }
 
 function strayExercises(plan){
-  const planned = new Set(allExercises(plan).map(slot => resolveSlot(slot).id));
   const entries = state.current.entries;
-  return Object.keys(entries)
-    .filter(id => !planned.has(id) && entries[id].some(set => set && set.r))
+  return strayIds(state.current, plan)
     .map(id => Object.assign(
       {id, n: exerciseName(id), s: entries[id].length, r: "", rest: DEFAULT_REST},
       findExercise(id) || {},
@@ -233,7 +211,7 @@ function isComplete(exercise){
   const sets = state.current.entries[exercise.id];
   if(!sets) return false;
   let done = 0;
-  for(let i = 0; i < exercise.s; i++) if(sets[i] && sets[i].r) done++;
+  for(let i = 0; i < exercise.s; i++) if(isLogged(sets[i])) done++;
   return done >= exercise.s;
 }
 
@@ -303,11 +281,8 @@ function fillCard(card, exercise, position, slot, notch){
     key: "swap:" + exercise.id
   });
   swap.addEventListener("click", () => {
-    if(exercise.swappedFrom){
-      delete state.current.swaps[exercise.swappedFrom];
-      queueSave();
-      notify();
-    } else openSwapSheet(slot);
+    if(exercise.swappedFrom) swapSlot(slot, slot.id);
+    else openSwapSheet(slot);
   });
   if(!exercise.stray) head.appendChild(swap);
   if(exercise.swappedFrom) card.classList.add("ex-swapped");
@@ -405,7 +380,7 @@ function workWindowButton(exercise, seconds){
     startWork(seconds, () => {
       if(!exercise.win){ logSecondsInto(exercise, index, seconds); return; }
       restAlreadyRunningFor = exercise.id + ":" + index;
-      startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
+      startTimer(restAfterSet(exercise, index));
     });
   });
   return button;
@@ -414,14 +389,11 @@ function workWindowButton(exercise, seconds){
 function logSecondsInto(exercise, index, seconds){
   const row = liveRows(exercise)[index];
   if(row){ row.logSeconds(seconds); return; }
-  const sets = setsFor(exercise.id);
-  while(sets.length <= index) sets.push({w: "", r: ""});
-  if(sets[index].r) return;
-  sets[index].r = String(seconds);
-  markLogged();
-  queueSave();
+  const existing = (state.current.entries[exercise.id] || [])[index];
+  if(isLogged(existing)) return;
+  logSet(exercise, index, {w: (existing && existing.w) || "", r: String(seconds)});
   notify();
-  startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
+  startTimer(restAfterSet(exercise, index));
 }
 
 function stallAction(label, key, act){
@@ -452,14 +424,12 @@ function callout(tone, icon, title, body, actions){
 }
 
 function stallPrompt(exercise, slot, prior){
-  const top = topSet(prior.sets, exercise.bw);
   const actions = [stallAction("swap", "stall-swap:" + exercise.id, () => openSwapSheet(slot))];
-  if(top && num(top.w)){
-    const dropped = Math.max(WEIGHT_STEP_LB, Math.round(num(top.w) * (1 - STALL_BACKOFF_PERCENT / 100) / WEIGHT_STEP_LB) * WEIGHT_STEP_LB);
+  const dropped = backoffWeight(prior.sets, exercise.bw);
+  if(dropped){
     actions.push(stallAction(`drop to ${dropped}`, "stall-drop:" + exercise.id, () => {
-      const sets = setsFor(exercise.id);
-      sets[0] = {w: String(dropped), r: (sets[0] && sets[0].r) || ""};
-      queueSave();
+      const first = (state.current.entries[exercise.id] || [])[0];
+      logSet(exercise, 0, {w: String(dropped), r: (first && first.r) || ""});
       notify();
     }));
   }
@@ -508,34 +478,25 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
     reps.classList.toggle("filled", !!reps.value);
     number.classList.toggle("done", !!reps.value);
     const entered = {w: weight.value.trim(), r: reps.value.trim()};
-    if(!entered.r){ delta.className = "delta none"; delta.textContent = last ? "—" : ""; return; }
-    if(!last || !last.r){ delta.className = "delta up"; delta.textContent = "new"; return; }
-    const now = score(entered, exercise.bw);
-    const then = score(last, exercise.bw);
-    if(now > then){ delta.className = "delta up"; delta.innerHTML = ICON_UP; }
-    else if(now === then){ delta.className = "delta same"; delta.innerHTML = ICON_SAME; }
-    else { delta.className = "delta down"; delta.innerHTML = ICON_DOWN; }
+    if(!isLogged(entered)){ delta.className = "delta none"; delta.textContent = last ? "—" : ""; return; }
+    if(!isLogged(last)){ delta.className = "delta up"; delta.textContent = "new"; return; }
+    const direction = trend(entered, last, exercise.bw);
+    delta.className = "delta " + direction;
+    delta.innerHTML = TREND_ICON[direction];
   };
 
   const commit = () => {
-    const sets = setsFor(exercise.id);
-    while(sets.length <= index) sets.push({w: "", r: ""});
-    const hadReps = !!sets[index].r;
     const wasComplete = isComplete(exercise);
-    sets[index] = {w: weight.value.trim(), r: reps.value.trim()};
-    if(isHeld(exercise.id) && last && beatsHold(score(sets[index], exercise.bw), score(last, exercise.bw)))
-      releaseLift(exercise.id);
+    const newlyLogged = logSet(exercise, index, {w: weight.value.trim(), r: reps.value.trim()});
     if(isComplete(exercise) !== wasComplete) state.foldFlips.delete(exercise.id);
-    if(!hadReps && sets[index].r) markLogged();
     paint();
     syncCard(exercise);
     updateFooter();
     refreshRepeats();
-    queueSave();
-    if(hadReps || !sets[index].r) return;
+    if(!newlyLogged) return;
     const restRunning = restAlreadyRunningFor === exercise.id + ":" + index;
     restAlreadyRunningFor = null;
-    if(!restRunning) startTimer(index + 1 >= exercise.s ? exercise.restAfter : exercise.rest);
+    if(!restRunning) startTimer(restAfterSet(exercise, index));
   };
 
   row.hasReps = () => !!reps.value.trim();
@@ -560,7 +521,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
 
   const refreshRepeat = () => {
     const source = carryFrom();
-    repeat.disabled = !source || !source.r;
+    repeat.disabled = !isLogged(source);
     repeat.title = repeat.disabled
       ? (index === 0 ? "Nothing logged last time" : `Log set ${index} first`)
       : "Fill with " + (source.w ? source.w + " \u00d7 " : "") + source.r;
@@ -569,7 +530,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
 
   repeat.addEventListener("click", () => {
     const source = carryFrom();
-    if(!source || !source.r) return;
+    if(!isLogged(source)) return;
     weight.value = source.w || "";
     reps.value = source.r;
     commit();
@@ -610,7 +571,7 @@ function notesCard(){
   area.id = "notes";
   area.value = state.current.notes || "";
   area.placeholder = "How it felt, what was occupied, anything worth remembering next cycle.";
-  const save = () => { state.current.notes = area.value; queueSave(); };
+  const save = () => setNotes(area.value);
   area.addEventListener("change", save);
   area.addEventListener("blur", save);
   box.append(label, strandField(area));
@@ -621,10 +582,10 @@ function setBarGroups(){
   const plan = workoutFor(state.current.block, state.current.day);
   if(!plan) return [];
   let reached = false;
-  return allExercises(plan).map(resolveSlot).map(exercise => {
+  return resolvedExercises(plan, state.current.swaps).map(exercise => {
     const sets = state.current.entries[exercise.id] || [];
     const marks = [];
-    for(let i = 0; i < exercise.s; i++) marks.push(sets[i] && sets[i].r ? "on" : "off");
+    for(let i = 0; i < exercise.s; i++) marks.push(isLogged(sets[i]) ? "on" : "off");
     const here = !reached && marks.includes("off");
     if(here){
       reached = true;
@@ -659,11 +620,10 @@ function updateSetBar(groups, done, total){
 function nextRestSeconds(){
   const plan = workoutFor(state.current.block, state.current.day);
   if(!plan) return null;
-  for(const exercise of allExercises(plan).map(resolveSlot)){
+  for(const exercise of resolvedExercises(plan, state.current.swaps)){
     const sets = state.current.entries[exercise.id] || [];
     for(let i = 0; i < exercise.s; i++)
-      if(!(sets[i] && sets[i].r))
-        return i + 1 >= exercise.s ? exercise.restAfter : exercise.rest;
+      if(!isLogged(sets[i])) return restAfterSet(exercise, i);
   }
   return null;
 }
@@ -675,7 +635,7 @@ function updateFooter(){
 
   const total = prescribedCount(current.block, current.day);
   const count = loggedCount(current);
-  const volume = sessionVolume(current, current.block, current.day);
+  const volume = sessionVolume(current);
   updateSetBar(setBarGroups(), count, total);
 
   el("volume").textContent = volume ? `${volume.toLocaleString()} lb` : (count ? `${count} sets` : "0");
@@ -689,7 +649,7 @@ function updateFooter(){
 
   const previous = previousSameWorkout();
   if(previous){
-    const before = sessionVolume(previous.session, previous.session.block, previous.session.day);
+    const before = sessionVolume(previous.session);
     if(before) parts.push(`${volume - before >= 0 ? "+" : ""}${(volume - before).toLocaleString()} vs ${previous.date.slice(5)}`);
   }
   el("volnote").textContent = parts.length ? parts.join(" · ") : "first set in";

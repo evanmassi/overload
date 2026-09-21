@@ -30,6 +30,10 @@ export function restFor(exercise){
   return exercise.s >= LEAD_SET_COUNT ? REST.lead : REST.accessory;
 }
 
+export function restAfterSet(exercise, index){
+  return index + 1 >= exercise.s ? exercise.restAfter : exercise.rest;
+}
+
 export function allExercises(plan){
   if(!plan) return [];
   if(plan.sections) return plan.sections.flatMap(section => section.ex);

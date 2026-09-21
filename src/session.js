@@ -1,22 +1,23 @@
-import {BLOCKS, AUTOSAVE_DELAY_MS} from "./constants.js";
+import {AUTOSAVE_DELAY_MS} from "./constants.js";
 import {state, notify, persistSessions} from "./state.js";
-import {loggedCount} from "./progression.js";
+import {loggedCount, priorSets} from "./progression.js";
 import {blockIndexOf, blockLetter, activeBlockIndex, nextSessionIn, nextOffBlockIndex} from "./rotation.js";
-import {isOffDay} from "./movements.js";
+import {isOffDay, workoutFor} from "./movements.js";
+import {idsTakenElsewhere} from "./swaps.js";
+import {releaseIfBeaten} from "./holds.js";
+import {isLogged} from "./sets.js";
+import {iso} from "./format.js";
 
 let saveTimer = null;
 let statusHandler = () => {};
 
 export function onStatus(fn){ statusHandler = fn; }
 
-export const iso = date =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
 const clock = date =>
   `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}:${String(date.getSeconds()).padStart(2, "0")}`;
 
-function newSessionKey(dateStr, now){
-  const stamp = `${dateStr}T${clock(now || new Date())}`;
+function newSessionKey(dateStr){
+  const stamp = `${dateStr}T${clock(new Date())}`;
   let key = stamp;
   for(let n = 2; state.sessions[key]; n++) key = `${stamp}.${n}`;
   return key;
@@ -30,10 +31,16 @@ function sessionKeyFor(dateStr, day){
   return sessionsOn(state.sessions, dateStr).filter(key => state.sessions[key].day === day).pop() || null;
 }
 
-export function setBlockIndex(index){
+function setBlockIndex(index){
   state.current.blockIndex = Math.max(0, index);
   state.current.block = blockLetter(state.current.blockIndex);
   state.foldFlips.clear();
+}
+
+export function chooseBlock(index){
+  setBlockIndex(index);
+  queueSave();
+  notify();
 }
 
 export function setDay(day){
@@ -45,10 +52,12 @@ export function setDay(day){
     current.day = day;
     if(crossing) setBlockIndex(isOffDay(day) ? nextOffBlockIndex(state.sessions, day) : activeBlockIndex(state.sessions));
     state.foldFlips.clear();
-    return;
+  } else {
+    stash();
+    openSession(existing || newSessionKey(current.date), current.date, day);
   }
-  stash();
-  openSession(existing || newSessionKey(current.date), current.date, day);
+  queueSave();
+  notify();
 }
 
 function sessionsExcept(key){
@@ -117,11 +126,28 @@ export function loadSession(key){
   openSession(key, saved.date, saved.day);
 }
 
-export function markLogged(){
+function markLogged(){
   if(state.current.date !== iso(new Date())) return;
   const now = Date.now();
   if(!state.current.startedAt) state.current.startedAt = now;
   state.current.lastLoggedAt = now;
+}
+
+export function setsFor(exerciseId){
+  if(!state.current.entries[exerciseId]) state.current.entries[exerciseId] = [];
+  return state.current.entries[exerciseId];
+}
+
+export function logSet(exercise, index, set){
+  const sets = setsFor(exercise.id);
+  while(sets.length <= index) sets.push({w: "", r: ""});
+  const newlyLogged = !isLogged(sets[index]) && isLogged(set);
+  sets[index] = set;
+  if(newlyLogged) markLogged();
+  const prior = priorSets(state.sessions, exercise.id, state.current.key, state.current.day);
+  releaseIfBeaten(exercise, set, prior && prior.sets[index]);
+  queueSave();
+  return newlyLogged;
 }
 
 export function setEffort(exerciseId, level){
@@ -132,9 +158,32 @@ export function setEffort(exerciseId, level){
   notify();
 }
 
-export function setsFor(exerciseId){
-  if(!state.current.entries[exerciseId]) state.current.entries[exerciseId] = [];
-  return state.current.entries[exerciseId];
+export function setNotes(text){
+  state.current.notes = text;
+  queueSave();
+}
+
+export function swapSlot(slot, id){
+  const plan = workoutFor(state.current.block, state.current.day);
+  if(idsTakenElsewhere(slot, plan, state.current.swaps).has(id)) return false;
+  if(id === slot.id) delete state.current.swaps[slot.id];
+  else state.current.swaps[slot.id] = id;
+  queueSave();
+  notify();
+  return true;
+}
+
+export function isAway(plan){
+  return Object.keys(plan.travel).every(id => state.current.swaps[id] === plan.travel[id]);
+}
+
+export function setTravel(plan, away){
+  for(const id in plan.travel){
+    if(away) state.current.swaps[id] = plan.travel[id];
+    else delete state.current.swaps[id];
+  }
+  queueSave();
+  notify();
 }
 
 function cleanEntries(entries){
@@ -176,7 +225,7 @@ function commitNow(){
   statusHandler("saved");
 }
 
-export function queueSave(){
+function queueSave(){
   stash();
   statusHandler("saving");
   clearTimeout(saveTimer);

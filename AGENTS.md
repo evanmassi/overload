@@ -33,7 +33,7 @@ A module imports only from its own row or the rows above it. The graph has no cy
 | Data | `program`, `offdays`, `extras`, `howto`, `taxonomy`, `muscles`, `constants` | Plain literals, no imports |
 | Derivation | `movements` | Tags the data once at load: rest, load kind, sides, lookup by id |
 | Store | `storage`, `state` | `storage` is the only file that touches `localStorage`; `state` holds the one state object |
-| Logic | `progression`, `rotation`, `format`, `swaps`, `holds` | No DOM. The first three are pure; `swaps` and `holds` save through `state` |
+| Logic | `sets`, `format`, `progression`, `rotation`, `swaps`, `holds` | No DOM. The first four are pure; `swaps` and `holds` save through `state` |
 | Session | `session`, `backup` | The open session, autosave, export and import |
 | Views | `render`, `history`, `progress`, `sheet`, `timer`, `savestate`, `sound` | DOM and audio. Read logic, never reimplement it |
 | Entry | `main` | Mounts views, subscribes `render`, registers the service worker |
@@ -49,8 +49,10 @@ A module imports only from its own row or the rows above it. The graph has no cy
   re-render is the default.
 - The one exception is typing in a set row. A full render would drop focus and the keyboard, so the set field commit
   updates its own card in place (`syncCard`, `updateFooter`). Keep that path narrow.
-- `session.js` owns the session being edited. Mutate `state.current`, then `queueSave()`. `flushNow()` runs on hide
-  and pagehide. Views never write `state.sessions` directly.
+- `session.js` owns the session being edited. Views change it only through its functions (`logSet`, `swapSlot`,
+  `setTravel`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves. `logSet` does not re-render,
+  because the set row updates in place; the rest do. `flushNow()` runs on hide and pagehide. Views never write
+  `state.current` or `state.sessions` directly.
 - `persistSessions`, `persistCustomNames`, `persistHolds` in `state.js` are the only save calls. `storage.js` is the
   only reader and writer behind them.
 
@@ -70,10 +72,10 @@ logged set. Changing the display name `n` is safe; names are capped at 22 charac
 **Stored session shape** comes from `snapshot()` in `session.js`: `date`, `day`, `block`, `blockIndex`, `entries`
 (`{id: [{w, r}]}`, strings as typed), and optional `notes`, `effort`, `startedAt`, `lastLoggedAt`, `swaps`. Keys are
 `YYYY-MM-DDTHH:MM:SS` with a `.n` suffix on a collision; older logs are keyed by date alone and must keep sorting
-and comparing correctly.
+and comparing correctly. Every session has a `date` once loaded, so code reads `session.date` and never the key.
 
 **Storage keys** are `overload.<name>.v1`, defined once in `constants.js`. Legacy shapes are converted at read time
-inside `storage.js` (see `migrateDayKeys` and the legacy key fallback). No migration system until a second version
+inside `storage.js` (see `migrateLegacySessions` and the legacy key fallback). No migration system until a second version
 of a key exists.
 
 **Backup import merges, never overwrites.** For a key present on both sides, the copy with more logged sets wins.
@@ -196,10 +198,14 @@ no storage key before something writes it.
 |---------|----------|----------|
 | Persistence | `storage.js` via `persist*` in `state.js` | `localStorage` anywhere else |
 | Re-rendering | `notify()` | Calling `render` or a view directly |
-| Saving the open session | `queueSave()` / `flushNow()` | Writing `state.sessions[key]` from a view |
+| Editing the open session | `session.js` functions | Writing `state.current` from a view |
 | Tunable numbers, storage keys, labels | `constants.js` | Inline literals |
 | Set summaries, durations, clock text | `format.js` | Per-view formatting |
-| Scoring, volume, targets, stalls | `progression.js` | Math inside a view |
+| Scoring, volume, targets, stalls, back-off | `progression.js` | Math inside a view |
+| Beat, match or below | `trend` in `progression.js` | Comparing scores in a view |
+| Whether a set counts as logged | `isLogged` in `sets.js` | `set && set.r` |
+| Rest after a set | `restAfterSet` in `movements.js` | Rewriting the ternary |
+| Which move fills a slot, and strays | `resolveSlot(slot, swaps)`, `strayIds` in `swaps.js` | Reading `swaps` by hand |
 | Week and version rotation | `rotation.js` | Counting sessions in a view |
 | Exercise lookup and derived fields | `movements.js` (`findExercise`, `workoutFor`) | Walking `PROGRAM` by hand |
 | Buttons, inputs, panels | `strand/` | Hand-built markup |

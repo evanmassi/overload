@@ -1,12 +1,12 @@
 import {PATTERNS} from "./taxonomy.js";
-import {PATTERN_OF, workoutFor, allExercises} from "./movements.js";
+import {PATTERN_OF, workoutFor} from "./movements.js";
 import {HOWTO} from "./howto.js";
 import {MUSCLES} from "./muscles.js";
 import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS, TIMER_PRESETS} from "./constants.js";
 import {state, notify} from "./state.js";
 import {priorSets} from "./progression.js";
-import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor, resolveSlot} from "./swaps.js";
-import {queueSave, relabelSession} from "./session.js";
+import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor, idsTakenElsewhere} from "./swaps.js";
+import {relabelSession, swapSlot} from "./session.js";
 import {start as startTimer, startStopwatch} from "./timer.js";
 import {clockFace, parseClock} from "./format.js";
 import {strandButton} from "./strand/button.js";
@@ -162,19 +162,8 @@ function armConfirm(button, prompt, act){
   });
 }
 
-function idsElsewhereInSession(slot){
-  const plan = workoutFor(state.current.block, state.current.day);
-  const taken = new Set(allExercises(plan).map(resolveSlot).map(exercise => exercise.id));
-  taken.delete(resolveSlot(slot).id);
-  return taken;
-}
-
 function pick(slot, id){
-  if(idsElsewhereInSession(slot).has(id)) return false;
-  if(id === slot.id) delete state.current.swaps[slot.id];
-  else state.current.swaps[slot.id] = id;
-  queueSave();
-  notify();
+  if(!swapSlot(slot, id)) return false;
   closeSheet();
   return true;
 }
@@ -227,7 +216,7 @@ export function openSwapSheet(slot){
   openSlot = slot;
   title.textContent = "Instead of " + slot.n;
   body.innerHTML = "";
-  const taken = idsElsewhereInSession(slot);
+  const taken = idsTakenElsewhere(slot, workoutFor(state.current.block, state.current.day), state.current.swaps);
   const offer = ids => ids.filter(id => !taken.has(id)).forEach(id => body.appendChild(movementRow(slot, id)));
 
   const mine = Object.keys(state.customNames)

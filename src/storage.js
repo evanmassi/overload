@@ -14,15 +14,17 @@ function writeJson(key, value){
   catch(e){ return false; }
 }
 
-export function migrateDayKeys(store){
-  for(const date in store){
-    const session = store[date];
-    if(session && LEGACY_DAY_KEYS[session.day]) session.day = LEGACY_DAY_KEYS[session.day];
+export function migrateLegacySessions(store){
+  for(const key in store){
+    const session = store[key];
+    if(!session) continue;
+    if(LEGACY_DAY_KEYS[session.day]) session.day = LEGACY_DAY_KEYS[session.day];
+    if(!session.date) session.date = key;
   }
   return store;
 }
 
-export function loadSessions(){ return migrateDayKeys(readJson(SESSIONS_KEY, LEGACY_SESSIONS_KEY)); }
+export function loadSessions(){ return migrateLegacySessions(readJson(SESSIONS_KEY, LEGACY_SESSIONS_KEY)); }
 export function saveSessions(sessions){ return writeJson(SESSIONS_KEY, sessions); }
 
 export function loadCustomNames(){ return readJson(CUSTOM_KEY); }
