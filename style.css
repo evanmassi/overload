@@ -86,7 +86,7 @@ button{cursor:pointer;border:none;background:none}
 .blockset .sbtn{--pad:12px 8px 12px 11px}
 .blockset .sbtn-label,.blockset .sbtn-word{text-align:center}
 .blockset.sessions,.blockset.offdays{margin-top:8px}
-.blockset.offdays{margin-top:4px}
+.blockset.offdays{margin-top:0;border-top:1px solid var(--line-hairline)}
 .blockset.sessions,.blockset.offdays{gap:0}
 .blockset.sessions .sbtn,.blockset.offdays .sbtn{flex:1;--pad:12px 8px 4px 10px}
 .blockset.sessions .sbtn + .sbtn,.blockset.offdays .sbtn + .sbtn{border-left:1px solid var(--line-hairline)}
