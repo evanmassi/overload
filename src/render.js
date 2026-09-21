@@ -381,12 +381,19 @@ function callout(tone, icon, title, body, actions){
   const box = document.createElement("div");
   box.className = "callout stall";
   box.dataset.tone = tone;
-  box.innerHTML = `<span class="callout-echo"></span><div class="callout-in"><span class="callout-fill"></span>`
-    + `<i class="icon callout-icon">${icon}</i><span class="callout-text"><span class="callout-title">${title}</span><span class="callout-body">${body}</span></span></div>`;
-  const row = document.createElement("div");
-  row.className = "stall-actions";
+  const make = (tag, className, text) => {
+    const node = document.createElement(tag);
+    node.className = className;
+    if(text) node.textContent = text;
+    return node;
+  };
+  const inner = make("div", "callout-in");
+  const text = make("span", "callout-text");
+  const row = make("div", "stall-actions");
   actions.forEach(button => row.appendChild(button));
-  box.querySelector(".callout-text").appendChild(row);
+  text.append(make("span", "callout-title", title), make("span", "callout-body", body), row);
+  inner.append(make("span", "callout-fill"), make("i", "icon callout-icon", icon), text);
+  box.append(make("span", "callout-echo"), inner);
   return box;
 }
 
