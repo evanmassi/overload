@@ -70,7 +70,7 @@ for(const file of modules){
 equal("no file imports from a layer above it", upward, []);
 
 section("Rendered classes");
-const css = filesUnder(at("styles"), ".css").map(read).join("\n");
+const css = filesUnder(at("src"), ".css").map(read).join("\n");
 const rendered = new Set();
 const collect = (text, pattern, split) => {
   for(const match of text.matchAll(pattern))
@@ -88,7 +88,7 @@ section("Service worker precache");
 const assets = read(at("sw.js")).match(/const ASSETS = \[([\s\S]*?)\];/)[1];
 const precached = [...assets.matchAll(/'\.\/([^']*)'/g)].map(match => match[1]);
 const shipped = ["", "index.html", "manifest.json"].concat(
-  [...filesUnder(at("src"), ".js"), ...filesUnder(at("styles"), ".css"), ...filesUnder(at("icons"), ".png")].map(relative));
+  [...filesUnder(at("src"), ".js"), ...filesUnder(at("src"), ".css"), ...filesUnder(at("icons"), ".png")].map(relative));
 equal("every shipped file is precached", shipped.filter(file => !precached.includes(file)), []);
 equal("every precached file exists", precached.filter(file => !shipped.includes(file)), []);
 

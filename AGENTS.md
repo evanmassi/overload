@@ -20,10 +20,9 @@ overload/
 │   ├── store/        # Saved state and every edit to it: storage, sessions, custom exercises, holds, backup
 │   ├── views/        # DOM and audio: one file per screen or piece of one
 │   │   └── sheets/   # The pop-up frame and one file per pop-up
-│   └── strand/       # Design system primitives (button, field, panel). Imports nothing from the app
-├── styles/
-│   ├── app.css       # App styles, built on the strand tokens
-│   └── strand/       # Design system CSS and tokens
+│   ├── styles/       # app.css: app styles, built on the strand tokens
+│   └── strand/       # Design system: each primitive's JS and CSS side by side, tokens/ for colors,
+│                     # type, motion and space. Imports nothing from the app
 ├── test/             # Node suites, no dependencies
 └── refs/             # Untracked design source (Strand OS). Read it, never ship from it
 ```
@@ -93,7 +92,7 @@ version of a key exists.
 
 - **Every button goes through `strandButton` or `strandIconButton`**, every text or date input through
   `strandField`, every framed surface through `strandPanel`. Never hand-build the layered spans.
-- **Colors come from the tokens** in `styles/strand/tokens/`. Need a new color, add a token first.
+- **Colors come from the tokens** in `src/strand/tokens/`. Need a new color, add a token first.
 - **Two type families.** Lato for language, IBM Plex Mono for data (weights, reps, times, tags, dates).
 - **Phone first, 390px wide.** The number keyboard covers the bottom of the screen while typing, so anything needed
   mid-set lives in the sticky header. Card text never wraps.

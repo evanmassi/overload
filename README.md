@@ -208,7 +208,8 @@ layer or the ones before it: `data`, `rules`, `store`, then `views`.
 | `src/views/timer.js` | rest timer |
 | `src/views/sound.js` | countdown beeps and the sound preference |
 | `src/views/sheets/` | the pop-up frame, and the swap, how-to, timer and relabel pop-ups |
-| `styles/app.css` | app styles on top of the strand tokens |
+| `src/styles/app.css` | app styles on top of the strand tokens |
+| `src/strand/` | the design system: button, field and panel, each with its CSS beside it, and the tokens |
 
 Nothing imports `views/app.js` except `main.js`. State changes call `notify()`, and `main.js` subscribes the app view
 to it. That keeps the view out of the logic and the module graph free of cycles.

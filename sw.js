@@ -14,10 +14,11 @@ const ASSETS = [
   './src/views/sheets/howtoSheet.js', './src/views/sheets/relabelSheet.js', './src/views/sheets/sheet.js',
   './src/views/sheets/swapSheet.js', './src/views/sheets/timerSheet.js',
   './src/strand/button.js', './src/strand/field.js', './src/strand/panel.js',
-  './styles/app.css', './styles/strand/button.css', './styles/strand/field.css', './styles/strand/index.css',
-  './styles/strand/panel.css', './styles/strand/stripe.css', './styles/strand/tokens/animations.css',
-  './styles/strand/tokens/colors.css', './styles/strand/tokens/fonts.css', './styles/strand/tokens/motion.css',
-  './styles/strand/tokens/space.css', './styles/strand/tokens/typography.css',
+  './src/strand/button.css', './src/strand/field.css', './src/strand/index.css', './src/strand/panel.css',
+  './src/strand/stripe.css', './src/strand/tokens/animations.css', './src/strand/tokens/colors.css',
+  './src/strand/tokens/fonts.css', './src/strand/tokens/motion.css', './src/strand/tokens/space.css',
+  './src/strand/tokens/typography.css',
+  './src/styles/app.css',
   './icons/apple-touch-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png',
 ];
 
