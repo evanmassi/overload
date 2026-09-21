@@ -110,8 +110,13 @@ export function makeButton(el, options = {}){
     const mark = el.querySelector(".btn-meta") || label.parentNode.insertBefore(make("meta"), label.nextSibling);
     mark.textContent = value || "";
   };
+  el.setChosen = on => {
+    el.dataset.chosen = on ? "on" : "off";
+    el.setAttribute(el.getAttribute("role") === "tab" ? "aria-selected" : "aria-pressed", String(on));
+  };
   el.setLabel(text);
   if(options.meta !== undefined) el.setMeta(options.meta);
+  if(options.chosen !== undefined) el.setChosen(options.chosen);
   wire(el, key);
   return el;
 }

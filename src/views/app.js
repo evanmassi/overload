@@ -15,9 +15,5 @@ export function render(){
   else renderProgress(main);
   updateSaveBar();
   setIdleRest(nextRest());
-  document.querySelectorAll(".tab").forEach(tab => {
-    const here = tab.dataset.view === state.view;
-    tab.setAttribute("aria-selected", String(here));
-    tab.dataset.chosen = here ? "on" : "off";
-  });
+  document.querySelectorAll(".tab").forEach(tab => tab.setChosen(tab.dataset.view === state.view));
 }

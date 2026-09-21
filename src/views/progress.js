@@ -6,6 +6,7 @@ import {loggedCount, bestEstimate, estimateFor, loggedAsBodyweight} from "../rul
 import {iso} from "../rules/format.js";
 import {isLogged} from "../rules/sets.js";
 import {makePanel} from "../ui/panel.js";
+import {el, escapeHtml} from "./dom.js";
 
 export function renderProgress(main){
   const byExercise = {};
@@ -25,24 +26,11 @@ export function renderProgress(main){
   });
 
   const ids = Object.keys(byExercise).sort((a, b) => byExercise[b].points.length - byExercise[a].points.length);
-  if(!ids.length){
-    main.innerHTML = `<p class="empty">Log two sessions of the same lift and the trend line shows up here.</p>`;
-    const consistency = document.createElement("p");
-    consistency.className = "section-label";
-    consistency.textContent = "Consistency";
-    main.append(consistency, consistencyGrid());
-    return;
-  }
+  if(!ids.length) main.appendChild(el("p", "empty", "Log two sessions of the same lift and the trend line shows up here."));
+  main.append(el("p", "section-label", "Consistency"), consistencyGrid());
+  if(!ids.length) return;
 
-  const consistency = document.createElement("p");
-  consistency.className = "section-label";
-  consistency.textContent = "Consistency";
-  main.append(consistency, consistencyGrid());
-
-  const label = document.createElement("p");
-  label.className = "section-label";
-  label.textContent = "Top set trend · est. 1RM";
-  main.appendChild(label);
+  main.appendChild(el("p", "section-label", "Top set trend · est. 1RM"));
 
   ids.forEach(id => {
     const entry = byExercise[id];
@@ -56,29 +44,27 @@ export function renderProgress(main){
     const bestLabel = entry.bw && best.top.w ? `${best.top.r} at ${entry.level ? "level " : "+"}${best.top.w}` : shown(best);
     const history = entry.points.length > 1 ? `${sessions} · best ${bestLabel}` : sessions;
 
-    const card = document.createElement("div");
-    card.className = "prog panel-flat";
+    const lastSet = `${latest.top.w ? latest.top.w + "×" : ""}${latest.top.r} on ${latest.date.slice(5)}`;
+    const card = el("div", "prog panel-flat");
     makePanel(card);
-    card.innerHTML = `<h3>${entry.name}</h3>
-      <div class="best">${shown(latest)}<em>${qualifier}</em></div>
-      <div class="meta">${history}</div>
-      <div class="meta" style="text-align:right">${latest.top.w ? latest.top.w + "×" : ""}${latest.top.r} on ${latest.date.slice(5)}</div>`;
+    card.innerHTML = `<h3>${escapeHtml(entry.name)}</h3>
+      <div class="best">${escapeHtml(shown(latest))}<em>${escapeHtml(qualifier)}</em></div>
+      <div class="meta">${escapeHtml(history)}</div>
+      <div class="meta" style="text-align:right">${escapeHtml(lastSet)}</div>`;
     if(entry.points.length > 1) card.appendChild(sparkline(entry.points.map(p => p.value)));
     main.appendChild(card);
   });
 }
 
 function consistencyGrid(){
-  const wrap = document.createElement("div");
-  wrap.className = "grid-wrap";
+  const wrap = el("div", "grid-wrap");
 
   const weeks = CONSISTENCY_WEEKS;
   const today = new Date();
   const start = new Date(today);
   start.setDate(start.getDate() - (weeks * 7 - 1));
 
-  const grid = document.createElement("div");
-  grid.className = "grid";
+  const grid = el("div", "grid");
   let trained = 0;
   const setsByDate = {};
   for(const key in state.sessions){
@@ -91,18 +77,13 @@ function consistencyGrid(){
     day.setDate(day.getDate() + i);
     const key = iso(day);
     const sets = setsByDate[key] || 0;
-    const cell = document.createElement("i");
-    cell.className = "cell" + (sets ? " lit" + Math.min(3, Math.ceil(sets / 10)) : "");
+    const cell = el("i", "cell" + (sets ? " lit" + Math.min(3, Math.ceil(sets / 10)) : ""));
     cell.title = key + (sets ? " · " + sets + " sets" : "");
     grid.appendChild(cell);
     if(sets) trained++;
   }
 
-  const caption = document.createElement("p");
-  caption.className = "grid-note";
-  caption.textContent = `${trained} session${trained === 1 ? "" : "s"} in the last ${weeks} weeks`;
-
-  wrap.append(grid, caption);
+  wrap.append(grid, el("p", "grid-note", `${trained} session${trained === 1 ? "" : "s"} in the last ${weeks} weeks`));
   return wrap;
 }
 

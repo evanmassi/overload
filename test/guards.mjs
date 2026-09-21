@@ -80,6 +80,8 @@ for(const text of modules.map(sourceOf).concat(read(at("index.html")))){
   collect(text, /className\s*[=:]\s*"([^"]+)"/g, true);
   collect(text, /class="([^"$]+)"/g, true);
   collect(text, /classList\.(?:add|toggle)\("([^"]+)"/g, false);
+  collect(text, /\bel\(\s*"[^"]*"\s*,\s*"([^"]+)"/g, true);
+  collect(text, /\bchoiceRow\(\s*"([^"]+)"/g, true);
 }
 const unstyled = [...rendered].sort().filter(name => !new RegExp("\\." + name + "[^a-zA-Z0-9_-]").test(css));
 equal("every rendered class has a CSS rule", unstyled, []);

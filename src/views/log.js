@@ -1,87 +1,70 @@
 import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON, DEFAULT_REST} from "../data/constants.js";
 import {workoutFor, findExercise, isOffDay} from "../rules/exercises.js";
-import {state} from "../store/state.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "../rules/rotation.js";
+import {state} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
 import {resolveSlot, strayIds} from "../store/slots.js";
 import {loadDate, chooseBlock, setDay, setNotes, isAway, setTravel} from "../store/session.js";
-import {makeButton} from "../ui/button.js";
 import {makeField} from "../ui/field.js";
 import {makePanel} from "../ui/panel.js";
+import {el} from "./dom.js";
+import {choiceRow} from "./controls.js";
 import {exerciseCard, corePairCard} from "./exerciseCard.js";
 
 export function renderLog(main){
   const current = state.current;
+  const offDay = isOffDay(current.day);
+  const plan = workoutFor(current.block, current.day);
 
-  const bar = document.createElement("div");
-  bar.className = "daybar";
-  const date = document.createElement("input");
+  const date = el("input", "date-input");
   date.type = "date";
-  date.className = "date-input";
   date.value = current.date;
   date.addEventListener("change", () => { if(date.value) loadDate(date.value); });
-  const dateField = makeField(date);
-
-  const blocks = document.createElement("div");
-  blocks.className = "blockset";
   const start = cycleStart(current.blockIndex);
-  const offDay = isOffDay(current.day);
-  BLOCKS.forEach((letter, i) => {
-    const button = document.createElement("button");
-    button.title = `${offDay ? "Version" : "Week"} ${letter}`;
-    makeButton(button, {label: letter, tone: "secondary", key: "block:" + letter});
-    button.dataset.chosen = letter === current.block ? "on" : "off";
-    button.setAttribute("aria-pressed", String(letter === current.block));
-    button.addEventListener("click", () => chooseBlock(start + i));
-    blocks.appendChild(button);
-  });
-  bar.append(dateField, blocks);
+  const blocks = choiceRow("blockset", BLOCKS.map((letter, i) => ({
+    label: letter,
+    key: "block:" + letter,
+    title: `${offDay ? "Version" : "Week"} ${letter}`,
+    chosen: letter === current.block,
+    onPick: () => chooseBlock(start + i)
+  })));
+  const bar = el("div", "daybar");
+  bar.append(makeField(date), blocks);
   main.appendChild(bar);
 
   const done = offDay ? new Set() : sessionsDoneIn(state.sessions, current.blockIndex);
-  main.appendChild(dayRow("blockset sessions", DAY_KEYS, done));
-  main.appendChild(dayRow("blockset offdays", OFF_KEYS, new Set()));
+  main.append(dayRow("blockset sessions", DAY_KEYS, done), dayRow("blockset offdays", OFF_KEYS, new Set()));
 
-  const plan = workoutFor(current.block, current.day);
-  const head = document.createElement("div");
-  head.className = "dayhead";
+  const head = el("div", "dayhead");
   head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>${offDay ? "Version" : "Week"} ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2></div>`;
   if(plan.travel) head.appendChild(placeSwitch(plan));
   main.appendChild(head);
 
-  const legend = document.createElement("div");
-  legend.className = "legend";
+  const legend = el("div", "legend");
   legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">${TREND_ICON.up}</em> beat it</span><span><em class="same">${TREND_ICON.same}</em> matched</span><span><em class="down">${TREND_ICON.down}</em> below</span>`;
   main.appendChild(legend);
 
+  let position = 0;
+  const addCards = slots => slots.forEach(slot =>
+    main.appendChild(exerciseCard(resolveSlot(slot, current.swaps), ++position, slot)));
   if(plan.sections){
-    let position = 0;
     plan.sections.forEach(section => {
-      const label = document.createElement("p");
-      label.className = "section-label";
-      label.textContent = sectionLabel(section);
-      main.appendChild(label);
-      section.ex.forEach(slot => main.appendChild(exerciseCard(resolveSlot(slot, current.swaps), ++position, slot)));
+      main.appendChild(el("p", "section-label", sectionLabel(section)));
+      addCards(section.ex);
     });
   } else {
-    plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot, current.swaps), i + 1, slot)));
+    addCards(plan.ex);
   }
 
   if(plan.core){
-    const label = document.createElement("p");
-    label.className = "section-label";
-    label.textContent = "Core finisher · 3 supersets, 2 rounds each";
-    main.appendChild(label);
+    main.appendChild(el("p", "section-label", "Core finisher · 3 supersets, 2 rounds each"));
     plan.core.forEach((pair, i) =>
       main.appendChild(corePairCard(pair.map(slot => resolveSlot(slot, current.swaps)), i, pair)));
   }
 
   const strays = strayExercises(plan);
   if(strays.length){
-    const label = document.createElement("p");
-    label.className = "section-label";
-    label.textContent = "Not in this session";
-    main.appendChild(label);
+    main.appendChild(el("p", "section-label", "Not in this session"));
     strays.forEach(exercise => main.appendChild(exerciseCard(exercise, null, null)));
   }
 
@@ -90,22 +73,17 @@ export function renderLog(main){
 
 function dayRow(className, keys, done){
   const current = state.current;
-  const row = document.createElement("div");
-  row.className = className;
-  keys.forEach(day => {
-    const button = document.createElement("button");
-    makeButton(button, {label: DAYS[day].short, tone: "secondary", ghost: true, key: "day:" + day});
-    if(done.has(day) && day !== current.day){
-      const mark = document.createElement("i");
-      mark.className = "icon day-done";
-      mark.textContent = "check";
-      mark.title = "Logged this week";
-      button.appendChild(mark);
-    }
-    button.dataset.chosen = day === current.day ? "on" : "off";
-    button.setAttribute("aria-pressed", String(day === current.day));
-    button.addEventListener("click", () => setDay(day));
-    row.appendChild(button);
+  const row = choiceRow(className, keys.map(day => ({
+    label: DAYS[day].short,
+    key: "day:" + day,
+    chosen: day === current.day,
+    onPick: () => setDay(day)
+  })), {ghost: true});
+  keys.forEach((day, i) => {
+    if(!done.has(day) || day === current.day) return;
+    const mark = el("i", "icon day-done", "check");
+    mark.title = "Logged this week";
+    row.children[i].appendChild(mark);
   });
   return row;
 }
@@ -117,24 +95,14 @@ function sectionLabel(section){
 }
 
 function placeSwitch(plan){
-  const wrap = document.createElement("div");
-  wrap.className = "place-wrap";
-  const label = document.createElement("p");
-  label.className = "eyebrow";
-  label.textContent = "Location";
-  const row = document.createElement("div");
-  row.className = "blockset place";
   const away = isAway(plan);
-  [["gym", !away], ["away", away]].forEach(([place, chosen]) => {
-    const button = document.createElement("button");
-    makeButton(button, {label: place, tone: "secondary", ghost: true, key: "place:" + place});
-    button.dataset.chosen = chosen ? "on" : "off";
-    button.setAttribute("aria-pressed", String(chosen));
-    button.title = place === "gym" ? "The gym versions" : "No-equipment versions for travel";
-    button.addEventListener("click", () => { if(!chosen) setTravel(plan, place === "away"); });
-    row.appendChild(button);
-  });
-  wrap.append(label, row);
+  const wrap = el("div", "place-wrap");
+  wrap.append(el("p", "eyebrow", "Location"), choiceRow("blockset place", [
+    {label: "gym", key: "place:gym", title: "The gym versions", chosen: !away,
+     onPick: () => { if(away) setTravel(plan, false); }},
+    {label: "away", key: "place:away", title: "No-equipment versions for travel", chosen: away,
+     onPick: () => { if(!away) setTravel(plan, true); }}
+  ], {ghost: true}));
   return wrap;
 }
 
@@ -149,13 +117,11 @@ function strayExercises(plan){
 }
 
 function notesCard(){
-  const box = document.createElement("div");
-  box.className = "notes";
+  const box = el("div", "notes");
   makePanel(box);
-  const label = document.createElement("label");
-  label.textContent = "Notes";
+  const label = el("label", null, "Notes");
   label.setAttribute("for", "notes");
-  const area = document.createElement("textarea");
+  const area = el("textarea");
   area.id = "notes";
   area.value = state.current.notes || "";
   area.placeholder = "How it felt, what was occupied, anything worth remembering next cycle.";

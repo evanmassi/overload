@@ -92,6 +92,11 @@ version of a key exists.
 
 - **Every button goes through `makeButton` or `makeIconButton`**, every text or date input through
   `makeField`, every framed surface through `makePanel`. Never hand-build the layered spans.
+- **Views build with the shared helpers.** `el(tag, className, text)` from `views/dom.js` makes an element.
+  `views/controls.js` has `actionButton` for a labelled button with a handler, `choiceRow` for a row of options
+  with one lit, and `confirmButton` for tap-twice actions. A button's lit state is `setChosen`.
+- **Typed text is never markup.** Custom names, set values and notes go in through `textContent`, or through
+  `escapeHtml` inside an HTML template. Raw interpolation of anything the user typed is a bug.
 - **Colors come from the tokens** in `src/ui/tokens/`. Need a new color, add a token first.
 - **Two type families.** Lato for language, IBM Plex Mono for data (weights, reps, times, tags, dates).
 - **Phone first, 390px wide.** The number keyboard covers the bottom of the screen while typing, so anything needed
@@ -218,6 +223,9 @@ no storage key before something writes it.
 | Exercise lookup and derived fields | `rules/exercises.js` (`findExercise`, `workoutFor`) | Walking `PROGRAM` by hand |
 | Buttons, inputs, panels | `ui/` | Hand-built markup |
 | Opening a pop-up | `openSheet` in `views/sheets/sheet.js` | Touching the sheet elements directly |
+| Making an element | `el()` in `views/dom.js` | `createElement`, `className` and `textContent` by hand |
+| A row of options, a button, tap twice to confirm | `choiceRow`, `actionButton`, `confirmButton` | Setting `data-chosen` or an armed flag by hand |
+| User text inside an HTML template | `escapeHtml` | Raw `${name}` |
 | Colors | design tokens | Hex or rgba literals |
 
 ### No Convenience Wrappers

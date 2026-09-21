@@ -1,15 +1,21 @@
 import {HOWTO} from "../../data/howto.js";
 import {MUSCLES} from "../../data/muscles.js";
+import {el} from "../dom.js";
 import {openSheet} from "./sheet.js";
 
 function youtubeLink(name){
-  const link = document.createElement("a");
-  link.className = "howto-link";
+  const link = el("a", "howto-link", "Watch it on YouTube");
   link.href = "https://www.youtube.com/results?search_query=" + encodeURIComponent(name + " proper form");
   link.target = "_blank";
   link.rel = "noopener noreferrer";
-  link.textContent = "Watch it on YouTube";
   return link;
+}
+
+function labelled(className, label, text){
+  const line = el("p", className);
+  line.appendChild(el("b", null, label));
+  line.appendChild(document.createTextNode(text));
+  return line;
 }
 
 export function openHowTo(exercise){
@@ -17,34 +23,16 @@ export function openHowTo(exercise){
   const body = openSheet(exercise.n);
 
   const worked = MUSCLES[exercise.id];
-  if(worked){
-    const works = document.createElement("p");
-    works.className = "howto-works";
-    works.innerHTML = "<b>Works</b>";
-    works.appendChild(document.createTextNode(worked.p.join(", ") + (worked.s.length ? " · also " + worked.s.join(", ") : "")));
-    body.appendChild(works);
-  }
+  if(worked)
+    body.appendChild(labelled("howto-works", "Works",
+      worked.p.join(", ") + (worked.s.length ? " · also " + worked.s.join(", ") : "")));
 
   if(guide){
-    const steps = document.createElement("ol");
-    steps.className = "howto-steps";
-    guide.s.forEach(step => {
-      const item = document.createElement("li");
-      item.textContent = step;
-      steps.appendChild(item);
-    });
-    body.appendChild(steps);
-
-    const watch = document.createElement("p");
-    watch.className = "howto-watch";
-    watch.innerHTML = "<b>Watch out</b>";
-    watch.appendChild(document.createTextNode(guide.w));
-    body.appendChild(watch);
+    const steps = el("ol", "howto-steps");
+    guide.s.forEach(step => steps.appendChild(el("li", null, step)));
+    body.append(steps, labelled("howto-watch", "Watch out", guide.w));
   } else {
-    const none = document.createElement("p");
-    none.className = "howto-watch";
-    none.textContent = "No write-up for this one yet.";
-    body.appendChild(none);
+    body.appendChild(el("p", "howto-watch", "No write-up for this one yet."));
   }
 
   body.appendChild(youtubeLink(exercise.n));

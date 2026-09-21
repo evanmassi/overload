@@ -1087,4 +1087,33 @@ section("Long-pressing the clock opens a picker with presets and a stopwatch");
   stop();
 }
 
+section("Typed names and numbers reach the page as text, not markup");
+{
+  fresh();
+  state.customNames = {custom_curl_3: "Curl <3"};
+  state.sessions["2026-08-25"] = {
+    date: "2026-08-25", day: "chest", block: "A", blockIndex: 0,
+    entries: {custom_curl_3: [{w: "<b>20", r: "10"}]}
+  };
+
+  state.view = "history";
+  render();
+  const line = openHistoryCard(0).find("hist-line").find(l => l.innerHTML.includes("Curl"));
+  check("a custom name is escaped in history",
+    line && line.innerHTML.includes("Curl &lt;3") && !line.innerHTML.includes("Curl <3"), line && line.innerHTML);
+  check("so is a typed weight", line && line.innerHTML.includes("&lt;b&gt;20×10"), line && line.innerHTML);
+
+  state.view = "progress";
+  render();
+  const card = els.main.find("prog")[0];
+  check("and the progress card",
+    card && card.innerHTML.includes("Curl &lt;3") && !card.innerHTML.includes("<b>20"), card && card.innerHTML);
+
+  state.view = "log";
+  loadDate("2026-08-25");
+  render();
+  const head = els.main.find("ex-head").find(h => h.innerHTML.includes("Curl"));
+  check("and the exercise card", head && head.innerHTML.includes("Curl &lt;3"), head && head.innerHTML);
+}
+
 process.exit(report() ? 0 : 1);

@@ -1,4 +1,5 @@
 import {makeButton} from "../../ui/button.js";
+import {el} from "../dom.js";
 
 let sheet, title, body;
 
@@ -23,8 +24,5 @@ export function openSheet(heading){
 }
 
 export function sheetGroup(text){
-  const heading = document.createElement("p");
-  heading.className = "sheet-group";
-  heading.textContent = text;
-  body.appendChild(heading);
+  body.appendChild(el("p", "sheet-group", text));
 }

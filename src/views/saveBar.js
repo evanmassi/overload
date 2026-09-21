@@ -5,7 +5,7 @@ import {resolvedExercises} from "../store/slots.js";
 import {isLogged} from "../rules/sets.js";
 import {previousSameWorkout} from "../store/session.js";
 import {elapsedLabel} from "../rules/format.js";
-import {byId} from "./dom.js";
+import {byId, el} from "./dom.js";
 
 function setBarGroups(){
   const plan = workoutFor(state.current.block, state.current.day);
@@ -31,7 +31,7 @@ function updateSetBar(groups, done, total){
   const shape = groups.map(group => group.length).join(",");
   if(bar.dataset.shape !== shape){
     bar.innerHTML = "";
-    marks.forEach(() => bar.appendChild(Object.assign(document.createElement("i"), {className: "tick"})));
+    marks.forEach(() => bar.appendChild(el("i", "tick")));
     bar.dataset.shape = shape;
   }
   const lead = marks.indexOf("now");

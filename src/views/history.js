@@ -1,17 +1,18 @@
-import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
+import {DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
 import {workoutFor, findExercise, isOffDay} from "../rules/exercises.js";
-import {state, notify} from "../store/state.js";
 import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
 import {blockIndexOf, cycleNumber} from "../rules/rotation.js";
+import {isLogged} from "../rules/sets.js";
+import {setSummary, elapsedLabel, unitSuffix} from "../rules/format.js";
+import {state, notify} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
 import {resolveSlot, strayIds} from "../store/slots.js";
-import {isLogged} from "../rules/sets.js";
 import {loadSession, deleteSession} from "../store/session.js";
+import {makePanel} from "../ui/panel.js";
+import {el, escapeHtml} from "./dom.js";
+import {actionButton, choiceRow, confirmButton} from "./controls.js";
 import {openRelabelSheet} from "./sheets/relabelSheet.js";
 import {settingsPanel} from "./settings.js";
-import {setSummary, elapsedLabel, unitSuffix} from "../rules/format.js";
-import {makeButton} from "../ui/button.js";
-import {makePanel} from "../ui/panel.js";
 
 const TREND_WORD = {up: "Beat", same: "Matched", down: "Below"};
 
@@ -23,10 +24,10 @@ function deltaMark(key, id, sets, isBodyweight){
 }
 
 function exerciseLine(key, id, sets, name, exercise, extraClass, mark){
-  const line = document.createElement("div");
-  line.className = "hist-line" + (extraClass ? " " + extraClass : "");
+  const line = el("div", "hist-line" + (extraClass ? " " + extraClass : ""));
   const isBodyweight = loggedAsBodyweight(exercise, sets);
-  line.innerHTML = `<span>${name}${mark || ""}</span><b>${setSummary(sets, exercise ? unitSuffix(exercise) : "")}</b>${deltaMark(key, id, sets, isBodyweight)}`;
+  const summary = setSummary(sets, exercise ? unitSuffix(exercise) : "");
+  line.innerHTML = `<span>${escapeHtml(name)}${mark || ""}</span><b>${escapeHtml(summary)}</b>${deltaMark(key, id, sets, isBodyweight)}`;
   return line;
 }
 
@@ -40,33 +41,34 @@ function slotLine(key, session, slot){
   return exerciseLine(key, exercise.id, sets, exercise.n, exercise, "", mark);
 }
 
-function subLabel(text){
-  const label = document.createElement("p");
-  label.className = "hist-sub";
-  label.textContent = text;
-  return label;
-}
-
-function armedDelete(key){
-  const remove = document.createElement("button");
-  remove.addEventListener("click", event => {
+function sessionActions(key){
+  const actions = el("div", "hist-actions");
+  const edit = actionButton("edit", {tone: "secondary", ghost: true, key: "hist-edit:" + key}, event => {
     event.stopPropagation();
-    if(remove.dataset.armed){ deleteSession(key); return; }
-    remove.dataset.armed = "1";
-    remove.setLabel("sure?");
-    setTimeout(() => { delete remove.dataset.armed; remove.setLabel("delete"); }, CONFIRM_WINDOW_MS);
+    loadSession(key);
+    state.view = "log";
+    notify();
+    window.scrollTo(0, 0);
   });
-  return makeButton(remove, {label: "delete", tone: "danger", ghost: true, key: "hist-delete:" + key});
+  edit.title = "Open this session on the Log tab";
+  const relabel = actionButton("relabel", {tone: "secondary", ghost: true, key: "hist-relabel:" + key}, event => {
+    event.stopPropagation();
+    openRelabelSheet(key);
+  });
+  relabel.title = "File this session under a different workout";
+  const remove = confirmButton("delete", "sure?", {tone: "danger", ghost: true, key: "hist-delete:" + key},
+    () => deleteSession(key));
+  actions.append(edit, relabel, remove);
+  return actions;
 }
 
 function sessionBody(key, session, plan){
-  const body = document.createElement("div");
-  body.className = "hist-body";
+  const body = el("div", "hist-body");
 
   (plan.sections || [{ex: plan.ex}]).forEach(section => {
     const lines = section.ex.map(slot => slotLine(key, session, slot)).filter(Boolean);
     if(!lines.length) return;
-    if(section.name) body.appendChild(subLabel(section.name));
+    if(section.name) body.appendChild(el("p", "hist-sub", section.name));
     lines.forEach(line => body.appendChild(line));
   });
 
@@ -74,10 +76,9 @@ function sessionBody(key, session, plan){
     .map(pair => pair.map(slot => slotLine(key, session, slot)).filter(Boolean))
     .filter(lines => lines.length);
   if(supersets.length){
-    body.appendChild(subLabel("Core finisher"));
+    body.appendChild(el("p", "hist-sub", "Core finisher"));
     supersets.forEach(lines => {
-      const group = document.createElement("div");
-      group.className = "hist-super";
+      const group = el("div", "hist-super");
       lines.forEach(line => group.appendChild(line));
       body.appendChild(group);
     });
@@ -85,57 +86,30 @@ function sessionBody(key, session, plan){
 
   const strays = strayIds(session, plan);
   if(strays.length){
-    body.appendChild(subLabel("Not in this session"));
+    body.appendChild(el("p", "hist-sub", "Not in this session"));
     strays.forEach(id =>
       body.appendChild(exerciseLine(key, id, session.entries[id], exerciseName(id), findExercise(id), "hist-stray")));
   }
 
-  if(session.notes){
-    const note = document.createElement("p");
-    note.className = "hist-notes";
-    note.textContent = session.notes;
-    body.appendChild(note);
-  }
-
-  const actions = document.createElement("div");
-  actions.className = "hist-actions";
-  const edit = document.createElement("button");
-  edit.title = "Open this session on the Log tab";
-  makeButton(edit, {label: "edit", tone: "secondary", ghost: true, key: "hist-edit:" + key});
-  edit.addEventListener("click", event => {
-    event.stopPropagation();
-    loadSession(key);
-    state.view = "log";
-    notify();
-    window.scrollTo(0, 0);
-  });
-  const relabel = document.createElement("button");
-  relabel.title = "File this session under a different workout";
-  makeButton(relabel, {label: "relabel", tone: "secondary", ghost: true, key: "hist-relabel:" + key});
-  relabel.addEventListener("click", event => { event.stopPropagation(); openRelabelSheet(key); });
-  actions.append(edit, relabel, armedDelete(key));
-  body.appendChild(actions);
+  if(session.notes) body.appendChild(el("p", "hist-notes", session.notes));
+  body.appendChild(sessionActions(key));
   return body;
 }
 
 function sessionCard(key, session, plan){
   const date = session.date;
   const open = state.historyOpen.has(key);
-  const card = document.createElement("div");
-  card.className = "hist-day" + (open ? " hist-expanded" : "");
+  const card = el("div", "hist-day" + (open ? " hist-expanded" : ""));
   makePanel(card);
 
-  const row = document.createElement("div");
-  row.className = "hist-row";
+  const row = el("div", "hist-row");
   row.setAttribute("role", "button");
   row.setAttribute("aria-expanded", String(open));
-  const top = document.createElement("div");
-  top.className = "hist-top";
+  const top = el("div", "hist-top");
   top.innerHTML = `<h3>${plan.focus}</h3><span class="chip live">${session.block}</span><span class="chip" title="${date}">${date.slice(5)}</span>`;
-  const foot = document.createElement("div");
-  foot.className = "hist-foot";
+  const foot = el("div", "hist-foot");
   const took = elapsedLabel(session.startedAt, session.lastLoggedAt);
-  foot.innerHTML = `<b>${sessionVolume(session, session.block, session.day).toLocaleString()} lb</b>`
+  foot.innerHTML = `<b>${sessionVolume(session).toLocaleString()} lb</b>`
     + `<span>${loggedCount(session)} sets</span>${took ? `<span>${took}</span>` : ""}`;
   row.append(top, foot);
   row.addEventListener("click", () => {
@@ -149,27 +123,18 @@ function sessionCard(key, session, plan){
 }
 
 function filterBar(className, keys){
-  const bar = document.createElement("div");
-  bar.className = className;
-  keys.forEach(day => {
-    const button = document.createElement("button");
-    makeButton(button, {
-      label: day ? DAYS[day].short : "All",
-      tone: "secondary", ghost: true, key: "filter:" + day
-    });
-    button.dataset.chosen = day === state.historyDay ? "on" : "off";
-    button.setAttribute("aria-pressed", String(day === state.historyDay));
-    button.addEventListener("click", () => { state.historyDay = day; notify(); });
-    bar.appendChild(button);
-  });
-  return bar;
+  return choiceRow(className, keys.map(day => ({
+    label: day ? DAYS[day].short : "All",
+    key: "filter:" + day,
+    chosen: day === state.historyDay,
+    onPick: () => { state.historyDay = day; notify(); }
+  })), {ghost: true});
 }
 
 export function renderHistory(main){
   const keys = Object.keys(state.sessions).sort().reverse();
   if(!keys.length){
-    main.innerHTML = `<p class="empty">Nothing logged yet. Fill in a set on the Log tab and it shows up here.</p>`;
-    main.append(...settingsPanel());
+    main.append(el("p", "empty", "Nothing logged yet. Fill in a set on the Log tab and it shows up here."), ...settingsPanel());
     return;
   }
 
@@ -178,10 +143,7 @@ export function renderHistory(main){
 
   const shown = keys.filter(key => !state.historyDay || state.sessions[key].day === state.historyDay);
   if(!shown.length){
-    const empty = document.createElement("p");
-    empty.className = "empty";
-    empty.textContent = `No ${DAYS[state.historyDay].label} sessions yet.`;
-    main.append(empty, ...settingsPanel());
+    main.append(el("p", "empty", `No ${DAYS[state.historyDay].label} sessions yet.`), ...settingsPanel());
     return;
   }
 
@@ -194,10 +156,7 @@ export function renderHistory(main){
     const cycle = cycleNumber(blockIndexOf(session));
     const ownRotation = !isOffDay(session.day) || state.historyDay === session.day;
     if(ownRotation && cycle !== lastCycle){
-      const label = document.createElement("p");
-      label.className = "section-label hist-cycle";
-      label.textContent = `Cycle ${cycle}`;
-      main.appendChild(label);
+      main.appendChild(el("p", "section-label hist-cycle", `Cycle ${cycle}`));
       lastCycle = cycle;
     }
     main.appendChild(sessionCard(key, session, plan));

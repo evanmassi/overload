@@ -1,80 +1,55 @@
 import {exportSessions, importSessions, onBackupStatus} from "../store/backup.js";
+import {el} from "./dom.js";
+import {actionButton} from "./controls.js";
 import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
-import {makeButton} from "../ui/button.js";
 
 function backupControls(){
-  const box = document.createElement("div");
-  box.className = "backup";
-
-  const save = document.createElement("button");
-  save.addEventListener("click", exportSessions);
-  makeButton(save, {label: "Export backup", tone: "primary"});
-
-  const picker = document.createElement("input");
+  const picker = el("input");
   picker.type = "file";
   picker.accept = "application/json,.json";
   picker.hidden = true;
   picker.addEventListener("change", importSessions);
 
-  const load = document.createElement("button");
-  load.addEventListener("click", () => picker.click());
-  makeButton(load, {label: "Import backup", tone: "primary"});
-
-  const result = document.createElement("span");
-  result.className = "backup-result";
+  const result = el("span", "backup-result");
   onBackupStatus(text => { result.textContent = text; });
 
-  box.append(save, load, picker, result);
+  const box = el("div", "backup");
+  box.append(
+    actionButton("Export backup", {tone: "primary"}, exportSessions),
+    actionButton("Import backup", {tone: "primary"}, () => picker.click()),
+    picker,
+    result);
   return box;
 }
 
-function backupNote(){
-  const note = document.createElement("p");
-  note.className = "backup-note";
-  note.textContent = "Your log lives on this device. Export before clearing browser data.";
-  return note;
-}
-
 function soundControls(){
-  const box = document.createElement("div");
-  box.className = "soundrow";
-
-  const toggle = document.createElement("button");
+  const toggle = actionButton("Sound off", {tone: "secondary"}, () => { setSoundOn(!soundOn()); paint(); });
   const paint = () => {
     toggle.setLabel(soundOn() ? "Sound on" : "Sound off");
-    toggle.dataset.chosen = soundOn() ? "on" : "off";
-    toggle.setAttribute("aria-pressed", String(soundOn()));
+    toggle.setChosen(soundOn());
   };
-  toggle.addEventListener("click", () => { setSoundOn(!soundOn()); paint(); });
-  makeButton(toggle, {label: "Sound off", tone: "secondary"});
   paint();
 
-  const note = document.createElement("p");
-  note.className = "sound-result";
-
-  const test = document.createElement("button");
-  makeButton(test, {label: "Test sound", tone: "primary"});
-  test.addEventListener("click", () => {
+  const note = el("p", "sound-result");
+  const test = actionButton("Test sound", {tone: "primary"}, () => {
     const played = testTone();
-    const state = audioState();
     note.textContent = played
       ? "Played. Heard nothing? Check the ring/silent switch."
-      : state === "unsupported"
+      : audioState() === "unsupported"
         ? "This browser has no Web Audio."
         : "Blocked by the browser. Tap once more.";
   });
 
+  const box = el("div", "soundrow");
   box.append(toggle, test, note);
   return box;
 }
 
-function soundNote(){
-  const note = document.createElement("p");
-  note.className = "sound-note";
-  note.textContent = "Three short beeps in the last seconds, one long high one when the rest is up. The screen stays awake while a rest runs. Switching apps pauses the clock; come back and it shows GO.";
-  return note;
-}
-
 export function settingsPanel(){
-  return [soundControls(), soundNote(), backupControls(), backupNote()];
+  return [
+    soundControls(),
+    el("p", "sound-note", "Three short beeps in the last seconds, one long high one when the rest is up. The screen stays awake while a rest runs. Switching apps pauses the clock; come back and it shows GO."),
+    backupControls(),
+    el("p", "backup-note", "Your log lives on this device. Export before clearing browser data.")
+  ];
 }

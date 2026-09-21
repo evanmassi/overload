@@ -1,30 +1,16 @@
 import {PATTERNS} from "../../data/taxonomy.js";
-import {CONFIRM_WINDOW_MS} from "../../data/constants.js";
 import {PATTERN_OF, workoutFor} from "../../rules/exercises.js";
 import {priorSets} from "../../rules/progression.js";
 import {state, notify} from "../../store/state.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor} from "../../store/customs.js";
 import {idsTakenElsewhere} from "../../store/slots.js";
 import {swapSlot} from "../../store/session.js";
-import {openSheet, closeSheet, sheetGroup} from "./sheet.js";
-import {makeButton} from "../../ui/button.js";
 import {makeField} from "../../ui/field.js";
+import {el, escapeHtml} from "../dom.js";
+import {actionButton, confirmButton} from "../controls.js";
+import {openSheet, closeSheet, sheetGroup} from "./sheet.js";
 
 let openSlot = null;
-
-function armConfirm(button, prompt, act){
-  button.addEventListener("click", event => {
-    event.stopPropagation();
-    if(button.dataset.armed){ act(); return; }
-    button.dataset.armed = "1";
-    const original = button.dataset.label;
-    button.setLabel(prompt);
-    setTimeout(() => {
-      delete button.dataset.armed;
-      button.setLabel(original);
-    }, CONFIRM_WINDOW_MS);
-  });
-}
 
 function pick(slot, id){
   if(!swapSlot(slot, id)) return false;
@@ -32,47 +18,57 @@ function pick(slot, id){
   return true;
 }
 
-function movementRow(slot, id){
-  const button = document.createElement("button");
-  button.className = "sheet-item" + (id === slot.id ? " current" : "");
+function lastDate(id){
   const last = priorSets(state.sessions, id, state.current.key, state.current.day);
-  button.innerHTML = `<span>${exerciseName(id)}</span>${last ? `<em>${last.date.slice(5)}</em>` : ""}`;
+  return last ? last.date.slice(5) : "";
+}
+
+function movementRow(slot, id){
+  const button = el("button", "sheet-item" + (id === slot.id ? " current" : ""));
+  const when = lastDate(id);
+  button.innerHTML = `<span>${escapeHtml(exerciseName(id))}</span>${when ? `<em>${when}</em>` : ""}`;
   button.addEventListener("click", () => pick(slot, id));
   return button;
 }
 
 function customRow(slot, id, taken){
-  const row = document.createElement("div");
-  row.className = "sheet-mine";
-
-  const use = document.createElement("button");
-  use.className = "pick" + (id === slot.id ? " current" : "");
-  use.textContent = state.customNames[id];
+  const use = el("button", "pick" + (id === slot.id ? " current" : ""), state.customNames[id]);
   use.disabled = taken.has(id);
   if(use.disabled) use.title = "Already in this session";
   use.addEventListener("click", () => pick(slot, id));
 
-  const last = priorSets(state.sessions, id, state.current.key, state.current.day);
-  const when = document.createElement("em");
-  when.textContent = last ? last.date.slice(5) : "";
-
-  const rename = document.createElement("button");
-  makeButton(rename, {label: "rename", tone: "secondary", ghost: true, key: "rename:" + id});
-  rename.addEventListener("click", () => {
+  const rename = actionButton("rename", {tone: "secondary", ghost: true, key: "rename:" + id}, () => {
     const next = prompt("Rename this exercise", state.customNames[id] || "");
     if(next !== null && renameCustom(id, next)){ notify(); openSwapSheet(openSlot); }
   });
 
-  const drop = document.createElement("button");
-  makeButton(drop, {label: "remove", tone: "danger", ghost: true, key: "remove:" + id});
   const count = setsLoggedFor(id);
-  armConfirm(drop, count ? `drop ${count} sets?` : "sure?", () => {
-    removeCustom(id);
-    notify();
-    openSwapSheet(openSlot);
-  });
+  const remove = confirmButton("remove", count ? `drop ${count} sets?` : "sure?",
+    {tone: "danger", ghost: true, key: "remove:" + id}, () => {
+      removeCustom(id);
+      notify();
+      openSwapSheet(openSlot);
+    });
 
-  row.append(use, when, rename, drop);
+  const row = el("div", "sheet-mine");
+  row.append(use, el("em", null, lastDate(id)), rename, remove);
+  return row;
+}
+
+function typedEntry(slot){
+  const input = el("input");
+  input.type = "text";
+  input.placeholder = "Exercise name";
+  const submit = () => {
+    const id = registerCustom(input.value.trim());
+    if(id && !pick(slot, id)){
+      input.value = "";
+      input.placeholder = "Already in this session";
+    }
+  };
+  input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
+  const row = el("div", "sheet-custom");
+  row.append(makeField(input), actionButton("Use", {tone: "primary"}, submit));
   return row;
 }
 
@@ -96,24 +92,7 @@ export function openSwapSheet(slot){
   }
 
   sheetGroup("Type your own");
-  const row = document.createElement("div");
-  row.className = "sheet-custom";
-  const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = "Exercise name";
-  const use = document.createElement("button");
-  makeButton(use, {label: "Use", tone: "primary"});
-  const submit = () => {
-    const id = registerCustom(input.value.trim());
-    if(id && !pick(slot, id)){
-      input.value = "";
-      input.placeholder = "Already in this session";
-    }
-  };
-  use.addEventListener("click", submit);
-  input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
-  row.append(makeField(input), use);
-  body.appendChild(row);
+  body.appendChild(typedEntry(slot));
 
   sheetGroup("Everything else");
   Object.keys(PATTERNS).filter(p => p !== pattern).forEach(other => {

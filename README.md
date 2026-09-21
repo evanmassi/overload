@@ -198,6 +198,8 @@ layer or the ones before it: `data`, `rules`, `store`, then `views`.
 | `src/store/holds.js` | lifts you are holding on purpose |
 | `src/store/backup.js` | JSON export and import |
 | `src/views/app.js` | picks the screen for the current tab and refreshes the save bar |
+| `src/views/dom.js` | element builder, lookup by id, and escaping for typed text |
+| `src/views/controls.js` | the shared button, row of options and tap-twice confirm |
 | `src/views/log.js` | the log view |
 | `src/views/exerciseCard.js` | an exercise card: set rows, target, stall and hold callouts, effort |
 | `src/views/saveBar.js` | the bottom bar: set ticks, volume, tally |

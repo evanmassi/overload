@@ -1,19 +1,20 @@
 import {LOAD_LABEL, TREND_ICON, EFFORT_LEVELS, STALL_EXPOSURES} from "../data/constants.js";
-import {restAfterSet} from "../rules/exercises.js";
-import {state, notify} from "../store/state.js";
-import {priorSets, suggestTarget, hasStalled, trend, backoffWeight} from "../rules/progression.js";
-import {isHeld, holdLift, releaseLift} from "../store/holds.js";
 import {MUSCLES} from "../data/muscles.js";
+import {restAfterSet} from "../rules/exercises.js";
+import {priorSets, suggestTarget, hasStalled, trend, backoffWeight} from "../rules/progression.js";
 import {isLogged} from "../rules/sets.js";
-import {setsFor, setEffort, logSet, swapSlot, nextRest} from "../store/session.js";
 import {setRuns, setSummary, unitSuffix, unitName} from "../rules/format.js";
+import {state, notify} from "../store/state.js";
+import {isHeld, holdLift, releaseLift} from "../store/holds.js";
+import {setsFor, setEffort, logSet, swapSlot, nextRest} from "../store/session.js";
+import {makeIconButton} from "../ui/button.js";
+import {makeField} from "../ui/field.js";
+import {makePanel} from "../ui/panel.js";
+import {byId, el, escapeHtml} from "./dom.js";
+import {actionButton, choiceRow} from "./controls.js";
 import {openSwapSheet} from "./sheets/swapSheet.js";
 import {openHowTo} from "./sheets/howtoSheet.js";
 import {start as startTimer, startWork, setIdleRest} from "./timer.js";
-import {makeButton, makeIconButton} from "../ui/button.js";
-import {makeField} from "../ui/field.js";
-import {makePanel} from "../ui/panel.js";
-import {byId} from "./dom.js";
 import {updateSaveBar} from "./saveBar.js";
 
 let restAlreadyRunningFor = null;
@@ -30,7 +31,7 @@ function flipFold(exercise){
 
 function summaryFor(exercise){
   const chips = setRuns(state.current.entries[exercise.id], unitSuffix(exercise))
-    .map(run => `<b>${run.count > 1 ? `<i>${run.count}×</i>` : ""}${run.part}</b>`);
+    .map(run => `<b>${run.count > 1 ? `<i>${run.count}×</i>` : ""}${escapeHtml(run.part)}</b>`);
   const effort = (state.current.effort || {})[exercise.id];
   if(effort) chips.push(`<em>${effort}</em>`);
   return chips.join("");
@@ -59,8 +60,7 @@ function isComplete(exercise){
 }
 
 function moveBlock(exercise, position, slot, notch){
-  const move = document.createElement("div");
-  move.className = "ex-move";
+  const move = el("div", "ex-move");
   move.id = "card-" + exercise.id;
   fillCard(move, exercise, position, slot, notch || (position ? String(position).padStart(2, "0") : ""));
   if(isFolded(exercise)) move.classList.add("done");
@@ -78,8 +78,7 @@ function ownMove(panel, move){
 }
 
 export function exerciseCard(exercise, position, slot){
-  const card = document.createElement("section");
-  card.className = "ex";
+  const card = el("section", "ex");
   makePanel(card);
   ownMove(card, moveBlock(exercise, position, slot));
   markDim(card);
@@ -87,12 +86,11 @@ export function exerciseCard(exercise, position, slot){
 }
 
 export function corePairCard(pair, index, slots){
-  const card = document.createElement("section");
-  card.className = "ex core";
+  const card = el("section", "ex core");
   makePanel(card);
   card.id = "card-core-" + index;
   pair.forEach((exercise, i) => {
-    if(i) card.appendChild(Object.assign(document.createElement("div"), {className: "rule"}));
+    if(i) card.appendChild(el("div", "rule"));
     ownMove(card, moveBlock(exercise, null, slots[i], i ? '<i class="icon">call_merge</i>' : "S" + (index + 1)));
   });
   markDim(card);
@@ -105,18 +103,15 @@ function fillCard(card, exercise, position, slot, notch){
   const unit = unitName(exercise);
   const suffix = unitSuffix(exercise);
 
-  const head = document.createElement("div");
-  head.className = "ex-head";
-  head.innerHTML = `${notch ? `<span class="ex-num"><i class="ex-echo">${notch}</i>${notch}</span>` : ""}<h3 class="ex-name">${exercise.n}</h3>`;
+  const head = el("div", "ex-head");
+  head.innerHTML = `${notch ? `<span class="ex-num"><i class="ex-echo">${notch}</i>${notch}</span>` : ""}<h3 class="ex-name">${escapeHtml(exercise.n)}</h3>`;
   head.querySelector(".ex-name").addEventListener("click", () => openHowTo(exercise));
 
-  const summary = document.createElement("span");
-  summary.className = "ex-summary";
+  const summary = el("span", "ex-summary");
   summary.innerHTML = summaryFor(exercise);
   head.appendChild(summary);
 
-  const swap = document.createElement("button");
-  swap.className = "ex-swap";
+  const swap = el("button", "ex-swap");
   swap.title = exercise.swappedFrom ? "Undo swap" : "Swap exercise";
   makeIconButton(swap, {
     icon: exercise.swappedFrom ? "undo" : "swap_horiz",
@@ -130,8 +125,7 @@ function fillCard(card, exercise, position, slot, notch){
   if(!exercise.stray) head.appendChild(swap);
   if(exercise.swappedFrom) card.classList.add("ex-swapped");
 
-  const fold = document.createElement("button");
-  fold.className = "ex-fold";
+  const fold = el("button", "ex-fold");
   makeIconButton(fold, {
     icon: isFolded(exercise) ? "expand_more" : "expand_less",
     label: "Show or hide sets", tone: "secondary", ghost: true, size: 30, glyph: 18,
@@ -141,8 +135,7 @@ function fillCard(card, exercise, position, slot, notch){
   head.appendChild(fold);
   card.appendChild(head);
 
-  const meta = document.createElement("div");
-  meta.className = "meta";
+  const meta = el("div", "meta");
   let chips = "";
   if(exercise.per) chips += `<span class="tag side">per ${exercise.per}</span>`;
   if(LOAD_LABEL[exercise.load]) chips += `<span class="tag">${LOAD_LABEL[exercise.load]}</span>`;
@@ -158,8 +151,7 @@ function fillCard(card, exercise, position, slot, notch){
   const held = isHeld(exercise.id);
   const target = suggestTarget(exercise, prior, held);
   if(target){
-    const band = document.createElement("div");
-    band.className = "target";
+    const band = el("div", "target");
     band.innerHTML = `<span>go for</span><b>${target.label}</b><i>${target.why}</i>`;
     card.appendChild(band);
   }
@@ -168,17 +160,15 @@ function fillCard(card, exercise, position, slot, notch){
   else if(!exercise.stray && hasStalled(state.sessions, exercise, state.current.key, state.current.day))
     card.appendChild(stallPrompt(exercise, slot, prior));
 
-  const sets = document.createElement("div");
-  sets.className = "sets";
+  const sets = el("div", "sets");
   const logged = setsFor(exercise.id);
 
-  const columns = document.createElement("div");
-  columns.className = "set head";
+  const columns = el("div", "set head");
   columns.innerHTML = `<div>${exercise.core || exercise.win ? "rd" : "#"}</div><div>${exercise.load === "level" ? "level" : "weight (lbs)"}</div><div></div><div>${unit}</div>`;
-  const timeCell = document.createElement("div");
+  const timeCell = el("div");
   const windowSeconds = workWindowSeconds(exercise);
   if(windowSeconds) timeCell.appendChild(workWindowButton(exercise, windowSeconds));
-  columns.append(timeCell, document.createElement("div"));
+  columns.append(timeCell, el("div"));
   sets.appendChild(columns);
 
   const refreshers = [];
@@ -189,10 +179,7 @@ function fillCard(card, exercise, position, slot, notch){
   if(position) card.appendChild(effortRow(exercise));
 
   if(prior){
-    const foot = document.createElement("p");
-    foot.className = "ex-cue prior";
-    foot.textContent = `${prior.date} — ${setSummary(prior.sets, suffix)}`;
-    card.appendChild(foot);
+    card.appendChild(el("p", "ex-cue prior", `${prior.date} — ${setSummary(prior.sets, suffix)}`));
   }
 }
 
@@ -208,8 +195,7 @@ function liveRows(exercise){
 }
 
 function workWindowButton(exercise, seconds){
-  const button = document.createElement("button");
-  button.className = "ex-time";
+  const button = el("button", "ex-time");
   const label = `Time ${seconds}s`;
   makeIconButton(button, {
     icon: "timer", label, tone: "primary", ghost: true, size: 30, glyph: 18,
@@ -240,29 +226,19 @@ function logSecondsInto(exercise, index, seconds){
 }
 
 function stallAction(label, key, act){
-  const button = document.createElement("button");
-  makeButton(button, {label, tone: "secondary", ghost: true, key});
-  button.addEventListener("click", act);
-  return button;
+  return actionButton(label, {tone: "secondary", ghost: true, key}, act);
 }
 
 function callout(tone, icon, title, body, actions){
-  const box = document.createElement("div");
-  box.className = "callout stall";
+  const box = el("div", "callout stall");
   box.dataset.tone = tone;
-  const make = (tag, className, text) => {
-    const node = document.createElement(tag);
-    node.className = className;
-    if(text) node.textContent = text;
-    return node;
-  };
-  const inner = make("div", "callout-in");
-  const text = make("span", "callout-text");
-  const row = make("div", "stall-actions");
+  const inner = el("div", "callout-in");
+  const text = el("span", "callout-text");
+  const row = el("div", "stall-actions");
   actions.forEach(button => row.appendChild(button));
-  text.append(make("span", "callout-title", title), make("span", "callout-body", body), row);
-  inner.append(make("span", "callout-fill"), make("i", "icon callout-icon", icon), text);
-  box.append(make("span", "callout-echo"), inner);
+  text.append(el("span", "callout-title", title), el("span", "callout-body", body), row);
+  inner.append(el("span", "callout-fill"), el("i", "icon callout-icon", icon), text);
+  box.append(el("span", "callout-echo"), inner);
   return box;
 }
 
@@ -286,35 +262,29 @@ function holdNotice(exercise){
 }
 
 function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
-  const row = document.createElement("div");
-  row.className = "set";
+  const row = el("div", "set");
   const last = prior && prior.sets[index];
   const unit = unitName(exercise);
 
-  const number = document.createElement("div");
-  number.className = "set-n";
-  number.textContent = exercise.core || exercise.win ? "R" + (index + 1) : index + 1;
+  const number = el("div", "set-n", exercise.core || exercise.win ? "R" + (index + 1) : index + 1);
 
-  const weight = document.createElement("input");
+  const weight = el("input");
   weight.type = "text";
   weight.inputMode = "decimal";
   weight.placeholder = last && last.w ? last.w : exercise.load === "level" ? "LVL" : exercise.bw ? "BW" : "WT";
   weight.value = (logged[index] && logged[index].w) || "";
   weight.setAttribute("aria-label", `${exercise.n} set ${index + 1} weight`);
 
-  const times = document.createElement("div");
-  times.className = "x";
-  times.textContent = "×";
+  const times = el("div", "x", "×");
 
-  const reps = document.createElement("input");
+  const reps = el("input");
   reps.type = "text";
   reps.inputMode = "numeric";
   reps.placeholder = last && last.r ? last.r : unit.toUpperCase();
   reps.value = (logged[index] && logged[index].r) || "";
   reps.setAttribute("aria-label", `${exercise.n} set ${index + 1} ${unit}`);
 
-  const delta = document.createElement("div");
-  delta.className = "delta";
+  const delta = el("div", "delta");
 
   const paint = () => {
     weight.classList.toggle("filled", !!weight.value);
@@ -356,8 +326,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
     ? last
     : (state.current.entries[exercise.id] || [])[index - 1];
 
-  const repeat = document.createElement("button");
-  repeat.className = "repeat";
+  const repeat = el("button", "repeat");
   makeIconButton(repeat, {
     icon: "replay", tone: "primary", ghost: true, size: 30, glyph: 18,
     key: "repeat:" + exercise.id + ":" + index
@@ -388,18 +357,11 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
 }
 
 function effortRow(exercise){
-  const row = document.createElement("div");
-  row.className = "effort";
   const chosen = (state.current.effort || {})[exercise.id];
-  const label = document.createElement("span");
-  label.textContent = "How did that feel?";
-  row.appendChild(label);
-  EFFORT_LEVELS.forEach(level => {
-    const button = document.createElement("button");
-    button.addEventListener("click", () => setEffort(exercise.id, level));
-    makeButton(button, {label: level, tone: "secondary", key: "effort:" + exercise.id + ":" + level});
-    button.dataset.chosen = chosen === level ? "on" : "off";
-    row.appendChild(button);
-  });
-  return row;
+  return choiceRow("effort", EFFORT_LEVELS.map(level => ({
+    label: level,
+    key: "effort:" + exercise.id + ":" + level,
+    chosen: chosen === level,
+    onPick: () => setEffort(exercise.id, level)
+  })), {label: "How did that feel?"});
 }
