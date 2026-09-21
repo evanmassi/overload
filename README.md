@@ -147,7 +147,7 @@ The set behind the estimate is the one with the **highest estimate**, not the on
 
 So Bulgarian Split Squat rests 90s as a 3×10 accessory in Week A and 120s as a 4×8 lead in Week C. A 4×AMRAP of pull-ups is a lead and gets 120s; a 3×AMRAP of push-ups is a finisher and gets 90s. Moving to the next exercise is always 90s. Inside the core finisher: 15s walking to the other half of a superset, 45s between rounds, 60s leaving one superset for the next.
 
-**Switching session or week after you have logged something asks first.** The buttons only relabel the day, they never move your sets, so a stray tap used to file a legs workout under arms with the squats still attached. The mislabel is close to invisible: the log's grey placeholders find history by movement rather than by session, so the legs cards still showed last time's numbers, and only the one lift in both sessions (Hanging Leg Raise) gave it away. A second tap still relabels, which is how you correct a session that went in wrong.
+**Switching session or week never moves your sets.** The buttons only relabel the day, so a legs workout filed under Arms keeps its squats attached, and a second tap on the right button corrects the label. The mislabel is close to invisible otherwise: the log's grey placeholders find history by movement rather than by session, so the legs cards still show last time's numbers, and only the one lift in both sessions (Hanging Leg Raise) gives it away.
 
 **History shows lifts the session plan does not contain**, under a `Not in this session` heading. It used to render only what the plan listed and silently drop the rest, so a mislabelled session showed one lift while the footer counted 39 sets and 33,880 lb of work that was nowhere on the card.
 
