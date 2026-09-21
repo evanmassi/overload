@@ -4,9 +4,9 @@ import {restAfterSet} from "../rules/exercises.js";
 import {priorSets, suggestTarget, hasStalled, trend, backoffWeight} from "../rules/progression.js";
 import {isLogged} from "../rules/sets.js";
 import {setRuns, setSummary, unitSuffix, unitName} from "../rules/format.js";
-import {state, notify} from "../store/state.js";
+import {state, changes} from "../store/state.js";
 import {isHeld, holdLift, releaseLift} from "../store/holds.js";
-import {setsFor, setEffort, logSet, swapSlot, nextRest} from "../store/session.js";
+import {setsFor, setEffort, logSet, swapSlot, nextRest, openSetIndex} from "../store/session.js";
 import {makeIconButton} from "../ui/button.js";
 import {makeField} from "../ui/field.js";
 import {makePanel} from "../ui/panel.js";
@@ -14,10 +14,8 @@ import {byId, el, escapeHtml} from "./dom.js";
 import {actionButton, choiceRow} from "./controls.js";
 import {openSwapSheet} from "./sheets/swapSheet.js";
 import {openHowTo} from "./sheets/howtoSheet.js";
-import {start as startTimer, startWork, setIdleRest} from "./timer.js";
+import {start as startTimer, startWork, setIdleRest, restRunningFor} from "./timer.js";
 import {updateSaveBar} from "./saveBar.js";
-
-let restAlreadyRunningFor = null;
 
 function isFolded(exercise){
   return isComplete(exercise) !== state.foldFlips.has(exercise.id);
@@ -38,25 +36,29 @@ function summaryFor(exercise){
 }
 
 function syncCard(exercise){
-  const card = byId("main").querySelector("#card-" + exercise.id) ||
-    document.getElementById("card-" + exercise.id);
-  if(card && card.classList){
-    const folded = isFolded(exercise);
-    card.classList.toggle("done", folded);
-    const summary = card.querySelector(".ex-summary");
-    if(summary) summary.innerHTML = summaryFor(exercise);
-    const fold = card.querySelector(".ex-fold");
-    if(fold) fold.setLabel(folded ? "expand_more" : "expand_less");
-    if(card.panel) markDim(card.panel);
-  }
+  const move = byId("main").querySelector("#card-" + exercise.id);
+  if(!move) return;
+  const folded = isFolded(exercise);
+  move.classList.toggle("done", folded);
+  move.querySelector(".ex-summary").innerHTML = summaryFor(exercise);
+  move.querySelector(".ex-fold").setLabel(folded ? "expand_more" : "expand_less");
+  markDim(move.closest(".ex"));
 }
 
-function isComplete(exercise){
-  const sets = state.current.entries[exercise.id];
-  if(!sets) return false;
-  let done = 0;
-  for(let i = 0; i < exercise.s; i++) if(isLogged(sets[i])) done++;
-  return done >= exercise.s;
+function isComplete(exercise){ return openSetIndex(exercise) < 0; }
+
+const setTag = (exercise, index) => exercise.id + ":" + index;
+
+function recordSet(exercise, index, set){
+  const wasComplete = isComplete(exercise);
+  const newlyLogged = logSet(exercise, index, set);
+  if(isComplete(exercise) !== wasComplete) state.foldFlips.delete(exercise.id);
+  return newlyLogged;
+}
+
+function startRestAfter(exercise, index){
+  const tag = setTag(exercise, index);
+  if(!restRunningFor(tag)) startTimer(restAfterSet(exercise, index), tag);
 }
 
 function moveBlock(exercise, position, slot, notch){
@@ -68,19 +70,13 @@ function moveBlock(exercise, position, slot, notch){
 }
 
 function markDim(panel){
-  panel.dataset.dim = panel.moves.every(move => move.classList.contains("done")) ? "on" : "off";
-}
-
-function ownMove(panel, move){
-  move.panel = panel;
-  (panel.moves = panel.moves || []).push(move);
-  panel.appendChild(move);
+  panel.dataset.dim = [...panel.querySelectorAll(".ex-move")].every(move => move.classList.contains("done")) ? "on" : "off";
 }
 
 export function exerciseCard(exercise, position, slot){
   const card = el("section", "ex");
   makePanel(card);
-  ownMove(card, moveBlock(exercise, position, slot));
+  card.appendChild(moveBlock(exercise, position, slot));
   markDim(card);
   return card;
 }
@@ -91,7 +87,7 @@ export function corePairCard(pair, index, slots){
   card.id = "card-core-" + index;
   pair.forEach((exercise, i) => {
     if(i) card.appendChild(el("div", "rule"));
-    ownMove(card, moveBlock(exercise, null, slots[i], i ? '<i class="icon">call_merge</i>' : "S" + (index + 1)));
+    card.appendChild(moveBlock(exercise, null, slots[i], i ? '<i class="icon">call_merge</i>' : "S" + (index + 1)));
   });
   markDim(card);
   return card;
@@ -188,12 +184,6 @@ function workWindowSeconds(exercise){
   return exercise.unit === "sec" ? Number(exercise.r) || 0 : 0;
 }
 
-function liveRows(exercise){
-  const card = byId("main").querySelector("#card-" + exercise.id) || document.getElementById("card-" + exercise.id);
-  if(!card || !card.querySelectorAll) return [];
-  return [...card.querySelectorAll(".set")].filter(row => row.logSeconds);
-}
-
 function workWindowButton(exercise, seconds){
   const button = el("button", "ex-time");
   const label = `Time ${seconds}s`;
@@ -203,26 +193,22 @@ function workWindowButton(exercise, seconds){
   });
   button.title = label;
   button.addEventListener("click", () => {
-    const index = liveRows(exercise).findIndex(row => !row.hasReps());
+    const index = openSetIndex(exercise);
     if(index < 0) return;
-    restAlreadyRunningFor = null;
     startWork(seconds, () => {
-      if(!exercise.win){ logSecondsInto(exercise, index, seconds); return; }
-      restAlreadyRunningFor = exercise.id + ":" + index;
-      startTimer(restAfterSet(exercise, index));
+      if(exercise.win) startRestAfter(exercise, index);
+      else logTimedSet(exercise, index, seconds);
     });
   });
   return button;
 }
 
-function logSecondsInto(exercise, index, seconds){
-  const row = liveRows(exercise)[index];
-  if(row){ row.logSeconds(seconds); return; }
+function logTimedSet(exercise, index, seconds){
   const existing = (state.current.entries[exercise.id] || [])[index];
   if(isLogged(existing)) return;
-  logSet(exercise, index, {w: (existing && existing.w) || "", r: String(seconds)});
-  notify();
-  startTimer(restAfterSet(exercise, index));
+  recordSet(exercise, index, {w: (existing && existing.w) || "", r: String(seconds)});
+  changes.notify();
+  startRestAfter(exercise, index);
 }
 
 function stallAction(label, key, act){
@@ -249,15 +235,15 @@ function stallPrompt(exercise, slot, prior){
     actions.push(stallAction(`drop to ${dropped}`, "stall-drop:" + exercise.id, () => {
       const first = (state.current.entries[exercise.id] || [])[0];
       logSet(exercise, 0, {w: String(dropped), r: (first && first.r) || ""});
-      notify();
+      changes.notify();
     }));
   }
-  actions.push(stallAction("hold", "stall-hold:" + exercise.id, () => { holdLift(exercise.id); notify(); }));
+  actions.push(stallAction("hold", "stall-hold:" + exercise.id, () => { holdLift(exercise.id); changes.notify(); }));
   return callout("warning", "warning", "Stalled", `Same numbers ${STALL_EXPOSURES} sessions running.`, actions);
 }
 
 function holdNotice(exercise){
-  const release = stallAction("push", "stall-release:" + exercise.id, () => { releaseLift(exercise.id); notify(); });
+  const release = stallAction("push", "stall-release:" + exercise.id, () => { releaseLift(exercise.id); changes.notify(); });
   return callout("secondary", "anchor", "Holding", "Match it. Beat it by 10% and the push comes back.", [release]);
 }
 
@@ -299,22 +285,14 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
   };
 
   const commit = () => {
-    const wasComplete = isComplete(exercise);
-    const newlyLogged = logSet(exercise, index, {w: weight.value.trim(), r: reps.value.trim()});
-    if(isComplete(exercise) !== wasComplete) state.foldFlips.delete(exercise.id);
+    const newlyLogged = recordSet(exercise, index, {w: weight.value.trim(), r: reps.value.trim()});
     paint();
     syncCard(exercise);
     updateSaveBar();
     setIdleRest(nextRest());
     refreshRepeats();
-    if(!newlyLogged) return;
-    const restRunning = restAlreadyRunningFor === exercise.id + ":" + index;
-    restAlreadyRunningFor = null;
-    if(!restRunning) startTimer(restAfterSet(exercise, index));
+    if(newlyLogged) startRestAfter(exercise, index);
   };
-
-  row.hasReps = () => !!reps.value.trim();
-  row.logSeconds = seconds => { reps.value = String(seconds); commit(); };
 
   [weight, reps].forEach(input => {
     input.addEventListener("input", paint);

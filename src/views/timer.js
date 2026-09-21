@@ -6,7 +6,7 @@ import {clockFace} from "../rules/format.js";
 
 const RUNNING_TONE = {rest: "primary", work: "secondary", stopwatch: "secondary"};
 
-const timer = {mode: null, endsAt: 0, startedAt: 0, tick: null, settle: null, idle: DEFAULT_REST, onDone: null};
+const timer = {mode: null, endsAt: 0, startedAt: 0, tick: null, settle: null, idle: DEFAULT_REST, onDone: null, forSet: null};
 const awake = {lock: null, requesting: false};
 const press = {timer: null, expire: null, fired: false};
 
@@ -82,11 +82,12 @@ function releaseScreen(){
   awake.lock = null;
 }
 
-function run(kind, seconds, onDone){
+function run(kind, seconds, onDone, forSet){
   clearTimeout(timer.settle);
   clearInterval(timer.tick);
   timer.mode = kind;
   timer.onDone = onDone || null;
+  timer.forSet = forSet || null;
   timer.startedAt = Date.now();
   timer.endsAt = seconds ? timer.startedAt + seconds * 1000 : 0;
   if(timer.endsAt) scheduleRest(timer.endsAt);
@@ -96,7 +97,9 @@ function run(kind, seconds, onDone){
   tick();
 }
 
-export function start(seconds){ run("rest", seconds || DEFAULT_REST); }
+export function start(seconds, forSet){ run("rest", seconds || DEFAULT_REST, null, forSet); }
+
+export function restRunningFor(forSet){ return timer.mode === "rest" && timer.forSet === forSet; }
 
 export function startWork(seconds, onDone){ run("work", seconds, onDone); }
 
@@ -107,6 +110,7 @@ function clear(){
   timer.mode = null;
   timer.endsAt = 0;
   timer.onDone = null;
+  timer.forSet = null;
   releaseScreen();
 }
 

@@ -51,10 +51,16 @@ The folder is the layer. A file imports only from its own layer or the ones list
 
 ### State and rendering
 
-- One `state` object in `store/state.js`. Change it, then call `notify()`; `main.js` subscribes the app view to it. A
-  full re-render is the default.
+- One `state` object in `store/state.js`. Change it, then call `changes.notify()`; `main.js` subscribes the app view
+  to it. A full re-render is the default. Screen state that must survive a redraw (open history cards, the backup
+  result) lives in `state` too, never on an element.
 - The one exception is typing in a set row. A full render would drop focus and the keyboard, so the set field commit
-  updates its own card in place (`syncCard` in `views/exerciseCard.js`, `updateSaveBar`). Keep that path narrow.
+  updates its own card in place (`syncCard` in `views/exerciseCard.js`, `updateSaveBar`). Keep that path narrow, and
+  read the card's structure from the page (`closest`, `querySelectorAll`), never from properties stored on elements.
+- Every signal is a `channel()` from `state.js`: `changes` for re-renders, `saveStatus` in `session.js` for the save
+  dot. A new signal is a new channel, not a new callback setter.
+- The rest timer knows which set it belongs to (`start(seconds, forSet)`, `restRunningFor`), so a cardio window's rest
+  is not restarted when you type that round's count.
 - `store/session.js` owns the session being edited. Views change it only through its functions (`logSet`,
   `swapSlot`, `setTravel`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves. `logSet` does not
   re-render, because the set row updates in place; the rest do. `flushNow()` runs on hide and pagehide. Views never
@@ -210,7 +216,8 @@ no storage key before something writes it.
 | Concern | Use this | Not this |
 |---------|----------|----------|
 | Persistence | `storage.js` via `persist*` in `state.js` | `localStorage` anywhere else |
-| Re-rendering | `notify()` | Calling `render` or a view directly |
+| Re-rendering | `changes.notify()` | Calling `render` or a view directly |
+| Telling a view something happened | a `channel()` | A one-off `onSomething(fn)` setter |
 | Editing the open session | `session.js` functions | Writing `state.current` from a view |
 | Tunable numbers, storage keys, labels | `constants.js` | Inline literals |
 | Set summaries, durations, clock text | `format.js` | Per-view formatting |

@@ -1,5 +1,5 @@
 import {AUTOSAVE_DELAY_MS} from "../data/constants.js";
-import {state, notify, persistSessions} from "./state.js";
+import {state, changes, channel, persistSessions} from "./state.js";
 import {loggedCount, priorSets} from "../rules/progression.js";
 import {blockIndexOf, blockLetter, activeBlockIndex, nextSessionIn, nextOffBlockIndex} from "../rules/rotation.js";
 import {isOffDay, workoutFor, restAfterSet} from "../rules/exercises.js";
@@ -9,9 +9,8 @@ import {isLogged} from "../rules/sets.js";
 import {iso} from "../rules/format.js";
 
 let saveTimer = null;
-let statusHandler = () => {};
 
-export function onStatus(fn){ statusHandler = fn; }
+export const saveStatus = channel();
 
 const clock = date =>
   `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}:${String(date.getSeconds()).padStart(2, "0")}`;
@@ -40,7 +39,7 @@ function setBlockIndex(index){
 export function chooseBlock(index){
   setBlockIndex(index);
   queueSave();
-  notify();
+  changes.notify();
 }
 
 export function setDay(day){
@@ -57,7 +56,7 @@ export function setDay(day){
     openSession(existing || newSessionKey(current.date), current.date, day);
   }
   queueSave();
-  notify();
+  changes.notify();
 }
 
 function sessionsExcept(key){
@@ -81,7 +80,7 @@ export function relabelSession(key, day){
     state.current.day = day;
     setBlockIndex(session.blockIndex);
   }
-  notify();
+  changes.notify();
 }
 
 function openSession(key, dateStr, day){
@@ -112,7 +111,7 @@ function openSession(key, dateStr, day){
     for(const id in saved.entries)
       current.entries[id] = saved.entries[id].map(set => ({w: set.w || "", r: set.r || ""}));
 
-  notify();
+  changes.notify();
 }
 
 export function loadDate(dateStr){
@@ -155,7 +154,7 @@ export function setEffort(exerciseId, level){
   if(state.current.effort[exerciseId] === level) delete state.current.effort[exerciseId];
   else state.current.effort[exerciseId] = level;
   queueSave();
-  notify();
+  changes.notify();
 }
 
 export function setNotes(text){
@@ -169,7 +168,7 @@ export function swapSlot(slot, id){
   if(id === slot.id) delete state.current.swaps[slot.id];
   else state.current.swaps[slot.id] = id;
   queueSave();
-  notify();
+  changes.notify();
   return true;
 }
 
@@ -183,7 +182,7 @@ export function setTravel(plan, away){
     else delete state.current.swaps[id];
   }
   queueSave();
-  notify();
+  changes.notify();
 }
 
 function cleanEntries(entries){
@@ -222,12 +221,12 @@ function stash(){
 function commitNow(){
   stash();
   persistSessions();
-  statusHandler("saved");
+  saveStatus.notify("saved");
 }
 
 function queueSave(){
   stash();
-  statusHandler("saving");
+  saveStatus.notify("saving");
   clearTimeout(saveTimer);
   saveTimer = setTimeout(commitNow, AUTOSAVE_DELAY_MS);
 }
@@ -244,16 +243,21 @@ export function deleteSession(key){
   delete state.sessions[key];
   persistSessions();
   if(key === state.current.key) loadDate(date || state.current.date);
-  else notify();
+  else changes.notify();
+}
+
+export function openSetIndex(exercise){
+  const sets = state.current.entries[exercise.id] || [];
+  for(let i = 0; i < exercise.s; i++) if(!isLogged(sets[i])) return i;
+  return -1;
 }
 
 export function nextRest(){
   const plan = workoutFor(state.current.block, state.current.day);
   if(!plan) return null;
   for(const exercise of resolvedExercises(plan, state.current.swaps)){
-    const sets = state.current.entries[exercise.id] || [];
-    for(let i = 0; i < exercise.s; i++)
-      if(!isLogged(sets[i])) return restAfterSet(exercise, i);
+    const index = openSetIndex(exercise);
+    if(index >= 0) return restAfterSet(exercise, index);
   }
   return null;
 }

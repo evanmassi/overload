@@ -191,7 +191,7 @@ layer or the ones before it: `data`, `rules`, `store`, then `views`.
 | `src/rules/progression.js` | scoring, volume, target suggestions, beat/match/below, stall back-off |
 | `src/rules/rotation.js` | which week and which session comes next |
 | `src/store/storage.js` | localStorage read and write |
-| `src/store/state.js` | shared state and a subscribe/notify pair |
+| `src/store/state.js` | shared state, and the channel that tells views it changed |
 | `src/store/session.js` | the session being edited: every edit to it, and autosave |
 | `src/store/slots.js` | which move fills a slot once swaps apply, and moves logged outside the plan |
 | `src/store/customs.js` | custom exercises and loose name matching |
@@ -213,7 +213,7 @@ layer or the ones before it: `data`, `rules`, `store`, then `views`.
 | `src/styles/app.css` | app styles on top of the design tokens |
 | `src/ui/` | the design system: button, field and panel, each with its CSS beside it, and the tokens |
 
-Nothing imports `views/app.js` except `main.js`. State changes call `notify()`, and `main.js` subscribes the app view
+Nothing imports `views/app.js` except `main.js`. State changes call `changes.notify()`, and `main.js` subscribes the app view
 to it. That keeps the view out of the logic and the module graph free of cycles.
 
 ## Tests

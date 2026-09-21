@@ -74,6 +74,28 @@ section("Logging a set updates the view");
   check("the set is recorded on the current session", state.current.entries.flat_db_press[0].r === "10");
   check("volume reflects a pair of dumbbells", els.volume.textContent === "1,000 lb", els.volume.textContent);
   check("the rest timer started", /^\d+:\d\d$/.test(els.timer.dataset.label), els.timer.dataset.label);
+
+  const panel = els.main.find("ex")[0];
+  check("a card with sets still open is not dimmed", panel.dataset.dim === "off", panel.dataset.dim);
+  panel.find("set").filter(r => !r.classList.contains("head")).forEach(row => {
+    wt(row).value = "50";
+    rp(row).value = "10";
+    rp(row).fire("change");
+  });
+  check("logging its last set dims the card", panel.dataset.dim === "on", panel.dataset.dim);
+}
+
+section("A backup result is shown from state and survives a redraw");
+{
+  fresh();
+  state.backupResult = "merged 3";
+  state.view = "history";
+  render();
+  render();
+  check("it reads under the backup buttons",
+    els.main.find("backup-result")[0].textContent === "merged 3", els.main.find("backup-result")[0].textContent);
+  state.backupResult = "";
+  state.view = "log";
 }
 
 section("A prior session drives placeholders and a target");
@@ -960,7 +982,8 @@ section("A work window times the set and rolls into the rest");
   const card = timed[0];
   const seconds = +card.find("ex-time")[0].title.match(/(\d+)s/)[1];
   const restSeconds = +card.find("meta")[0].innerHTML.match(/rest (\d+)s/)[1];
-  const rows = card.find("set").filter(r => !r.classList.contains("head"));
+  const cardNow = () => { render(); return timedCards().find(move => move.id === card.id); };
+  const rowsNow = () => cardNow().find("set").filter(r => !r.classList.contains("head"));
   check("the button names the prescribed seconds",
     card.find("meta")[0].innerHTML.includes(`× ${seconds}s`), card.find("meta")[0].innerHTML);
 
@@ -969,18 +992,18 @@ section("A work window times the set and rolls into the rest");
   check("on the secondary tone, not the rest tone", els.timer.dataset.tone === "secondary", els.timer.dataset.tone);
 
   comeBackAfter((seconds + 1) * 1000);
-  check("when it ends the set is logged as the prescribed seconds", rp(rows[0]).value === String(seconds), rp(rows[0]).value);
   check("and the rest starts by itself", els.timer.dataset.label === clockFace(restSeconds), els.timer.dataset.label);
   check("on the rest tone", els.timer.dataset.tone === "primary", els.timer.dataset.tone);
+  check("when it ends the set is logged as the prescribed seconds", rp(rowsNow()[0]).value === String(seconds), rp(rowsNow()[0]).value);
   stop();
 
-  card.find("ex-time")[0].fire("click");
+  cardNow().find("ex-time")[0].fire("click");
   comeBackAfter((seconds + 1) * 1000);
-  check("the next tap fills the next open set", rp(rows[1]).value === String(seconds), rp(rows[1]).value);
+  check("the next tap fills the next open set", rp(rowsNow()[1]).value === String(seconds), rp(rowsNow()[1]).value);
   stop();
 
   const before = els.timer.dataset.label;
-  card.find("ex-time")[0].fire("click");
+  cardNow().find("ex-time")[0].fire("click");
   check("with every set logged the button does nothing", els.timer.dataset.label === before, els.timer.dataset.label);
   stop();
 

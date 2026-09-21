@@ -1,7 +1,7 @@
 import {PATTERNS} from "../../data/taxonomy.js";
 import {PATTERN_OF, workoutFor} from "../../rules/exercises.js";
 import {priorSets} from "../../rules/progression.js";
-import {state, notify} from "../../store/state.js";
+import {state, changes} from "../../store/state.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor} from "../../store/customs.js";
 import {idsTakenElsewhere} from "../../store/slots.js";
 import {swapSlot} from "../../store/session.js";
@@ -39,14 +39,14 @@ function customRow(slot, id, taken){
 
   const rename = actionButton("rename", {tone: "secondary", ghost: true, key: "rename:" + id}, () => {
     const next = prompt("Rename this exercise", state.customNames[id] || "");
-    if(next !== null && renameCustom(id, next)){ notify(); openSwapSheet(openSlot); }
+    if(next !== null && renameCustom(id, next)){ changes.notify(); openSwapSheet(openSlot); }
   });
 
   const count = setsLoggedFor(id);
   const remove = confirmButton("remove", count ? `drop ${count} sets?` : "sure?",
     {tone: "danger", ghost: true, key: "remove:" + id}, () => {
       removeCustom(id);
-      notify();
+      changes.notify();
       openSwapSheet(openSlot);
     });
 

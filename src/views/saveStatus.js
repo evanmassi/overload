@@ -1,4 +1,4 @@
-import {onStatus} from "../store/session.js";
+import {saveStatus} from "../store/session.js";
 
 const SAVE_LABEL = {saving: "Saving to this device", saved: "Saved on this device"};
 
@@ -8,6 +8,6 @@ export function mountSaveStatus(node){
     node.title = SAVE_LABEL[text] || text;
     node.setAttribute("aria-label", node.title);
   };
-  onStatus(paint);
+  saveStatus.subscribe(paint);
   paint("saved");
 }

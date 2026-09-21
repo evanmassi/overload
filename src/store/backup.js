@@ -1,11 +1,13 @@
-import {state, notify, persistSessions} from "./state.js";
+import {state, changes, persistSessions} from "./state.js";
 import {loggedCount} from "../rules/progression.js";
 import {migrateLegacySessions} from "./storage.js";
 import {loadDate} from "./session.js";
 import {iso} from "../rules/format.js";
 
-let statusHandler = () => {};
-export function onBackupStatus(fn){ statusHandler = fn; }
+function showResult(text){
+  state.backupResult = text;
+  changes.notify();
+}
 
 export function exportSessions(){
   const blob = new Blob([JSON.stringify(state.sessions, null, 2)], {type: "application/json"});
@@ -42,15 +44,14 @@ export function importSessions(event){
   reader.onload = () => {
     let incoming;
     try{ incoming = JSON.parse(reader.result); }
-    catch(e){ statusHandler("bad file"); return; }
-    if(!incoming || typeof incoming !== "object"){ statusHandler("bad file"); return; }
+    catch(e){ showResult("bad file"); return; }
+    if(!incoming || typeof incoming !== "object"){ showResult("bad file"); return; }
 
     const merged = mergeSessions(incoming);
     persistSessions();
+    state.backupResult = `merged ${merged}`;
     loadDate(state.current.date);
-    notify();
-    statusHandler(`merged ${merged}`);
   };
-  reader.onerror = () => statusHandler("read failed");
+  reader.onerror = () => showResult("read failed");
   reader.readAsText(file);
 }

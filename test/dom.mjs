@@ -37,8 +37,13 @@ class FakeNode {
   get outerHTML(){
     return `<${this.tag} class="${this._class}">${this.innerHTML}${this._text}</${this.tag}>`;
   }
-  appendChild(child){ this.children.push(child); return child; }
-  append(...nodes){ nodes.forEach(n => this.children.push(n)); }
+  appendChild(child){ child.parentNode = this; this.children.push(child); return child; }
+  append(...nodes){ nodes.forEach(n => this.appendChild(n)); }
+  closest(sel){
+    const want = sel.replace(/^\./, "");
+    for(let node = this; node; node = node.parentNode) if(node._class.split(" ").includes(want)) return node;
+    return null;
+  }
   remove(){}
   setAttribute(name, value){ this.attrs[name] = String(value); if(name === "id") this.id = String(value); }
   removeAttribute(name){

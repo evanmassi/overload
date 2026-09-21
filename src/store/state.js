@@ -8,13 +8,19 @@ export const state = {
   foldFlips: new Set(),
   historyDay: null,
   historyOpen: new Set(),
+  backupResult: "",
   current: {key: null, date: null, day: null, block: null, blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}, startedAt: null, lastLoggedAt: null}
 };
 
-const listeners = new Set();
+export function channel(){
+  const listeners = new Set();
+  return {
+    subscribe: fn => { listeners.add(fn); },
+    notify: detail => listeners.forEach(fn => fn(detail))
+  };
+}
 
-export function subscribe(fn){ listeners.add(fn); return () => listeners.delete(fn); }
-export function notify(){ listeners.forEach(fn => fn()); }
+export const changes = channel();
 
 export function hydrate(){
   state.customNames = loadCustomNames();

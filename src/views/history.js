@@ -4,7 +4,7 @@ import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight
 import {blockIndexOf, cycleNumber} from "../rules/rotation.js";
 import {isLogged} from "../rules/sets.js";
 import {setSummary, elapsedLabel, unitSuffix} from "../rules/format.js";
-import {state, notify} from "../store/state.js";
+import {state, changes} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
 import {resolveSlot, strayIds} from "../store/slots.js";
 import {loadSession, deleteSession} from "../store/session.js";
@@ -47,7 +47,7 @@ function sessionActions(key){
     event.stopPropagation();
     loadSession(key);
     state.view = "log";
-    notify();
+    changes.notify();
     window.scrollTo(0, 0);
   });
   edit.title = "Open this session on the Log tab";
@@ -114,7 +114,7 @@ function sessionCard(key, session, plan){
   row.append(top, foot);
   row.addEventListener("click", () => {
     open ? state.historyOpen.delete(key) : state.historyOpen.add(key);
-    notify();
+    changes.notify();
   });
   card.appendChild(row);
 
@@ -127,7 +127,7 @@ function filterBar(className, keys){
     label: day ? DAYS[day].short : "All",
     key: "filter:" + day,
     chosen: day === state.historyDay,
-    onPick: () => { state.historyDay = day; notify(); }
+    onPick: () => { state.historyDay = day; changes.notify(); }
   })), {ghost: true});
 }
 

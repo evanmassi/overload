@@ -1,4 +1,5 @@
-import {exportSessions, importSessions, onBackupStatus} from "../store/backup.js";
+import {state} from "../store/state.js";
+import {exportSessions, importSessions} from "../store/backup.js";
 import {el} from "./dom.js";
 import {actionButton} from "./controls.js";
 import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
@@ -10,15 +11,12 @@ function backupControls(){
   picker.hidden = true;
   picker.addEventListener("change", importSessions);
 
-  const result = el("span", "backup-result");
-  onBackupStatus(text => { result.textContent = text; });
-
   const box = el("div", "backup");
   box.append(
     actionButton("Export backup", {tone: "primary"}, exportSessions),
     actionButton("Import backup", {tone: "primary"}, () => picker.click()),
     picker,
-    result);
+    el("span", "backup-result", state.backupResult));
   return box;
 }
 

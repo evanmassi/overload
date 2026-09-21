@@ -1,4 +1,4 @@
-import {state, hydrate, subscribe, notify} from "./store/state.js";
+import {state, changes, hydrate} from "./store/state.js";
 import {loadDate, flushNow} from "./store/session.js";
 import {iso} from "./rules/format.js";
 import {render} from "./views/app.js";
@@ -24,7 +24,7 @@ byId("tabs").addEventListener("click", event => {
   const tab = event.target.closest(".tab");
   if(!tab) return;
   state.view = tab.dataset.view;
-  notify();
+  changes.notify();
 });
 
 document.addEventListener("visibilitychange", () => {
@@ -33,7 +33,7 @@ document.addEventListener("visibilitychange", () => {
 });
 window.addEventListener("pagehide", flushNow);
 
-subscribe(render);
+changes.subscribe(render);
 hydrate();
 loadDate(iso(new Date()));
 
