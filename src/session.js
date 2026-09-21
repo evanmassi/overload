@@ -12,6 +12,24 @@ export function onStatus(fn){ statusHandler = fn; }
 export const iso = date =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
+const clock = date =>
+  `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}:${String(date.getSeconds()).padStart(2, "0")}`;
+
+function newSessionKey(dateStr, now){
+  const stamp = `${dateStr}T${clock(now || new Date())}`;
+  let key = stamp;
+  for(let n = 2; state.sessions[key]; n++) key = `${stamp}.${n}`;
+  return key;
+}
+
+function sessionsOn(sessions, dateStr){
+  return Object.keys(sessions).filter(key => sessions[key] && sessions[key].date === dateStr).sort();
+}
+
+function sessionKeyFor(dateStr, day){
+  return sessionsOn(state.sessions, dateStr).filter(key => state.sessions[key].day === day).pop() || null;
+}
+
 export function setBlockIndex(index){
   state.current.blockIndex = Math.max(0, index);
   state.current.block = blockLetter(state.current.blockIndex);
@@ -19,20 +37,41 @@ export function setBlockIndex(index){
 }
 
 export function setDay(day){
-  const crossing = isOffDay(day) !== isOffDay(state.current.day);
-  state.current.day = day;
-  if(crossing) setBlockIndex(isOffDay(day) ? nextOffBlockIndex(state.sessions, day) : activeBlockIndex(state.sessions));
-  state.foldFlips.clear();
+  const current = state.current;
+  if(day === current.day) return;
+  const existing = sessionKeyFor(current.date, day);
+  if(!loggedCount(current) && !existing){
+    const crossing = isOffDay(day) !== isOffDay(current.day);
+    current.day = day;
+    if(crossing) setBlockIndex(isOffDay(day) ? nextOffBlockIndex(state.sessions, day) : activeBlockIndex(state.sessions));
+    state.foldFlips.clear();
+    return;
+  }
+  stash();
+  openSession(existing || newSessionKey(current.date), current.date, day);
 }
 
-export function loadDate(dateStr){
+export function relabelSession(key, day){
+  const session = state.sessions[key];
+  if(!session) return;
+  session.day = day;
+  persistSessions();
+  if(key === state.current.key) state.current.day = day;
+  notify();
+}
+
+function openSession(key, dateStr, day){
   const current = state.current;
+  const saved = state.sessions[key];
+  current.key = key;
   current.date = dateStr;
-  const saved = state.sessions[dateStr];
 
   if(saved){
     setBlockIndex(blockIndexOf(saved));
     current.day = saved.day;
+  } else if(day){
+    current.day = day;
+    setBlockIndex(isOffDay(day) ? nextOffBlockIndex(state.sessions, day) : activeBlockIndex(state.sessions));
   } else {
     setBlockIndex(activeBlockIndex(state.sessions));
     current.day = nextSessionIn(state.sessions, current.blockIndex);
@@ -50,6 +89,17 @@ export function loadDate(dateStr){
       current.entries[id] = saved.entries[id].map(set => ({w: set.w || "", r: set.r || ""}));
 
   notify();
+}
+
+export function loadDate(dateStr){
+  const latest = sessionsOn(state.sessions, dateStr).pop();
+  openSession(latest || newSessionKey(dateStr), dateStr, null);
+}
+
+export function loadSession(key){
+  const saved = state.sessions[key];
+  if(!saved){ loadDate(state.current.date); return; }
+  openSession(key, saved.date, saved.day);
 }
 
 export function markLogged(){
@@ -101,8 +151,8 @@ function snapshot(){
 
 function stash(){
   const snap = snapshot();
-  if(loggedCount(snap) || snap.notes || snap.effort) state.sessions[snap.date] = snap;
-  else delete state.sessions[snap.date];
+  if(loggedCount(snap) || snap.notes || snap.effort) state.sessions[state.current.key] = snap;
+  else delete state.sessions[state.current.key];
 }
 
 function commitNow(){
@@ -125,19 +175,20 @@ export function flushNow(){
   commitNow();
 }
 
-export function deleteSession(date){
-  delete state.sessions[date];
+export function deleteSession(key){
+  const date = state.sessions[key] && state.sessions[key].date;
+  delete state.sessions[key];
   persistSessions();
-  if(date === state.current.date) loadDate(date);
+  if(key === state.current.key) loadDate(date || state.current.date);
   else notify();
 }
 
 export function previousSameWorkout(){
   const {sessions, current} = state;
-  const dates = Object.keys(sessions).filter(d => d < current.date).sort().reverse();
-  for(const date of dates){
-    const session = sessions[date];
-    if(session.day === current.day && session.block === current.block) return {date, session};
+  const keys = Object.keys(sessions).filter(key => key < current.key).sort().reverse();
+  for(const key of keys){
+    const session = sessions[key];
+    if(session.day === current.day && session.block === current.block) return {date: session.date, session};
   }
   return null;
 }

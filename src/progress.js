@@ -8,8 +8,9 @@ import {strandPanel} from "./strand/panel.js";
 
 export function renderProgress(main){
   const byExercise = {};
-  Object.keys(state.sessions).sort().forEach(date => {
-    const session = state.sessions[date];
+  Object.keys(state.sessions).sort().forEach(key => {
+    const session = state.sessions[key];
+    const date = session.date || key;
     for(const id in (session.entries || {})){
       const sets = session.entries[id].filter(set => set && set.r);
       if(!sets.length) continue;
@@ -79,13 +80,18 @@ function consistencyGrid(){
   const grid = document.createElement("div");
   grid.className = "grid";
   let trained = 0;
+  const setsByDate = {};
+  for(const key in state.sessions){
+    const session = state.sessions[key];
+    const date = session.date || key;
+    setsByDate[date] = (setsByDate[date] || 0) + loggedCount(session);
+  }
 
   for(let i = 0; i < weeks * 7; i++){
     const day = new Date(start);
     day.setDate(day.getDate() + i);
     const key = iso(day);
-    const session = state.sessions[key];
-    const sets = session ? loggedCount(session) : 0;
+    const sets = setsByDate[key] || 0;
     const cell = document.createElement("i");
     cell.className = "cell" + (sets ? " lit" + Math.min(3, Math.ceil(sets / 10)) : "");
     cell.title = key + (sets ? " · " + sets + " sets" : "");

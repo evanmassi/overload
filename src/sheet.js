@@ -2,11 +2,11 @@ import {PATTERNS} from "./taxonomy.js";
 import {PATTERN_OF, workoutFor, allExercises} from "./movements.js";
 import {HOWTO} from "./howto.js";
 import {MUSCLES} from "./muscles.js";
-import {CONFIRM_WINDOW_MS} from "./constants.js";
+import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS} from "./constants.js";
 import {state, notify} from "./state.js";
 import {priorSets} from "./progression.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor, resolveSlot} from "./swaps.js";
-import {queueSave} from "./session.js";
+import {queueSave, relabelSession} from "./session.js";
 import {strandButton} from "./strand/button.js";
 import {strandField} from "./strand/field.js";
 
@@ -45,6 +45,21 @@ function youtubeLink(name){
   link.rel = "noopener noreferrer";
   link.textContent = "Watch it on YouTube";
   return link;
+}
+
+export function openRelabelSheet(key){
+  const session = state.sessions[key];
+  if(!session) return;
+  title.textContent = "File this session as";
+  body.innerHTML = "";
+  [...DAY_KEYS, ...OFF_KEYS].forEach(day => {
+    const button = document.createElement("button");
+    button.className = "sheet-item" + (day === session.day ? " current" : "");
+    button.innerHTML = `<span>${DAYS[day].label}</span>`;
+    button.addEventListener("click", () => { relabelSession(key, day); closeSheet(); });
+    body.appendChild(button);
+  });
+  show();
 }
 
 export function openHowTo(exercise){
@@ -121,7 +136,7 @@ function pick(slot, id){
 function movementRow(slot, id){
   const button = document.createElement("button");
   button.className = "sheet-item" + (id === slot.id ? " current" : "");
-  const last = priorSets(state.sessions, id, state.current.date);
+  const last = priorSets(state.sessions, id, state.current.key);
   button.innerHTML = `<span>${exerciseName(id)}</span>${last ? `<em>${last.date.slice(5)}</em>` : ""}`;
   button.addEventListener("click", () => pick(slot, id));
   return button;
@@ -138,7 +153,7 @@ function customRow(slot, id, taken){
   if(use.disabled) use.title = "Already in this session";
   use.addEventListener("click", () => pick(slot, id));
 
-  const last = priorSets(state.sessions, id, state.current.date);
+  const last = priorSets(state.sessions, id, state.current.key);
   const when = document.createElement("em");
   when.textContent = last ? last.date.slice(5) : "";
 

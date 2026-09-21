@@ -47,30 +47,30 @@ export function topSet(sets, isBodyweight){
   return logged.reduce((best, set) => score(set, isBodyweight) > score(best, isBodyweight) ? set : best);
 }
 
-export function priorSets(sessions, exerciseId, beforeDate){
-  const dates = Object.keys(sessions).filter(d => d < beforeDate).sort().reverse();
-  for(const date of dates){
-    const session = sessions[date];
+export function priorSets(sessions, exerciseId, beforeKey){
+  const keys = Object.keys(sessions).filter(key => key < beforeKey).sort().reverse();
+  for(const key of keys){
+    const session = sessions[key];
     const sets = session.entries && session.entries[exerciseId];
     if(sets && sets.some(set => set && set.r))
-      return {date, sets, effort: session.effort && session.effort[exerciseId]};
+      return {date: session.date || key, key, sets, effort: session.effort && session.effort[exerciseId]};
   }
   return null;
 }
 
-export function exposures(sessions, exerciseId, beforeDate, limit){
-  const dates = Object.keys(sessions).filter(d => d < beforeDate).sort().reverse();
+export function exposures(sessions, exerciseId, beforeKey, limit){
+  const keys = Object.keys(sessions).filter(key => key < beforeKey).sort().reverse();
   const found = [];
-  for(const date of dates){
-    const sets = sessions[date].entries && sessions[date].entries[exerciseId];
-    if(sets && sets.some(set => set && set.r)) found.push({date, sets});
+  for(const key of keys){
+    const sets = sessions[key].entries && sessions[key].entries[exerciseId];
+    if(sets && sets.some(set => set && set.r)) found.push({date: sessions[key].date || key, sets});
     if(found.length === limit) break;
   }
   return found;
 }
 
-export function hasStalled(sessions, exercise, beforeDate){
-  const recent = exposures(sessions, exercise.id, beforeDate, STALL_EXPOSURES);
+export function hasStalled(sessions, exercise, beforeKey){
+  const recent = exposures(sessions, exercise.id, beforeKey, STALL_EXPOSURES);
   if(recent.length < STALL_EXPOSURES) return false;
   const best = recent.map(entry => score(topSet(entry.sets, exercise.bw), exercise.bw));
   const oldest = best[best.length - 1];

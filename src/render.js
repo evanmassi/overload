@@ -278,7 +278,7 @@ function corePairCard(pair, index, slots){
 
 function fillCard(card, exercise, position, slot, notch){
   slot = slot || exercise;
-  const prior = priorSets(state.sessions, exercise.id, state.current.date);
+  const prior = priorSets(state.sessions, exercise.id, state.current.key);
   const unit = unitName(exercise);
   const suffix = unitSuffix(exercise);
 
@@ -345,7 +345,7 @@ function fillCard(card, exercise, position, slot, notch){
   }
 
   if(held) card.appendChild(holdNotice(exercise));
-  else if(!exercise.stray && hasStalled(state.sessions, exercise, state.current.date))
+  else if(!exercise.stray && hasStalled(state.sessions, exercise, state.current.key))
     card.appendChild(stallPrompt(exercise, slot, prior));
 
   const sets = document.createElement("div");

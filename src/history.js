@@ -4,15 +4,16 @@ import {state, notify} from "./state.js";
 import {loggedCount, sessionVolume, score, topSet, priorSets} from "./progression.js";
 import {blockIndexOf, cycleNumber} from "./rotation.js";
 import {exerciseName} from "./swaps.js";
-import {loadDate, deleteSession} from "./session.js";
+import {loadSession, deleteSession} from "./session.js";
+import {openRelabelSheet} from "./sheet.js";
 import {setSummary, elapsedLabel, unitSuffix} from "./format.js";
 import {exportSessions, importSessions, onBackupStatus} from "./backup.js";
 import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
 import {strandButton} from "./strand/button.js";
 import {strandPanel} from "./strand/panel.js";
 
-function deltaMark(date, id, sets, isBodyweight){
-  const prior = priorSets(state.sessions, id, date);
+function deltaMark(key, id, sets, isBodyweight){
+  const prior = priorSets(state.sessions, id, key);
   if(!prior) return `<i class="hist-delta up" title="First time logged">new</i>`;
   const now = score(topSet(sets, isBodyweight), isBodyweight);
   const then = score(topSet(prior.sets, isBodyweight), isBodyweight);
@@ -21,15 +22,15 @@ function deltaMark(date, id, sets, isBodyweight){
   return `<i class="hist-delta down" title="Below ${prior.date}">${ICON_DOWN}</i>`;
 }
 
-function exerciseLine(date, id, sets, name, exercise, extraClass, mark){
+function exerciseLine(key, id, sets, name, exercise, extraClass, mark){
   const line = document.createElement("div");
   line.className = "hist-line" + (extraClass ? " " + extraClass : "");
   const isBodyweight = exercise ? !!exercise.bw : !sets.some(set => set.w);
-  line.innerHTML = `<span>${name}${mark || ""}</span><b>${setSummary(sets, exercise ? unitSuffix(exercise) : "")}</b>${deltaMark(date, id, sets, isBodyweight)}`;
+  line.innerHTML = `<span>${name}${mark || ""}</span><b>${setSummary(sets, exercise ? unitSuffix(exercise) : "")}</b>${deltaMark(key, id, sets, isBodyweight)}`;
   return line;
 }
 
-function slotLine(date, session, slot){
+function slotLine(key, session, slot){
   const swapped = session.swaps && session.swaps[slot.id];
   const id = swapped || slot.id;
   const sets = (session.entries || {})[id];
@@ -37,7 +38,7 @@ function slotLine(date, session, slot){
   const mark = swapped
     ? `<i class="hist-swap" title="Swapped in for ${slot.n}" aria-label="Swapped in for ${slot.n}">${ICON_SWAP}</i>`
     : "";
-  return exerciseLine(date, id, sets, swapped ? exerciseName(id) : slot.n, (swapped && findExercise(id)) || slot, "", mark);
+  return exerciseLine(key, id, sets, swapped ? exerciseName(id) : slot.n, (swapped && findExercise(id)) || slot, "", mark);
 }
 
 function subLabel(text){
@@ -47,31 +48,31 @@ function subLabel(text){
   return label;
 }
 
-function armedDelete(date){
+function armedDelete(key){
   const remove = document.createElement("button");
   remove.addEventListener("click", event => {
     event.stopPropagation();
-    if(remove.dataset.armed){ deleteSession(date); return; }
+    if(remove.dataset.armed){ deleteSession(key); return; }
     remove.dataset.armed = "1";
     remove.strandLabel("sure?");
     setTimeout(() => { delete remove.dataset.armed; remove.strandLabel("delete"); }, CONFIRM_WINDOW_MS);
   });
-  return strandButton(remove, {label: "delete", tone: "danger", ghost: true, key: "hist-delete:" + date});
+  return strandButton(remove, {label: "delete", tone: "danger", ghost: true, key: "hist-delete:" + key});
 }
 
-function sessionBody(date, session, plan){
+function sessionBody(key, session, plan){
   const body = document.createElement("div");
   body.className = "hist-body";
 
   (plan.sections || [{ex: plan.ex}]).forEach(section => {
-    const lines = section.ex.map(slot => slotLine(date, session, slot)).filter(Boolean);
+    const lines = section.ex.map(slot => slotLine(key, session, slot)).filter(Boolean);
     if(!lines.length) return;
     if(section.name) body.appendChild(subLabel(section.name));
     lines.forEach(line => body.appendChild(line));
   });
 
   const supersets = (plan.core || [])
-    .map(pair => pair.map(slot => slotLine(date, session, slot)).filter(Boolean))
+    .map(pair => pair.map(slot => slotLine(key, session, slot)).filter(Boolean))
     .filter(lines => lines.length);
   if(supersets.length){
     body.appendChild(subLabel("Core finisher"));
@@ -90,7 +91,7 @@ function sessionBody(date, session, plan){
   if(strays.length){
     body.appendChild(subLabel("Not in this session"));
     strays.forEach(id =>
-      body.appendChild(exerciseLine(date, id, session.entries[id], exerciseName(id), findExercise(id), "hist-stray")));
+      body.appendChild(exerciseLine(key, id, session.entries[id], exerciseName(id), findExercise(id), "hist-stray")));
   }
 
   if(session.notes){
@@ -104,21 +105,26 @@ function sessionBody(date, session, plan){
   actions.className = "hist-actions";
   const edit = document.createElement("button");
   edit.title = "Open this session on the Log tab";
-  strandButton(edit, {label: "edit", tone: "secondary", ghost: true, key: "hist-edit:" + date});
+  strandButton(edit, {label: "edit", tone: "secondary", ghost: true, key: "hist-edit:" + key});
   edit.addEventListener("click", event => {
     event.stopPropagation();
-    loadDate(date);
+    loadSession(key);
     state.view = "log";
     notify();
     window.scrollTo(0, 0);
   });
-  actions.append(edit, armedDelete(date));
+  const relabel = document.createElement("button");
+  relabel.title = "File this session under a different workout";
+  strandButton(relabel, {label: "relabel", tone: "secondary", ghost: true, key: "hist-relabel:" + key});
+  relabel.addEventListener("click", event => { event.stopPropagation(); openRelabelSheet(key); });
+  actions.append(edit, relabel, armedDelete(key));
   body.appendChild(actions);
   return body;
 }
 
-function sessionCard(date, session, plan){
-  const open = state.historyOpen.has(date);
+function sessionCard(key, session, plan){
+  const date = session.date || key;
+  const open = state.historyOpen.has(key);
   const card = document.createElement("div");
   card.className = "hist-day" + (open ? " hist-expanded" : "");
   strandPanel(card);
@@ -137,12 +143,12 @@ function sessionCard(date, session, plan){
     + `<span>${loggedCount(session)} sets</span>${took ? `<span>${took}</span>` : ""}`;
   row.append(top, foot);
   row.addEventListener("click", () => {
-    open ? state.historyOpen.delete(date) : state.historyOpen.add(date);
+    open ? state.historyOpen.delete(key) : state.historyOpen.add(key);
     notify();
   });
   card.appendChild(row);
 
-  if(open) card.appendChild(sessionBody(date, session, plan));
+  if(open) card.appendChild(sessionBody(key, session, plan));
   return card;
 }
 
@@ -168,8 +174,8 @@ function settings(){
 }
 
 export function renderHistory(main){
-  const dates = Object.keys(state.sessions).sort().reverse();
-  if(!dates.length){
+  const keys = Object.keys(state.sessions).sort().reverse();
+  if(!keys.length){
     main.innerHTML = `<p class="empty">Nothing logged yet. Fill in a set on the Log tab and it shows up here.</p>`;
     main.append(...settings());
     return;
@@ -178,7 +184,7 @@ export function renderHistory(main){
   main.appendChild(filterBar("blockset hist-filter", [null, ...DAY_KEYS]));
   main.appendChild(filterBar("blockset hist-filter-off", OFF_KEYS));
 
-  const shown = dates.filter(date => !state.historyDay || state.sessions[date].day === state.historyDay);
+  const shown = keys.filter(key => !state.historyDay || state.sessions[key].day === state.historyDay);
   if(!shown.length){
     const empty = document.createElement("p");
     empty.className = "empty";
@@ -188,8 +194,8 @@ export function renderHistory(main){
   }
 
   let lastCycle = null;
-  shown.forEach(date => {
-    const session = state.sessions[date];
+  shown.forEach(key => {
+    const session = state.sessions[key];
     const plan = workoutFor(session.block, session.day);
     if(!plan) return;
 
@@ -202,7 +208,7 @@ export function renderHistory(main){
       main.appendChild(label);
       lastCycle = cycle;
     }
-    main.appendChild(sessionCard(date, session, plan));
+    main.appendChild(sessionCard(key, session, plan));
   });
 
   main.append(...settings());

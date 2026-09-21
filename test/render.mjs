@@ -158,7 +158,7 @@ section("History and progress views render");
   check("tapping a row opens it", els.main.find("hist-body").length === 1, els.main.find("hist-body").length);
   check("notes show on the open card", els.main.find("hist-notes").length === 1);
   check("the open card offers edit and delete",
-    els.main.find("hist-actions")[0].children.map(b => b.dataset.label).join() === "edit,delete",
+    els.main.find("hist-actions")[0].children.map(b => b.dataset.label).join() === "edit,relabel,delete",
     els.main.find("hist-actions")[0].children.map(b => b.dataset.label).join());
   openHistoryCard(0);
   check("tapping again closes it", els.main.find("hist-body").length === 0);
@@ -282,7 +282,7 @@ section("Effort buttons");
   buttons[2].fire("click");
   equal("tapping one records it", state.current.effort.flat_db_press, "hard");
   equal("and keeps it even before a set is logged",
-    (state.sessions[state.current.date] || {}).effort, {flat_db_press: "hard"});
+    (state.sessions[state.current.key] || {}).effort, {flat_db_press: "hard"});
 
   render();
   const again = els.main.find("effort")[0].children.filter(c => c.tag === "button");
@@ -593,6 +593,63 @@ section("A history card groups, collapses and marks");
 
   state.view = "log";
   render();
+}
+
+section("Each button is its own workout for the day");
+{
+  const {loggedCount} = await import("../src/progression.js");
+  fresh();
+  render();
+  const firstRow = els.main.find("set").filter(r => !r.classList.contains("head"))[0];
+  wt(firstRow).value = "50"; rp(firstRow).value = "10"; rp(firstRow).fire("change");
+  const chestKey = state.current.key;
+  check("the session key carries the date", chestKey.startsWith("2026-09-01"), chestKey);
+
+  setDay("functional");
+  render();
+  check("switching type with sets logged opens a fresh workout", state.current.key !== chestKey && state.current.day === "functional");
+  check("with nothing in it", loggedCount(state.current) === 0);
+  check("and no stray bench press on the page", els.main.find("section-label").every(l => l.textContent !== "Not in this session"));
+  const funcRow = els.main.find("set").filter(r => !r.classList.contains("head"))[0];
+  wt(funcRow).value = "40"; rp(funcRow).value = "30"; rp(funcRow).fire("change");
+  const funcKey = state.current.key;
+
+  setDay("chest");
+  render();
+  check("tapping back returns to the same chest workout", state.current.key === chestKey);
+  check("with its sets intact", state.current.entries.flat_db_press[0].r === "10");
+  check("both workouts are saved for the date", !!state.sessions[chestKey] && !!state.sessions[funcKey]);
+  check("both carry the same date", state.sessions[chestKey].date === "2026-09-01" && state.sessions[funcKey].date === "2026-09-01");
+
+  setDay("legs");
+  render();
+  check("a type with no sets yet is a new empty workout", state.current.key !== chestKey && state.current.key !== funcKey);
+  setDay("arms");
+  check("an untouched empty workout just relabels", state.current.day === "arms" && Object.keys(state.sessions).length === 2);
+
+  state.view = "history";
+  render();
+  check("history shows a card per workout", els.main.find("hist-day").length === 2, els.main.find("hist-day").length);
+  const card = openHistoryCard(0);
+  card.find("hist-actions")[0].children[1].fire("click");
+  check("relabel opens a chooser", els.sheet.hidden === false && els.sheetbody.find("sheet-item").length === 6);
+  els.sheetbody.find("sheet-item")[2].fire("click");
+  const relabelled = Object.keys(state.sessions).map(k => state.sessions[k].day);
+  check("picking one refiles the session", relabelled.includes("arms"), relabelled.join());
+}
+
+section("Two sessions of the same lift on one day compare in order");
+{
+  fresh();
+  state.sessions["2026-09-01T08:00:00"] = {date: "2026-09-01", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "50", r: "10"}]}};
+  state.sessions["2026-09-01T18:00:00"] = {date: "2026-09-01", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "55", r: "10"}]}};
+  const {priorSets} = await import("../src/progression.js");
+  const prior = priorSets(state.sessions, "flat_db_press", "2026-09-01T18:00:00");
+  check("the evening compares against the morning", prior && prior.sets[0].w === "50" && prior.date === "2026-09-01");
+  const earlier = priorSets(state.sessions, "flat_db_press", "2026-09-01T08:00:00");
+  check("the morning has nothing before it", earlier === null);
+  state.sessions["2026-08-30"] = {date: "2026-08-30", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "45", r: "10"}]}};
+  check("an old date-keyed session still counts as prior", priorSets(state.sessions, "flat_db_press", "2026-09-01T08:00:00").sets[0].w === "45");
 }
 
 section("History shows lifts the session plan does not contain");
