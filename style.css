@@ -135,7 +135,7 @@ button{cursor:pointer;border:none;background:none}
 .ex-head{display:flex;flex-wrap:wrap;align-items:center;gap:0 9px;padding:0 0 8px calc(var(--tag-w) + 10px);min-height:var(--notch-h)}
 .ex-name{
   font-family:var(--font-ui);font-weight:var(--weight-control);font-size:12px;
-  letter-spacing:var(--track-title);text-transform:uppercase;flex:1;margin:0;line-height:1.5;min-width:0;
+  letter-spacing:.14em;text-transform:uppercase;flex:1;margin:0;line-height:1.5;min-width:0;
 }
 .meta{
   display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:0 13px 10px;
