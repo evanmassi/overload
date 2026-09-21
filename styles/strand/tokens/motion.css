@@ -29,7 +29,7 @@
   --steps-hair: steps(7, end);
   --steps-hair-echo: steps(5, end);
 
-  /* idle flicker periods; --flicker-pace scales every one of them, 2 = half as often */
+  /* idle flicker periods */
   --flicker-pace: 2;
   --flicker-primary: calc(3100ms * var(--flicker-pace));
   --flicker-warning: calc(3800ms * var(--flicker-pace));
