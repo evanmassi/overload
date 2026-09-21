@@ -3,7 +3,7 @@
   --f-line:var(--accent);--f-plate:var(--accent-deep);
   --f-glow:var(--accent-glow);--f-glow-soft:var(--accent-glow-soft);
   --f-pad:15px 16px 15px 18px;--f-size:var(--size-control);--f-track:.14em;
-  --f-clock:5900ms;--f-lag:0ms;
+  --f-clock:calc(5900ms * var(--flicker-pace));--f-lag:0ms;
 }
 .sfield[data-tone="success"]{
   --f-line:var(--success);--f-plate:var(--success-deep);

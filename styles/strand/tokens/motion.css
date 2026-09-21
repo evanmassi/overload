@@ -29,10 +29,11 @@
   --steps-hair: steps(7, end);
   --steps-hair-echo: steps(5, end);
 
-  /* idle flicker periods */
-  --flicker-primary: 3100ms;
-  --flicker-warning: 3800ms;
-  --flicker-danger: 2400ms;
-  --flicker-icon: 2800ms;
-  --flicker-secondary: 5200ms;
+  /* idle flicker periods; --flicker-pace scales every one of them, 2 = half as often */
+  --flicker-pace: 2;
+  --flicker-primary: calc(3100ms * var(--flicker-pace));
+  --flicker-warning: calc(3800ms * var(--flicker-pace));
+  --flicker-danger: calc(2400ms * var(--flicker-pace));
+  --flicker-icon: calc(2800ms * var(--flicker-pace));
+  --flicker-secondary: calc(5200ms * var(--flicker-pace));
 }

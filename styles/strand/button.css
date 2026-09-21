@@ -12,21 +12,21 @@
   --s-line:var(--accent);--s-plate:var(--accent-deep);--s-mid:var(--accent-mid);
   --lc:var(--accent-ink);--lgl:var(--accent-glow);
   --hg1:rgba(95,227,240,.5);--hg2:rgba(95,227,240,.26);--hgl:rgba(190,250,255,.85);
-  --clock:520ms;--idle:5400ms;--s-press:322ms;--s-flash:442ms;--s-word-idle:7290ms;
+  --clock:520ms;--idle:calc(5400ms * var(--flicker-pace));--s-press:322ms;--s-flash:442ms;--s-word-idle:calc(7290ms * var(--flicker-pace));
   --s-flash-name:hud-face-flash;
 }
 .sbtn[data-tone="success"]{
   --s-line:var(--success);--s-plate:var(--success-deep);--s-mid:var(--success-mid);
   --lc:var(--success-ink);--lgl:var(--success-glow);
   --hg1:rgba(98,237,160,.5);--hg2:rgba(98,237,160,.26);--hgl:rgba(196,255,222,.88);
-  --clock:480ms;--idle:5900ms;--s-press:298ms;--s-flash:408ms;--s-word-idle:7965ms;
+  --clock:480ms;--idle:calc(5900ms * var(--flicker-pace));--s-press:298ms;--s-flash:408ms;--s-word-idle:calc(7965ms * var(--flicker-pace));
   --s-flash-name:hud-face-flash;
 }
 .sbtn[data-tone="warning"]{
   --s-line:var(--warning);--s-plate:var(--warning-deep);--s-mid:var(--warning-mid);
   --lc:var(--warning-ink);--lgl:var(--warning-glow);
   --hg1:rgba(255,182,72,.5);--hg2:rgba(255,182,72,.26);--hgl:rgba(255,220,160,.9);
-  --clock:600ms;--idle:6500ms;--s-press:372ms;--s-flash:510ms;--s-word-idle:8775ms;
+  --clock:600ms;--idle:calc(6500ms * var(--flicker-pace));--s-press:372ms;--s-flash:510ms;--s-word-idle:calc(8775ms * var(--flicker-pace));
   --s-steps:9;--s-steps-echo:6;--s-echo-gap:80ms;--s-echo-lag:80ms;
   --s-flash-name:hud-face-flash;
 }
@@ -34,7 +34,7 @@
   --s-line:var(--danger);--s-plate:var(--danger-deep);--s-mid:var(--danger-mid);
   --lc:var(--danger-ink);--lgl:var(--danger-glow);
   --hg1:rgba(255,93,93,.52);--hg2:rgba(255,93,93,.28);--hgl:rgba(255,180,180,.9);
-  --clock:400ms;--idle:4300ms;--s-press:248ms;--s-flash:340ms;--s-word-idle:5805ms;
+  --clock:400ms;--idle:calc(4300ms * var(--flicker-pace));--s-press:248ms;--s-flash:340ms;--s-word-idle:calc(5805ms * var(--flicker-pace));
   --s-steps:5;--s-steps-echo:4;--s-echo-lag:30ms;
   --s-flash-name:hud-face-flash-hard;
 }
@@ -42,12 +42,12 @@
   --s-line:var(--secondary);--s-plate:var(--secondary-mid);--s-mid:var(--secondary-mid);
   --lc:var(--secondary-ink);--lgl:var(--secondary-glow);
   --hg1:rgba(159,201,208,.45);--hg2:rgba(159,201,208,.22);--hgl:rgba(214,236,240,.85);
-  --clock:640ms;--idle:8600ms;--s-press:397ms;--s-flash:544ms;--s-word-idle:11610ms;
+  --clock:640ms;--idle:calc(8600ms * var(--flicker-pace));--s-press:397ms;--s-flash:544ms;--s-word-idle:calc(11610ms * var(--flicker-pace));
   --s-steps:11;--s-steps-echo:7;--s-echo-gap:80ms;--s-echo-lag:100ms;
   --s-flash-name:hud-face-flash;
 }
 .sbtn.sbtn-icon{
-  --clock:360ms;--idle:4900ms;--s-press:240ms;--s-flash:300ms;--s-word-idle:6615ms;
+  --clock:360ms;--idle:calc(4900ms * var(--flicker-pace));--s-press:240ms;--s-flash:300ms;--s-word-idle:calc(6615ms * var(--flicker-pace));
   --s-steps:6;--s-steps-echo:4;--s-echo-gap:60ms;--s-echo-lag:40ms;
 }
 
