@@ -946,7 +946,7 @@ section("A superset reads as an alternating pair");
   const blocks = els.main.find("ex-move");
   const first = blocks[9], second = blocks[10];
   check("the first move carries the S1 notch", first.find("ex-head")[0].innerHTML.includes(">S1<"), first.find("ex-head")[0].innerHTML);
-  check("the second move has no notch", !second.find("ex-head")[0].innerHTML.includes("ex-num"));
+  check("the second move carries the pairing glyph", second.find("ex-head")[0].innerHTML.includes("call_merge"));
   const firstMeta = first.find("meta")[0].innerHTML;
   const secondMeta = second.find("meta")[0].innerHTML;
   check("the first move reads like any other card", firstMeta.includes("2 × 12") && firstMeta.includes("rest 15s"), firstMeta);
