@@ -131,11 +131,14 @@ function dayRow(className, keys, done){
   row.className = className;
   keys.forEach(day => {
     const button = document.createElement("button");
-    const isDone = done.has(day) && day !== current.day;
-    strandButton(button, {
-      label: DAYS[day].short, meta: isDone ? "done" : "",
-      tone: "secondary", ghost: true, key: "day:" + day
-    });
+    strandButton(button, {label: DAYS[day].short, tone: "secondary", ghost: true, key: "day:" + day});
+    if(done.has(day) && day !== current.day){
+      const mark = document.createElement("i");
+      mark.className = "icon day-done";
+      mark.textContent = "check";
+      mark.title = "Logged this week";
+      button.appendChild(mark);
+    }
     button.dataset.chosen = day === current.day ? "on" : "off";
     button.setAttribute("aria-pressed", String(day === current.day));
     button.addEventListener("click", () => {
