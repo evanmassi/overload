@@ -1,4 +1,4 @@
-.spanel{
+.panel{
   --tag-w:48px;--notch-h:30px;--cut:8px;
   --p-line:var(--accent);--p-plate:var(--accent-deep);
   --p-frame:50%;--p-tint:7%;--p-wash:14%;
@@ -10,32 +10,32 @@
     calc(var(--tag-w) + 1px) calc(var(--notch-h) - var(--cut) + .5px));
   position:relative;isolation:isolate;
 }
-.spanel[data-tone="success"]{--p-line:var(--success);--p-plate:var(--success-deep)}
-.spanel[data-tone="warning"]{--p-line:var(--warning);--p-plate:var(--warning-deep)}
-.spanel[data-tone="danger"]{--p-line:var(--danger);--p-plate:var(--danger-deep)}
-.spanel[data-tone="secondary"]{--p-line:var(--secondary);--p-plate:var(--secondary-mid)}
+.panel[data-tone="success"]{--p-line:var(--success);--p-plate:var(--success-deep)}
+.panel[data-tone="warning"]{--p-line:var(--warning);--p-plate:var(--warning-deep)}
+.panel[data-tone="danger"]{--p-line:var(--danger);--p-plate:var(--danger-deep)}
+.panel[data-tone="secondary"]{--p-line:var(--secondary);--p-plate:var(--secondary-mid)}
 
-.spanel-plate{
+.panel-plate{
   position:absolute;inset:0;z-index:-2;pointer-events:none;
   transform:translate(4px,4px);opacity:.55;
   background:var(--p-plate);clip-path:var(--p-notch);
 }
-.spanel-plate::after{
+.panel-plate::after{
   content:"";position:absolute;inset:0;
   background:color-mix(in oklab,var(--p-plate) 30%,transparent);
   clip-path:var(--p-notch-in);
 }
 
-.spanel::before,.spanel::after{
+.panel::before,.panel::after{
   content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
 }
-.spanel::before{background:color-mix(in oklab,var(--p-line) var(--p-frame),transparent);clip-path:var(--p-notch)}
-.spanel::after{
+.panel::before{background:color-mix(in oklab,var(--p-line) var(--p-frame),transparent);clip-path:var(--p-notch)}
+.panel::after{
   background:repeating-linear-gradient(var(--scanline-ground) 0 1px,transparent 1px 3px),
     color-mix(in oklab,var(--bg-stage) calc(100% - var(--p-tint)),var(--p-line));
   box-shadow:inset 0 0 22px color-mix(in oklab,var(--p-line) var(--p-wash),transparent);
   clip-path:var(--p-notch-in);
 }
 
-.spanel-flat{--p-notch:none;--p-notch-in:none}
-.spanel-flat::after,.spanel-flat .spanel-plate::after{inset:1px}
+.panel-flat{--p-notch:none;--p-notch-in:none}
+.panel-flat::after,.panel-flat .panel-plate::after{inset:1px}

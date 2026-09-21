@@ -5,7 +5,7 @@ import {exerciseName} from "../store/customs.js";
 import {loggedCount, bestEstimate, estimateFor, loggedAsBodyweight} from "../rules/progression.js";
 import {iso} from "../rules/format.js";
 import {isLogged} from "../rules/sets.js";
-import {strandPanel} from "../strand/panel.js";
+import {makePanel} from "../ui/panel.js";
 
 export function renderProgress(main){
   const byExercise = {};
@@ -57,8 +57,8 @@ export function renderProgress(main){
     const history = entry.points.length > 1 ? `${sessions} · best ${bestLabel}` : sessions;
 
     const card = document.createElement("div");
-    card.className = "prog spanel-flat";
-    strandPanel(card);
+    card.className = "prog panel-flat";
+    makePanel(card);
     card.innerHTML = `<h3>${entry.name}</h3>
       <div class="best">${shown(latest)}<em>${qualifier}</em></div>
       <div class="meta">${history}</div>

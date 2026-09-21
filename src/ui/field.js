@@ -6,20 +6,20 @@ const CLOCK_SPREAD_MS = 12000;
 
 let phase = 0;
 
-export function strandField(input, options = {}){
+export function makeField(input, options = {}){
   const {tone = "primary"} = options;
   const host = document.createElement("span");
-  host.className = "sfield";
+  host.className = "field";
   host.dataset.tone = tone;
   const index = phase++;
   host.style.setProperty("--f-clock", Math.round(CLOCK_MIN_MS + (index * GOLDEN % 1) * CLOCK_SPREAD_MS) + "ms");
   host.style.setProperty("--f-lag", -(index * PHASE_STEP_MS) + "ms");
   LAYERS.forEach(name => {
     const span = document.createElement("span");
-    span.className = "sfield-" + name;
+    span.className = "field-" + name;
     host.appendChild(span);
   });
-  input.classList.add("sfield-input");
+  input.classList.add("field-input");
   host.appendChild(input);
 
   let hover = false;

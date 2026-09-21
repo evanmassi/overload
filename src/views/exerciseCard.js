@@ -10,9 +10,9 @@ import {setRuns, setSummary, unitSuffix, unitName} from "../rules/format.js";
 import {openSwapSheet} from "./sheets/swapSheet.js";
 import {openHowTo} from "./sheets/howtoSheet.js";
 import {start as startTimer, startWork, setIdleRest} from "./timer.js";
-import {strandButton, strandIconButton} from "../strand/button.js";
-import {strandField} from "../strand/field.js";
-import {strandPanel} from "../strand/panel.js";
+import {makeButton, makeIconButton} from "../ui/button.js";
+import {makeField} from "../ui/field.js";
+import {makePanel} from "../ui/panel.js";
 import {byId} from "./dom.js";
 import {updateSaveBar} from "./saveBar.js";
 
@@ -45,7 +45,7 @@ function syncCard(exercise){
     const summary = card.querySelector(".ex-summary");
     if(summary) summary.innerHTML = summaryFor(exercise);
     const fold = card.querySelector(".ex-fold");
-    if(fold) fold.strandLabel(folded ? "expand_more" : "expand_less");
+    if(fold) fold.setLabel(folded ? "expand_more" : "expand_less");
     if(card.panel) markDim(card.panel);
   }
 }
@@ -80,7 +80,7 @@ function ownMove(panel, move){
 export function exerciseCard(exercise, position, slot){
   const card = document.createElement("section");
   card.className = "ex";
-  strandPanel(card);
+  makePanel(card);
   ownMove(card, moveBlock(exercise, position, slot));
   markDim(card);
   return card;
@@ -89,7 +89,7 @@ export function exerciseCard(exercise, position, slot){
 export function corePairCard(pair, index, slots){
   const card = document.createElement("section");
   card.className = "ex core";
-  strandPanel(card);
+  makePanel(card);
   card.id = "card-core-" + index;
   pair.forEach((exercise, i) => {
     if(i) card.appendChild(Object.assign(document.createElement("div"), {className: "rule"}));
@@ -118,7 +118,7 @@ function fillCard(card, exercise, position, slot, notch){
   const swap = document.createElement("button");
   swap.className = "ex-swap";
   swap.title = exercise.swappedFrom ? "Undo swap" : "Swap exercise";
-  strandIconButton(swap, {
+  makeIconButton(swap, {
     icon: exercise.swappedFrom ? "undo" : "swap_horiz",
     label: swap.title, tone: "primary", ghost: true, size: 30, glyph: 18,
     key: "swap:" + exercise.id
@@ -132,7 +132,7 @@ function fillCard(card, exercise, position, slot, notch){
 
   const fold = document.createElement("button");
   fold.className = "ex-fold";
-  strandIconButton(fold, {
+  makeIconButton(fold, {
     icon: isFolded(exercise) ? "expand_more" : "expand_less",
     label: "Show or hide sets", tone: "secondary", ghost: true, size: 30, glyph: 18,
     key: "fold:" + exercise.id
@@ -211,7 +211,7 @@ function workWindowButton(exercise, seconds){
   const button = document.createElement("button");
   button.className = "ex-time";
   const label = `Time ${seconds}s`;
-  strandIconButton(button, {
+  makeIconButton(button, {
     icon: "timer", label, tone: "primary", ghost: true, size: 30, glyph: 18,
     key: "time:" + exercise.id
   });
@@ -241,7 +241,7 @@ function logSecondsInto(exercise, index, seconds){
 
 function stallAction(label, key, act){
   const button = document.createElement("button");
-  strandButton(button, {label, tone: "secondary", ghost: true, key});
+  makeButton(button, {label, tone: "secondary", ghost: true, key});
   button.addEventListener("click", act);
   return button;
 }
@@ -358,7 +358,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
 
   const repeat = document.createElement("button");
   repeat.className = "repeat";
-  strandIconButton(repeat, {
+  makeIconButton(repeat, {
     icon: "replay", tone: "primary", ghost: true, size: 30, glyph: 18,
     key: "repeat:" + exercise.id + ":" + index
   });
@@ -383,7 +383,7 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
   refreshers.push(refreshRepeat);
   refreshRepeat();
   paint();
-  row.append(number, strandField(weight), times, strandField(reps), repeat, delta);
+  row.append(number, makeField(weight), times, makeField(reps), repeat, delta);
   return row;
 }
 
@@ -397,7 +397,7 @@ function effortRow(exercise){
   EFFORT_LEVELS.forEach(level => {
     const button = document.createElement("button");
     button.addEventListener("click", () => setEffort(exercise.id, level));
-    strandButton(button, {label: level, tone: "secondary", key: "effort:" + exercise.id + ":" + level});
+    makeButton(button, {label: level, tone: "secondary", key: "effort:" + exercise.id + ":" + level});
     button.dataset.chosen = chosen === level ? "on" : "off";
     row.appendChild(button);
   });

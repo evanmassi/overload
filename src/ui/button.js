@@ -12,7 +12,7 @@ let phase = 0;
 
 function make(name){
   const span = document.createElement("span");
-  span.className = "sbtn-" + name;
+  span.className = "btn-" + name;
   return span;
 }
 
@@ -30,7 +30,7 @@ function brackets(host){
 
 function glyph(host){
   const span = document.createElement("span");
-  span.className = "sbtn-glyph";
+  span.className = "btn-glyph";
   host.appendChild(span);
   return span;
 }
@@ -87,12 +87,12 @@ function wire(el, key){
   paint();
 }
 
-export function strandButton(el, options = {}){
+export function makeButton(el, options = {}){
   const {tone = "primary", ghost = false, key} = options;
   const text = options.label === undefined ? el.textContent : options.label;
   el.textContent = "";
   el.type = "button";
-  el.classList.add("sbtn");
+  el.classList.add("btn");
   el.dataset.tone = tone;
   el.style.setProperty("--s-lag", -(phase++ * PHASE_STEP_MS) + "ms");
   if(ghost) el.dataset.ghost = "";
@@ -101,33 +101,33 @@ export function strandButton(el, options = {}){
   const word = layer(el, "word");
   const label = layer(el, "label");
   layer(el, "face");
-  el.strandLabel = value => {
+  el.setLabel = value => {
     word.textContent = value;
     label.textContent = value;
     el.dataset.label = value;
   };
-  el.strandMeta = value => {
-    const mark = el.querySelector(".sbtn-meta") || label.parentNode.insertBefore(make("meta"), label.nextSibling);
+  el.setMeta = value => {
+    const mark = el.querySelector(".btn-meta") || label.parentNode.insertBefore(make("meta"), label.nextSibling);
     mark.textContent = value || "";
   };
-  el.strandLabel(text);
-  if(options.meta !== undefined) el.strandMeta(options.meta);
+  el.setLabel(text);
+  if(options.meta !== undefined) el.setMeta(options.meta);
   wire(el, key);
   return el;
 }
 
-export function strandIconButton(el, options = {}){
+export function makeIconButton(el, options = {}){
   const {icon, label, size, glyph: glyphSize} = options;
-  strandButton(el, Object.assign({}, options, {label: ""}));
-  const marks = [glyph(el.querySelector(".sbtn-word")), glyph(el.querySelector(".sbtn-label"))];
-  el.classList.add("sbtn-icon");
+  makeButton(el, Object.assign({}, options, {label: ""}));
+  const marks = [glyph(el.querySelector(".btn-word")), glyph(el.querySelector(".btn-label"))];
+  el.classList.add("btn-icon");
   if(size) el.style.setProperty("--s-size", size + "px");
   if(glyphSize) el.style.setProperty("--s-glyph", glyphSize + "px");
-  el.strandLabel = value => {
+  el.setLabel = value => {
     marks.forEach(mark => { mark.textContent = value; });
     el.dataset.label = value;
   };
-  el.strandLabel(icon);
+  el.setLabel(icon);
   el.setAttribute("aria-label", label || icon);
   return el;
 }

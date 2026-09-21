@@ -8,7 +8,7 @@ import {mountTimer} from "./views/timer.js";
 import {mountSaveStatus} from "./views/saveStatus.js";
 import {loadSoundPreference, unlockAudio} from "./views/sound.js";
 import {byId} from "./views/dom.js";
-import {strandButton} from "./strand/button.js";
+import {makeButton} from "./ui/button.js";
 
 loadSoundPreference();
 document.addEventListener("pointerdown", unlockAudio);
@@ -18,7 +18,7 @@ mountTimer(byId("timer"), {onHold: openTimerSheet});
 mountSheet(byId("sheet"), byId("sheettitle"), byId("sheetbody"), byId("sheetclose"), byId("sheetback"));
 
 byId("tabs").querySelectorAll(".tab").forEach(tab =>
-  strandButton(tab, {tone: "secondary", ghost: true}));
+  makeButton(tab, {tone: "secondary", ghost: true}));
 
 byId("tabs").addEventListener("click", event => {
   const tab = event.target.closest(".tab");

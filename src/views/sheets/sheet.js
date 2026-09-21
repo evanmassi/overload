@@ -1,4 +1,4 @@
-import {strandButton} from "../../strand/button.js";
+import {makeButton} from "../../ui/button.js";
 
 let sheet, title, body;
 
@@ -6,7 +6,7 @@ export function mountSheet(sheetEl, titleEl, bodyEl, closeEl, backdropEl){
   sheet = sheetEl;
   title = titleEl;
   body = bodyEl;
-  strandButton(closeEl, {tone: "secondary", ghost: true});
+  makeButton(closeEl, {tone: "secondary", ghost: true});
   closeEl.addEventListener("click", closeSheet);
   backdropEl.addEventListener("click", closeSheet);
   document.addEventListener("keydown", e => { if(e.key === "Escape" && !sheet.hidden) closeSheet(); });

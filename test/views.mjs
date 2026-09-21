@@ -20,7 +20,7 @@ mountTimer(els.timer, {onHold: openTimerSheet});
 mountSaveStatus(els.status);
 mountSheet(els.sheet, els.sheettitle, els.sheetbody, els.sheetclose, els.sheetback);
 
-const cell = (row, i) => row.children[i].find("sfield-input")[0] || row.children[i];
+const cell = (row, i) => row.children[i].find("field-input")[0] || row.children[i];
 const wt = row => cell(row, 1);
 const rp = row => cell(row, 3);
 
@@ -767,7 +767,7 @@ section("Sound is optional, remembered and testable");
   render();
   const row = els.main.find("soundrow")[0];
   check("the history tab carries a sound row", !!row);
-  const buttons = row.find("sbtn");
+  const buttons = row.find("btn");
   check("it offers a toggle and a test", buttons.length === 2, buttons.length);
   check("the toggle reads its current state",
     buttons[0].dataset.label === "Sound on", buttons[0].dataset.label);
@@ -1061,9 +1061,9 @@ section("Long-pressing the clock opens a picker with presets and a stopwatch");
     ["90", "1:30", "1.30", "2m", "45s", "2 min", "1.75", "abc", ""].map(parseClock), [90, 90, 90, 120, 45, 120, 0, 0, 0]);
   await longPress();
   const custom = els.sheetbody.find("sheet-custom")[0];
-  const box = custom.find("sfield-input")[0] || custom.children[0];
+  const box = custom.find("field-input")[0] || custom.children[0];
   box.value = "nope";
-  custom.find("sbtn")[0].fire("click");
+  custom.find("btn")[0].fire("click");
   check("a bad entry keeps the sheet open", els.sheet.hidden === false);
   check("clears the box", box.value === "", box.value);
   check("and hints at the format", box.placeholder === "Try 90 or 1.30", box.placeholder);

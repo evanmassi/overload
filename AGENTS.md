@@ -20,11 +20,11 @@ overload/
 │   ├── store/        # Saved state and every edit to it: storage, sessions, custom exercises, holds, backup
 │   ├── views/        # DOM and audio: one file per screen or piece of one
 │   │   └── sheets/   # The pop-up frame and one file per pop-up
-│   ├── styles/       # app.css: app styles, built on the strand tokens
-│   └── strand/       # Design system: each primitive's JS and CSS side by side, tokens/ for colors,
+│   ├── styles/       # app.css: app styles, built on the design tokens
+│   └── ui/           # Design system: each primitive's JS and CSS side by side, tokens/ for colors,
 │                     # type, motion and space. Imports nothing from the app
 ├── test/             # Node suites, no dependencies
-└── refs/             # Untracked design source (Strand OS). Read it, never ship from it
+└── refs/             # Untracked design references. Read them, never ship from them
 ```
 
 ---
@@ -39,7 +39,7 @@ The folder is the layer. A file imports only from its own layer or the ones list
 | `data/` | `data/` | Plain literals, no logic |
 | `rules/` | `data/`, `rules/` | Pure functions: no DOM, no storage, no saved state |
 | `store/` | `data/`, `rules/`, `store/` | Saved state and every edit to it. `storage.js` is the only file that touches `localStorage` |
-| `strand/` | `strand/` | Design system primitives, no app knowledge |
+| `ui/` | `ui/` | Design system primitives, no app knowledge |
 | `views/` | everything above | DOM and audio. Read rules and the store, never reimplement them |
 | `main.js` | everything above | Mounts the views, nothing else |
 
@@ -90,9 +90,9 @@ version of a key exists.
 
 ## UI
 
-- **Every button goes through `strandButton` or `strandIconButton`**, every text or date input through
-  `strandField`, every framed surface through `strandPanel`. Never hand-build the layered spans.
-- **Colors come from the tokens** in `src/strand/tokens/`. Need a new color, add a token first.
+- **Every button goes through `makeButton` or `makeIconButton`**, every text or date input through
+  `makeField`, every framed surface through `makePanel`. Never hand-build the layered spans.
+- **Colors come from the tokens** in `src/ui/tokens/`. Need a new color, add a token first.
 - **Two type families.** Lato for language, IBM Plex Mono for data (weights, reps, times, tags, dates).
 - **Phone first, 390px wide.** The number keyboard covers the bottom of the screen while typing, so anything needed
   mid-set lives in the sticky header. Card text never wraps.
@@ -172,8 +172,8 @@ Match the surrounding code. It is consistent, and a new file should be indisting
 | Functions | camelCase, verb first | `activeBlockIndex`, `openSwapSheet` |
 | Constants | UPPER_CASE | `AUTOSAVE_DELAY_MS` |
 | Booleans | is/has prefix | `isOffDay`, `hasStalled` |
-| Strand factories | `strand` + primitive | `strandButton`, `strandField` |
-| CSS classes | lowercase-hyphen; strand parts prefixed | `.ex-summary`, `.sbtn-glyph` |
+| Design system primitives | `make` + primitive | `makeButton`, `makeField` |
+| CSS classes | lowercase-hyphen; a primitive's parts carry its prefix | `.ex-summary`, `.btn-glyph` |
 
 - **Generic filenames are banned**: no `utils.js`, `helpers.js`, `misc.js`. Name the file after what it contains.
 - **One file, one concern.** A new concern gets a new file and a line in the README layout table.
@@ -189,7 +189,7 @@ tests. The code documents itself through naming. If a comment feels needed, rena
 **Sole exception**: one line containing `PITFALL:` for something a reader cannot infer from the code (a Safari quirk,
 a silent failure, an intentional overwrite). See `views/sound.js` for the model.
 
-The strand token files keep the group labels they came with. Add none.
+The design token files keep the group labels they came with. Add none.
 
 ---
 
@@ -216,9 +216,9 @@ no storage key before something writes it.
 | Which move fills a slot, and strays | `resolveSlot(slot, swaps)`, `strayIds` in `store/slots.js` | Reading `swaps` by hand |
 | Week and version rotation | `rotation.js` | Counting sessions in a view |
 | Exercise lookup and derived fields | `rules/exercises.js` (`findExercise`, `workoutFor`) | Walking `PROGRAM` by hand |
-| Buttons, inputs, panels | `strand/` | Hand-built markup |
+| Buttons, inputs, panels | `ui/` | Hand-built markup |
 | Opening a pop-up | `openSheet` in `views/sheets/sheet.js` | Touching the sheet elements directly |
-| Colors | strand tokens | Hex or rgba literals |
+| Colors | design tokens | Hex or rgba literals |
 
 ### No Convenience Wrappers
 

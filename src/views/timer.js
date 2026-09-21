@@ -1,7 +1,7 @@
 import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, LIVE_FINISH_MS, VIBRATE_PATTERN,
         WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS, LONG_PRESS_MS} from "../data/constants.js";
 import {scheduleRest, cancelRest} from "./sound.js";
-import {strandButton} from "../strand/button.js";
+import {makeButton} from "../ui/button.js";
 import {clockFace} from "../rules/format.js";
 
 const RUNNING_TONE = {rest: "primary", work: "secondary", stopwatch: "secondary"};
@@ -14,13 +14,13 @@ let button = null;
 
 function face(label, tone, urgent){
   if(!button) return;
-  button.strandLabel(label);
+  button.setLabel(label);
   button.dataset.tone = tone;
   button.dataset.urgent = urgent ? "on" : "off";
 }
 
 export function mountTimer(buttonEl, options = {}){
-  button = strandButton(buttonEl, {tone: "primary"});
+  button = makeButton(buttonEl, {tone: "primary"});
   button.addEventListener("click", () => {
     if(press.fired){ press.fired = false; return; }
     timer.mode ? stop() : start(timer.idle);

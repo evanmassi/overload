@@ -208,8 +208,8 @@ layer or the ones before it: `data`, `rules`, `store`, then `views`.
 | `src/views/timer.js` | rest timer |
 | `src/views/sound.js` | countdown beeps and the sound preference |
 | `src/views/sheets/` | the pop-up frame, and the swap, how-to, timer and relabel pop-ups |
-| `src/styles/app.css` | app styles on top of the strand tokens |
-| `src/strand/` | the design system: button, field and panel, each with its CSS beside it, and the tokens |
+| `src/styles/app.css` | app styles on top of the design tokens |
+| `src/ui/` | the design system: button, field and panel, each with its CSS beside it, and the tokens |
 
 Nothing imports `views/app.js` except `main.js`. State changes call `notify()`, and `main.js` subscribes the app view
 to it. That keeps the view out of the logic and the module graph free of cycles.
@@ -222,7 +222,7 @@ node test/all.mjs
 
 Three suites, no dependencies.
 
-- `guards.mjs` loads every module against a DOM stub, fails on a dead export, fails when a file imports from a layer above its own, and fails on any class the renderers emit that has no stylesheet rule. That last check exists because a stylesheet edit once deleted the consistency grid's rules along with the ones it meant to remove, and every DOM test still passed while the grid rendered invisible. It also fails when a shipped file is missing from the `sw.js` precache list, or the list names a file that no longer exists; the whole strand design system once shipped outside that list without any test noticing.
+- `guards.mjs` loads every module against a DOM stub, fails on a dead export, fails when a file imports from a layer above its own, and fails on any class the renderers emit that has no stylesheet rule. That last check exists because a stylesheet edit once deleted the consistency grid's rules along with the ones it meant to remove, and every DOM test still passed while the grid rendered invisible. It also fails when a shipped file is missing from the `sw.js` precache list, or the list names a file that no longer exists; the whole design system once shipped outside that list without any test noticing.
 - `logic.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.
 - `views.mjs` boots the real views against a fake DOM and asserts what renders, including the sheet's hidden state.
 

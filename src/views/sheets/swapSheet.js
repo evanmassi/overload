@@ -7,8 +7,8 @@ import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor}
 import {idsTakenElsewhere} from "../../store/slots.js";
 import {swapSlot} from "../../store/session.js";
 import {openSheet, closeSheet, sheetGroup} from "./sheet.js";
-import {strandButton} from "../../strand/button.js";
-import {strandField} from "../../strand/field.js";
+import {makeButton} from "../../ui/button.js";
+import {makeField} from "../../ui/field.js";
 
 let openSlot = null;
 
@@ -18,10 +18,10 @@ function armConfirm(button, prompt, act){
     if(button.dataset.armed){ act(); return; }
     button.dataset.armed = "1";
     const original = button.dataset.label;
-    button.strandLabel(prompt);
+    button.setLabel(prompt);
     setTimeout(() => {
       delete button.dataset.armed;
-      button.strandLabel(original);
+      button.setLabel(original);
     }, CONFIRM_WINDOW_MS);
   });
 }
@@ -57,14 +57,14 @@ function customRow(slot, id, taken){
   when.textContent = last ? last.date.slice(5) : "";
 
   const rename = document.createElement("button");
-  strandButton(rename, {label: "rename", tone: "secondary", ghost: true, key: "rename:" + id});
+  makeButton(rename, {label: "rename", tone: "secondary", ghost: true, key: "rename:" + id});
   rename.addEventListener("click", () => {
     const next = prompt("Rename this exercise", state.customNames[id] || "");
     if(next !== null && renameCustom(id, next)){ notify(); openSwapSheet(openSlot); }
   });
 
   const drop = document.createElement("button");
-  strandButton(drop, {label: "remove", tone: "danger", ghost: true, key: "remove:" + id});
+  makeButton(drop, {label: "remove", tone: "danger", ghost: true, key: "remove:" + id});
   const count = setsLoggedFor(id);
   armConfirm(drop, count ? `drop ${count} sets?` : "sure?", () => {
     removeCustom(id);
@@ -102,7 +102,7 @@ export function openSwapSheet(slot){
   input.type = "text";
   input.placeholder = "Exercise name";
   const use = document.createElement("button");
-  strandButton(use, {label: "Use", tone: "primary"});
+  makeButton(use, {label: "Use", tone: "primary"});
   const submit = () => {
     const id = registerCustom(input.value.trim());
     if(id && !pick(slot, id)){
@@ -112,7 +112,7 @@ export function openSwapSheet(slot){
   };
   use.addEventListener("click", submit);
   input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
-  row.append(strandField(input), use);
+  row.append(makeField(input), use);
   body.appendChild(row);
 
   sheetGroup("Everything else");

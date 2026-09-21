@@ -2,8 +2,8 @@ import {TIMER_PRESETS} from "../../data/constants.js";
 import {clockFace, parseClock} from "../../rules/format.js";
 import {start as startTimer, startStopwatch} from "../timer.js";
 import {openSheet, closeSheet, sheetGroup} from "./sheet.js";
-import {strandButton} from "../../strand/button.js";
-import {strandField} from "../../strand/field.js";
+import {makeButton} from "../../ui/button.js";
+import {makeField} from "../../ui/field.js";
 
 function customCountdown(){
   const row = document.createElement("div");
@@ -13,7 +13,7 @@ function customCountdown(){
   input.inputMode = "decimal";
   input.placeholder = "Seconds or m.ss";
   const use = document.createElement("button");
-  strandButton(use, {label: "Start", tone: "primary"});
+  makeButton(use, {label: "Start", tone: "primary"});
   const submit = () => {
     const seconds = parseClock(input.value);
     if(!seconds){ input.value = ""; input.placeholder = "Try 90 or 1.30"; return; }
@@ -22,7 +22,7 @@ function customCountdown(){
   };
   use.addEventListener("click", submit);
   input.addEventListener("keydown", e => { if(e.key === "Enter") submit(); });
-  row.append(strandField(input), use);
+  row.append(makeField(input), use);
   return row;
 }
 
@@ -33,7 +33,7 @@ export function openTimerSheet(){
   presets.className = "sheet-presets";
   TIMER_PRESETS.forEach(seconds => {
     const button = document.createElement("button");
-    strandButton(button, {label: clockFace(seconds), tone: "primary", key: "preset:" + seconds});
+    makeButton(button, {label: clockFace(seconds), tone: "primary", key: "preset:" + seconds});
     button.addEventListener("click", () => { startTimer(seconds); closeSheet(); });
     presets.appendChild(button);
   });

@@ -1,6 +1,6 @@
 import {exportSessions, importSessions, onBackupStatus} from "../store/backup.js";
 import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
-import {strandButton} from "../strand/button.js";
+import {makeButton} from "../ui/button.js";
 
 function backupControls(){
   const box = document.createElement("div");
@@ -8,7 +8,7 @@ function backupControls(){
 
   const save = document.createElement("button");
   save.addEventListener("click", exportSessions);
-  strandButton(save, {label: "Export backup", tone: "primary"});
+  makeButton(save, {label: "Export backup", tone: "primary"});
 
   const picker = document.createElement("input");
   picker.type = "file";
@@ -18,7 +18,7 @@ function backupControls(){
 
   const load = document.createElement("button");
   load.addEventListener("click", () => picker.click());
-  strandButton(load, {label: "Import backup", tone: "primary"});
+  makeButton(load, {label: "Import backup", tone: "primary"});
 
   const result = document.createElement("span");
   result.className = "backup-result";
@@ -41,19 +41,19 @@ function soundControls(){
 
   const toggle = document.createElement("button");
   const paint = () => {
-    toggle.strandLabel(soundOn() ? "Sound on" : "Sound off");
+    toggle.setLabel(soundOn() ? "Sound on" : "Sound off");
     toggle.dataset.chosen = soundOn() ? "on" : "off";
     toggle.setAttribute("aria-pressed", String(soundOn()));
   };
   toggle.addEventListener("click", () => { setSoundOn(!soundOn()); paint(); });
-  strandButton(toggle, {label: "Sound off", tone: "secondary"});
+  makeButton(toggle, {label: "Sound off", tone: "secondary"});
   paint();
 
   const note = document.createElement("p");
   note.className = "sound-result";
 
   const test = document.createElement("button");
-  strandButton(test, {label: "Test sound", tone: "primary"});
+  makeButton(test, {label: "Test sound", tone: "primary"});
   test.addEventListener("click", () => {
     const played = testTone();
     const state = audioState();

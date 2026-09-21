@@ -5,9 +5,9 @@ import {cycleNumber, cycleStart, sessionsDoneIn} from "../rules/rotation.js";
 import {exerciseName} from "../store/customs.js";
 import {resolveSlot, strayIds} from "../store/slots.js";
 import {loadDate, chooseBlock, setDay, setNotes, isAway, setTravel} from "../store/session.js";
-import {strandButton} from "../strand/button.js";
-import {strandField} from "../strand/field.js";
-import {strandPanel} from "../strand/panel.js";
+import {makeButton} from "../ui/button.js";
+import {makeField} from "../ui/field.js";
+import {makePanel} from "../ui/panel.js";
 import {exerciseCard, corePairCard} from "./exerciseCard.js";
 
 export function renderLog(main){
@@ -20,7 +20,7 @@ export function renderLog(main){
   date.className = "date-input";
   date.value = current.date;
   date.addEventListener("change", () => { if(date.value) loadDate(date.value); });
-  const dateField = strandField(date);
+  const dateField = makeField(date);
 
   const blocks = document.createElement("div");
   blocks.className = "blockset";
@@ -29,7 +29,7 @@ export function renderLog(main){
   BLOCKS.forEach((letter, i) => {
     const button = document.createElement("button");
     button.title = `${offDay ? "Version" : "Week"} ${letter}`;
-    strandButton(button, {label: letter, tone: "secondary", key: "block:" + letter});
+    makeButton(button, {label: letter, tone: "secondary", key: "block:" + letter});
     button.dataset.chosen = letter === current.block ? "on" : "off";
     button.setAttribute("aria-pressed", String(letter === current.block));
     button.addEventListener("click", () => chooseBlock(start + i));
@@ -94,7 +94,7 @@ function dayRow(className, keys, done){
   row.className = className;
   keys.forEach(day => {
     const button = document.createElement("button");
-    strandButton(button, {label: DAYS[day].short, tone: "secondary", ghost: true, key: "day:" + day});
+    makeButton(button, {label: DAYS[day].short, tone: "secondary", ghost: true, key: "day:" + day});
     if(done.has(day) && day !== current.day){
       const mark = document.createElement("i");
       mark.className = "icon day-done";
@@ -127,7 +127,7 @@ function placeSwitch(plan){
   const away = isAway(plan);
   [["gym", !away], ["away", away]].forEach(([place, chosen]) => {
     const button = document.createElement("button");
-    strandButton(button, {label: place, tone: "secondary", ghost: true, key: "place:" + place});
+    makeButton(button, {label: place, tone: "secondary", ghost: true, key: "place:" + place});
     button.dataset.chosen = chosen ? "on" : "off";
     button.setAttribute("aria-pressed", String(chosen));
     button.title = place === "gym" ? "The gym versions" : "No-equipment versions for travel";
@@ -151,7 +151,7 @@ function strayExercises(plan){
 function notesCard(){
   const box = document.createElement("div");
   box.className = "notes";
-  strandPanel(box);
+  makePanel(box);
   const label = document.createElement("label");
   label.textContent = "Notes";
   label.setAttribute("for", "notes");
@@ -162,6 +162,6 @@ function notesCard(){
   const save = () => setNotes(area.value);
   area.addEventListener("change", save);
   area.addEventListener("blur", save);
-  box.append(label, strandField(area));
+  box.append(label, makeField(area));
   return box;
 }

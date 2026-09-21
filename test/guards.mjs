@@ -50,9 +50,9 @@ const MAY_IMPORT = {
   data: ["data"],
   rules: ["data", "rules"],
   store: ["data", "rules", "store"],
-  strand: ["strand"],
-  views: ["data", "rules", "store", "strand", "views"],
-  main: ["data", "rules", "store", "strand", "views"]
+  ui: ["ui"],
+  views: ["data", "rules", "store", "ui", "views"],
+  main: ["data", "rules", "store", "ui", "views"]
 };
 const layerOf = file => {
   const parts = file.split("/");

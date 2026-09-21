@@ -10,8 +10,8 @@ import {loadSession, deleteSession} from "../store/session.js";
 import {openRelabelSheet} from "./sheets/relabelSheet.js";
 import {settingsPanel} from "./settings.js";
 import {setSummary, elapsedLabel, unitSuffix} from "../rules/format.js";
-import {strandButton} from "../strand/button.js";
-import {strandPanel} from "../strand/panel.js";
+import {makeButton} from "../ui/button.js";
+import {makePanel} from "../ui/panel.js";
 
 const TREND_WORD = {up: "Beat", same: "Matched", down: "Below"};
 
@@ -53,10 +53,10 @@ function armedDelete(key){
     event.stopPropagation();
     if(remove.dataset.armed){ deleteSession(key); return; }
     remove.dataset.armed = "1";
-    remove.strandLabel("sure?");
-    setTimeout(() => { delete remove.dataset.armed; remove.strandLabel("delete"); }, CONFIRM_WINDOW_MS);
+    remove.setLabel("sure?");
+    setTimeout(() => { delete remove.dataset.armed; remove.setLabel("delete"); }, CONFIRM_WINDOW_MS);
   });
-  return strandButton(remove, {label: "delete", tone: "danger", ghost: true, key: "hist-delete:" + key});
+  return makeButton(remove, {label: "delete", tone: "danger", ghost: true, key: "hist-delete:" + key});
 }
 
 function sessionBody(key, session, plan){
@@ -101,7 +101,7 @@ function sessionBody(key, session, plan){
   actions.className = "hist-actions";
   const edit = document.createElement("button");
   edit.title = "Open this session on the Log tab";
-  strandButton(edit, {label: "edit", tone: "secondary", ghost: true, key: "hist-edit:" + key});
+  makeButton(edit, {label: "edit", tone: "secondary", ghost: true, key: "hist-edit:" + key});
   edit.addEventListener("click", event => {
     event.stopPropagation();
     loadSession(key);
@@ -111,7 +111,7 @@ function sessionBody(key, session, plan){
   });
   const relabel = document.createElement("button");
   relabel.title = "File this session under a different workout";
-  strandButton(relabel, {label: "relabel", tone: "secondary", ghost: true, key: "hist-relabel:" + key});
+  makeButton(relabel, {label: "relabel", tone: "secondary", ghost: true, key: "hist-relabel:" + key});
   relabel.addEventListener("click", event => { event.stopPropagation(); openRelabelSheet(key); });
   actions.append(edit, relabel, armedDelete(key));
   body.appendChild(actions);
@@ -123,7 +123,7 @@ function sessionCard(key, session, plan){
   const open = state.historyOpen.has(key);
   const card = document.createElement("div");
   card.className = "hist-day" + (open ? " hist-expanded" : "");
-  strandPanel(card);
+  makePanel(card);
 
   const row = document.createElement("div");
   row.className = "hist-row";
@@ -153,7 +153,7 @@ function filterBar(className, keys){
   bar.className = className;
   keys.forEach(day => {
     const button = document.createElement("button");
-    strandButton(button, {
+    makeButton(button, {
       label: day ? DAYS[day].short : "All",
       tone: "secondary", ghost: true, key: "filter:" + day
     });
