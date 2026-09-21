@@ -1,8 +1,9 @@
-import {loadSessions, saveSessions, loadCustomNames, saveCustomNames} from "./storage.js";
+import {loadSessions, saveSessions, loadCustomNames, saveCustomNames, loadHolds, saveHolds} from "./storage.js";
 
 export const state = {
   sessions: {},
   customNames: {},
+  holds: {},
   view: "log",
   foldFlips: new Set(),
   historyDay: null,
@@ -17,8 +18,10 @@ export function notify(){ listeners.forEach(fn => fn()); }
 
 export function hydrate(){
   state.customNames = loadCustomNames();
+  state.holds = loadHolds();
   state.sessions = loadSessions();
 }
 
 export function persistSessions(){ saveSessions(state.sessions); }
 export function persistCustomNames(){ saveCustomNames(state.customNames); }
+export function persistHolds(){ saveHolds(state.holds); }

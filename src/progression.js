@@ -92,7 +92,7 @@ export function sessionVolume(session, block, day){
   return Math.round(volume);
 }
 
-export function suggestTarget(exercise, prior){
+export function suggestTarget(exercise, prior, held){
   if(!prior) return null;
   const top = topSet(prior.sets, exercise.bw);
   if(!top) return null;
@@ -103,9 +103,10 @@ export function suggestTarget(exercise, prior){
   const unit = unitSuffix(exercise);
   const effort = prior.effort || "medium";
   const step = EFFORT_STEPS[effort] === undefined ? 1 : EFFORT_STEPS[effort];
+  const same = `${topWeight ? topWeight + "×" : ""}${topReps}${unit}`;
 
-  if(effort === "hard")
-    return {label: `${topWeight ? topWeight + "×" : ""}${topReps}${unit}`, why: "repeat it"};
+  if(held) return {label: same, why: "match it"};
+  if(effort === "hard") return {label: same, why: "repeat it"};
 
   if(!topWeight) return {label: `${topReps + step}${unit || " reps"}`, why: "add reps"};
 

@@ -127,7 +127,7 @@ The caveats are iOS ones, and the reason the visual tiers exist rather than rely
 
 **After each exercise, say how it felt** — easy, medium or hard. Easy doubles next week's jump, medium takes the normal step, hard repeats the same numbers instead of pushing. That turns a fixed +5 rule into something that answers to the day you actually had.
 
-**A lift that has not improved in three sessions** gets flagged with a note to swap it or drop 10% and build back.
+**A lift that has not improved in three sessions** gets flagged with three ways out: **swap it** opens the swap sheet, **drop to N** fills set 1 with 10% less rounded to the plate, and **hold here** says you are staying put on purpose. A held lift's target reads `match it`, the stall flag goes quiet, and the up / matched / down markers still show whether you slipped. The hold is remembered per lift across sessions, so an EZ-bar curl capped by the heaviest bar in the gym stays held until you tap **push again** or beat the held number by more than 10%, at which point the push comes back on its own.
 
 **The Progress tab** opens with a 26-week consistency grid: 182 squares, one per day, seven rows deep and reading left to right by week. A day you logged nothing stays the background grey. A day you logged something is shaded by how much — up to 10 sets, up to 20, then anything above — so a light week and a heavy one look different at a glance. Each square names its date and set count on hover.
 
@@ -157,7 +157,7 @@ The session buttons mark which of the three you have already logged in the curre
 
 Everything is written to `localStorage` on the device, immediately, as you leave each field, plus a flush when you switch apps or close the tab. No account, no server, works with no signal.
 
-The sound preference lives in `overload.sound.v1`; the log itself is untouched by it. That means the log lives on one device. Use **Export backup** on the History tab to save a JSON file, and **Import backup** to merge it into another device. Import merges rather than overwrites: for any date present in both, the copy with more logged sets wins.
+The sound preference lives in `overload.sound.v1` and held lifts in `overload.hold.v1`; the log itself is untouched by either. That means the log lives on one device. Use **Export backup** on the History tab to save a JSON file, and **Import backup** to merge it into another device. Import merges rather than overwrites: for any date present in both, the copy with more logged sets wins.
 
 **Save state is a single dot in the header**, green when written and amber while writing. It was a line of text in the bottom bar, but the text changed width as it changed state, which shoved the countdown sideways on every autosave. Backup results (`merged 3`, `bad file`) print under the Export and Import buttons instead, where the action happened.
 
@@ -185,6 +185,7 @@ Static files, ES modules, no build step.
 | `src/rotation.js` | which week and which session comes next |
 | `src/progression.js` | scoring, volume, target suggestions |
 | `src/swaps.js` | substitutions and custom exercises |
+| `src/holds.js` | lifts you are holding on purpose |
 | `src/session.js` | the session being edited, autosave |
 | `src/format.js` | set summaries and durations, shared by every view |
 | `src/render.js` | the log view, the save bar |

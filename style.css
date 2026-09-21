@@ -494,6 +494,9 @@ button{cursor:pointer;border:none;background:none}
   margin:0 13px 11px;padding:8px 11px;
   background:var(--flat-soft);color:var(--flat);font-size:12.5px;line-height:1.4;
 }
+.stall p{margin:0 0 6px}
+.stall.hold{background:var(--ui-accent-soft);color:var(--muted)}
+.stall-actions{display:flex;flex-wrap:wrap;gap:4px}
 
 .effort{
   display:flex;align-items:center;gap:6px;padding:0 13px 12px;

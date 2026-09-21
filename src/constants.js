@@ -17,6 +17,7 @@ export const LEGACY_DAY_KEYS = {mon: "chest", wed: "legs", fri: "arms"};
 export const SESSIONS_KEY = "overload.v1";
 export const CUSTOM_KEY = "overload.custom.v1";
 export const SOUND_KEY = "overload.sound.v1";
+export const HOLD_KEY = "overload.hold.v1";
 
 export const REST = {
   heavy: 180,
@@ -72,5 +73,6 @@ export const EFFORT_LEVELS = ["easy", "medium", "hard"];
 export const EFFORT_STEPS = {easy: 2, medium: 1, hard: 0};
 export const STALL_EXPOSURES = 3;
 export const STALL_BACKOFF_PERCENT = 10;
+export const HOLD_RELEASE_MARGIN = 0.1;
 export const CONSISTENCY_WEEKS = 26;
 

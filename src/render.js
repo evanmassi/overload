@@ -1,10 +1,11 @@
 import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, LOAD_LABEL, ICON_UP, ICON_SAME, ICON_DOWN,
         EFFORT_LEVELS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT,
-        DEFAULT_REST} from "./constants.js";
+        DEFAULT_REST, WEIGHT_STEP_LB} from "./constants.js";
 import {workoutFor, allExercises, findExercise, isOffDay} from "./movements.js";
 import {state, notify} from "./state.js";
 import {score, loggedCount, priorSets, sessionVolume, suggestTarget,
-        prescribedCount, hasStalled} from "./progression.js";
+        prescribedCount, hasStalled, topSet, num} from "./progression.js";
+import {isHeld, holdLift, releaseLift, beatsHold} from "./holds.js";
 import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
 import {resolveSlot, exerciseName} from "./swaps.js";
 import {loadDate, setBlockIndex, setDay, setsFor, queueSave, previousSameWorkout,
@@ -332,7 +333,8 @@ function fillCard(card, exercise, position, slot, partnerName){
       : `<span>${prescription}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
   card.appendChild(meta);
 
-  const target = suggestTarget(exercise, prior);
+  const held = isHeld(exercise.id);
+  const target = suggestTarget(exercise, prior, held);
   if(target){
     const band = document.createElement("div");
     band.className = "target";
@@ -340,12 +342,9 @@ function fillCard(card, exercise, position, slot, partnerName){
     card.appendChild(band);
   }
 
-  if(hasStalled(state.sessions, exercise, state.current.date)){
-    const flag = document.createElement("p");
-    flag.className = "stall";
-    flag.textContent = `Stuck here ${STALL_EXPOSURES} sessions running. Swap it, or drop ${STALL_BACKOFF_PERCENT}% and build back up.`;
-    card.appendChild(flag);
-  }
+  if(held) card.appendChild(holdNotice(exercise));
+  else if(!exercise.stray && hasStalled(state.sessions, exercise, state.current.date))
+    card.appendChild(stallPrompt(exercise, slot, prior));
 
   const sets = document.createElement("div");
   sets.className = "sets";
@@ -369,6 +368,48 @@ function fillCard(card, exercise, position, slot, partnerName){
     foot.textContent = `${prior.date} — ${setSummary(prior.sets, suffix)}`;
     card.appendChild(foot);
   }
+}
+
+function stallAction(label, key, act){
+  const button = document.createElement("button");
+  strandButton(button, {label, tone: "secondary", ghost: true, key});
+  button.addEventListener("click", act);
+  return button;
+}
+
+function stallPrompt(exercise, slot, prior){
+  const flag = document.createElement("div");
+  flag.className = "stall";
+  const text = document.createElement("p");
+  text.textContent = `Stuck here ${STALL_EXPOSURES} sessions running.`;
+  const actions = document.createElement("div");
+  actions.className = "stall-actions";
+  const top = topSet(prior.sets, exercise.bw);
+  actions.appendChild(stallAction("swap it", "stall-swap:" + exercise.id, () => openSwapSheet(slot)));
+  if(top && num(top.w)){
+    const dropped = Math.max(WEIGHT_STEP_LB, Math.round(num(top.w) * (1 - STALL_BACKOFF_PERCENT / 100) / WEIGHT_STEP_LB) * WEIGHT_STEP_LB);
+    actions.appendChild(stallAction(`drop to ${dropped}`, "stall-drop:" + exercise.id, () => {
+      const sets = setsFor(exercise.id);
+      sets[0] = {w: String(dropped), r: (sets[0] && sets[0].r) || ""};
+      queueSave();
+      notify();
+    }));
+  }
+  actions.appendChild(stallAction("hold here", "stall-hold:" + exercise.id, () => { holdLift(exercise.id); notify(); }));
+  flag.append(text, actions);
+  return flag;
+}
+
+function holdNotice(exercise){
+  const flag = document.createElement("div");
+  flag.className = "stall hold";
+  const text = document.createElement("p");
+  text.textContent = "Holding here on purpose. Beat it by 10% and the push comes back on its own.";
+  const actions = document.createElement("div");
+  actions.className = "stall-actions";
+  actions.appendChild(stallAction("push again", "stall-release:" + exercise.id, () => { releaseLift(exercise.id); notify(); }));
+  flag.append(text, actions);
+  return flag;
 }
 
 function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
@@ -422,6 +463,8 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
     const hadReps = !!sets[index].r;
     const wasComplete = isComplete(exercise);
     sets[index] = {w: weight.value.trim(), r: reps.value.trim()};
+    if(isHeld(exercise.id) && last && beatsHold(score(sets[index], exercise.bw), score(last, exercise.bw)))
+      releaseLift(exercise.id);
     if(isComplete(exercise) !== wasComplete) state.foldFlips.delete(exercise.id);
     if(!hadReps && sets[index].r) markLogged();
     paint();

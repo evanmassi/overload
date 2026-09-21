@@ -332,6 +332,8 @@ section("Effort tunes the next target");
   equal("hard repeats the same set",
     at([[45, 10], [45, 10]], "hard").label, "45×10");
   equal("hard says so", at([[45, 10], [45, 10]], "hard").why, "repeat it");
+  equal("a held lift asks only for a match",
+    suggestTarget(press, {sets: setsOf([[60, 12], [60, 10]]), effort: "easy"}, true), {label: "60×12", why: "match it"});
   equal("easy mid-range adds two reps",
     at([[45, 8], [45, 8]], "easy").label, "45×10");
   equal("easy cannot push reps past the top of the range",
@@ -346,6 +348,25 @@ section("Effort tunes the next target");
   equal("a heavy short set does not beat a lighter long one",
     topSet(setsOf([[50, 3], [45, 9]]), false).w, "45");
   equal("a set with no reps is not a top set", topSet(setsOf([["", ""]]), false), null);
+}
+
+section("Holding a lift");
+{
+  reset();
+  const {isHeld, holdLift, releaseLift, beatsHold} = await import("../src/holds.js");
+  const {loadHolds} = await import("../src/storage.js");
+  holdLift("ez_curl");
+  check("a hold is remembered", isHeld("ez_curl") && loadHolds().ez_curl === 1);
+  check("beating the held number by more than the margin releases it", beatsHold(60 * 12, 60 * 10));
+  check("matching it does not", !beatsHold(60 * 10, 60 * 10));
+  check("a small gain does not either", !beatsHold(60 * 10.5, 60 * 10));
+  releaseLift("ez_curl");
+  check("released", !isHeld("ez_curl") && !loadHolds().ez_curl);
+
+  state.customNames = {custom_x: "x"};
+  holdLift("custom_x");
+  swaps.removeCustom("custom_x");
+  check("removing a custom exercise drops its hold", !isHeld("custom_x"));
 }
 
 section("Stall detection");

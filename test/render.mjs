@@ -290,6 +290,50 @@ section("Effort buttons");
   equal("tapping it again clears it", state.current.effort.flat_db_press, undefined);
 }
 
+section("A stalled lift offers swap, drop and hold");
+{
+  fresh();
+  const {holdLift, isHeld} = await import("../src/holds.js");
+  state.holds = {};
+  ["2026-08-04", "2026-08-11", "2026-08-18"].forEach(date => {
+    state.sessions[date] = {date, day: "arms", block: "A", blockIndex: 0, entries: {ez_curl: [{w: "60", r: "10"}, {w: "60", r: "10"}]}};
+  });
+  loadDate("2026-09-01");
+  setDay("arms");
+  render();
+  const curl = els.main.find("ex-move").find(m => m.id === "card-ez_curl");
+  check("the stall prompt shows", curl.find("stall").length === 1);
+  const actions = curl.find("stall-actions")[0].children.map(b => b.dataset.label);
+  equal("with three ways out", actions, ["swap it", "drop to 55", "hold here"]);
+
+  curl.find("stall-actions")[0].children[2].fire("click");
+  render();
+  const heldCurl = els.main.find("ex-move").find(m => m.id === "card-ez_curl");
+  check("holding is remembered", isHeld("ez_curl"));
+  check("the target asks for a match", heldCurl.find("target")[0].innerHTML.includes("match it"), heldCurl.find("target")[0].innerHTML);
+  check("the stall prompt becomes a hold notice", heldCurl.find("stall")[0].classList.contains("hold"));
+  equal("with a way back", heldCurl.find("stall-actions")[0].children.map(b => b.dataset.label), ["push again"]);
+
+  const rows = heldCurl.find("set").filter(r => !r.classList.contains("head"));
+  wt(rows[0]).value = "60";
+  rp(rows[0]).value = "10";
+  rp(rows[0]).fire("change");
+  check("matching the held number keeps the hold", isHeld("ez_curl"));
+  wt(rows[1]).value = "65";
+  rp(rows[1]).value = "12";
+  rp(rows[1]).fire("change");
+  check("beating it by a clear margin releases the hold", !isHeld("ez_curl"));
+
+  render();
+  const dropRow = els.main.find("ex-move").find(m => m.id === "card-ez_curl");
+  const dropButton = dropRow.find("stall-actions")[0] && dropRow.find("stall-actions")[0].children[1];
+  check("with the hold gone the stall prompt is back", !!dropButton && dropButton.dataset.label === "drop to 55");
+  dropButton.fire("click");
+  render();
+  const droppedRow = els.main.find("ex-move").find(m => m.id === "card-ez_curl").find("set").filter(r => !r.classList.contains("head"))[0];
+  check("drop fills set 1 with 10% less, rounded to the plate", wt(droppedRow).value === "55", wt(droppedRow).value);
+}
+
 section("Consistency grid");
 {
   fresh();

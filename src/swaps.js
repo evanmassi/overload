@@ -1,6 +1,6 @@
 import {findExercise, programIds} from "./movements.js";
 import {ALIASES} from "./taxonomy.js";
-import {state, persistCustomNames, persistSessions} from "./state.js";
+import {state, persistCustomNames, persistSessions, persistHolds} from "./state.js";
 import {loggedCount} from "./progression.js";
 
 const squash = text => String(text).toLowerCase().replace(/[^a-z0-9]/g, "").replace(/s$/, "");
@@ -67,6 +67,8 @@ export function renameCustom(id, name){
 export function removeCustom(id){
   delete state.customNames[id];
   persistCustomNames();
+  delete state.holds[id];
+  persistHolds();
   for(const date in state.sessions){
     const session = state.sessions[date];
     if(session.entries && session.entries[id]) delete session.entries[id];

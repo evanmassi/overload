@@ -1,4 +1,4 @@
-import {SESSIONS_KEY, CUSTOM_KEY, SOUND_KEY, LEGACY_DAY_KEYS} from "./constants.js";
+import {SESSIONS_KEY, CUSTOM_KEY, SOUND_KEY, HOLD_KEY, LEGACY_DAY_KEYS} from "./constants.js";
 
 const LEGACY_SESSIONS_KEY = "ironledger.v1";
 
@@ -27,6 +27,9 @@ export function saveSessions(sessions){ return writeJson(SESSIONS_KEY, sessions)
 
 export function loadCustomNames(){ return readJson(CUSTOM_KEY); }
 export function saveCustomNames(names){ return writeJson(CUSTOM_KEY, names); }
+
+export function loadHolds(){ return readJson(HOLD_KEY); }
+export function saveHolds(holds){ return writeJson(HOLD_KEY, holds); }
 
 export function loadSoundOn(){
   try{ return localStorage.getItem(SOUND_KEY) !== "off"; }
