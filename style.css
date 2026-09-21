@@ -82,7 +82,8 @@ button{cursor:pointer;border:none;background:none}
 .daybar .sfield{flex:1;min-width:0;--f-pad:11px 10px 11px 12px}
 .date-input{font-variant-numeric:tabular-nums}
 .date-input::-webkit-calendar-picker-indicator{opacity:.6;cursor:pointer}
-.sbtn[data-chosen="off"]:not([data-state="hover"]):not([data-state="held"]):not([data-fired]) :is(.sbtn-label,.sbtn-word,.sbtn-glow,.sbtn-frame,.sbtn-fill){animation:none}
+.sbtn[data-chosen="off"]:not([data-state="hover"]):not([data-state="held"]):not([data-fired]) :is(.sbtn-label,.sbtn-word,.sbtn-glow,.sbtn-frame,.sbtn-fill),
+.sbtn:disabled :is(.sbtn-label,.sbtn-word,.sbtn-glow,.sbtn-frame,.sbtn-fill){animation:none}
 .blockset{display:flex;gap:4px}
 .blockset .sbtn{--pad:12px 8px 12px 11px}
 .blockset .sbtn-label,.blockset .sbtn-word{text-align:center}
