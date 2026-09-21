@@ -1,11 +1,11 @@
 import {
-  section, check, equal, report, reset, logged, setsOf, everyMovement, prescribedMovements,
+  section, check, equal, report, reset, logged, setsOf, everyMovement, prescribedMovements, offDayMovements,
   clearStorage, state, hydrate, constants, movements, progression, rotation, swaps, backup,
   HOWTO, PATTERNS, LOAD, PER, EXTRAS
 } from "./harness.mjs";
 
-const {BLOCKS, DAY_KEYS, IMPLEMENTS_PER_LOAD} = constants;
-const {activeBlockIndex, nextSessionIn, sessionsDoneIn, blockLetter, cycleNumber} = rotation;
+const {BLOCKS, DAY_KEYS, OFF_KEYS, IMPLEMENTS_PER_LOAD} = constants;
+const {activeBlockIndex, nextSessionIn, sessionsDoneIn, blockLetter, cycleNumber, nextOffBlockIndex} = rotation;
 const {suggestTarget, sessionVolume, loggedCount, priorSets} = progression;
 
 const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01");
@@ -15,10 +15,12 @@ section("Program data");
 {
   const moves = everyMovement();
   equal("three week blocks", Object.keys(movements.PROGRAM), BLOCKS);
-  check("98 distinct movements", moves.size === 98, moves.size);
+  check("165 distinct movements", moves.size === 165, moves.size);
 
   const prescribed = prescribedMovements();
-  check("9 sessions prescribe 93 of them", prescribed.size === 93, prescribed.size);
+  check("9 lifting sessions prescribe 93 of them", prescribed.size === 93, prescribed.size);
+  const offDay = offDayMovements();
+  check("9 off-day sessions prescribe 74", offDay.size === 74, offDay.size);
 
   const leaked = EXTRAS.filter(e => prescribed.has(e.id));
   equal("extras are swappable but never prescribed", leaked.map(e => e.id), []);
@@ -35,11 +37,11 @@ section("Program data");
   const ghosts = Object.keys(HOWTO).filter(id => !moves.has(id));
   equal("no how-to for a movement that does not exist", ghosts, []);
 
-  const unfactored = [...moves.values()].filter(e => !e.sides || !e.implements || !e.load);
+  const unfactored = [...moves.values()].filter(e => !e.sides || e.implements == null || !e.load);
   equal("every movement carries load and side factors", unfactored.map(e => e.id), []);
 
-  const bwMismatch = [...moves.values()].filter(e => !!e.bw !== LOAD.bw.includes(e.id));
-  equal("bodyweight flag agrees with the bodyweight load tag", bwMismatch.map(e => e.id), []);
+  const bwMismatch = [...moves.values()].filter(e => !!e.bw !== (LOAD.bw.includes(e.id) || LOAD.level.includes(e.id)));
+  equal("bodyweight flag agrees with the bodyweight and level load tags", bwMismatch.map(e => e.id), []);
 
   const perIds = new Set(Object.values(PER).flat());
   const perMismatch = [...moves.values()].filter(e => !!e.per !== perIds.has(e.id));
@@ -139,7 +141,9 @@ section("Session volume counts implements and sides");
   equal("bodyweight contributes no tonnage",
     volume("chest", "A", {pullup: setsOf([["", 10]])}), 0);
 
-  equal("implement factors", IMPLEMENTS_PER_LOAD, {pair: 2, single: 1, bar: 1, stack: 1, bw: 1});
+  equal("implement factors", IMPLEMENTS_PER_LOAD, {pair: 2, single: 1, bar: 1, stack: 1, bw: 1, level: 0});
+  equal("a machine level is not tonnage",
+    volume("conditioning", "A", {stair_intervals: setsOf([[8, 8]])}), 0);
 }
 
 section("Custom exercises keep one identity");
@@ -365,6 +369,64 @@ section("Stall detection");
 
   reset();
   check("no history is not a stall", !hasStalledFor(press));
+}
+
+section("Off days sit beside the program, not inside it");
+{
+  for(const block of BLOCKS) for(const day of OFF_KEYS){
+    const plan = movements.workoutFor(block, day);
+    check(`${block}/${day} has three sections`, plan.sections.length === 3, plan.sections.length);
+    check(`${block}/${day} prescribes 15-36 sets`,
+      progression.prescribedCount(block, day) >= 15 && progression.prescribedCount(block, day) <= 36,
+      progression.prescribedCount(block, day));
+    const ids = movements.allExercises(plan).map(e => e.id);
+    equal(`${block}/${day} lists no move twice`, ids.filter((id, i) => ids.indexOf(id) !== i), []);
+    const badTravel = Object.keys(plan.travel).filter(id =>
+      !ids.includes(id) || !movements.findExercise(plan.travel[id]) || ids.includes(plan.travel[id]));
+    equal(`${block}/${day} travel swaps point at real moves not already in the session`, badTravel, []);
+  }
+
+  const thruster = movements.workoutFor("A", "conditioning").sections[0].ex[0];
+  equal("an interval move takes its shape from its section",
+    [thruster.s, thruster.r, thruster.win, thruster.rest, thruster.restAfter], [4, "AMRAP", 40, 20, 20]);
+  const hang = movements.workoutFor("A", "functional").sections[2].ex[0];
+  equal("a finisher keeps its own set count", [hang.s, hang.r, hang.unit, hang.rest], [2, "30", "sec", 60]);
+  const stairs = movements.workoutFor("A", "conditioning").sections[2].ex[0];
+  equal("a machine finisher logs level and minutes", [stairs.load, stairs.unit, stairs.implements, !!stairs.bw], ["level", "min", 0, true]);
+
+  const liftingGoblet = movements.findExercise("goblet_squat");
+  equal("a lift reused on an off day keeps its lifting definition", [liftingGoblet.r, liftingGoblet.win], ["10-12", undefined]);
+
+  equal("a machine finisher that hit its minutes goes up a level",
+    suggestTarget(stairs, {sets: setsOf([[8, 8]])}), {label: "9×8m", why: "add a level"});
+  equal("one that fell short keeps the level and adds a minute",
+    suggestTarget(stairs, {sets: setsOf([[8, 6]])}).label, "8×7m");
+
+  reset();
+  state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
+  state.sessions["2026-09-05"] = logged("2026-09-05", "conditioning", 0);
+  state.sessions["2026-09-06"] = logged("2026-09-06", "mobility", 0);
+  equal("off days do not count toward the lifting week",
+    [activeBlockIndex(state.sessions), nextSessionIn(state.sessions, 0), [...sessionsDoneIn(state.sessions, 0)]],
+    [0, "legs", ["chest"]]);
+  equal("each off-day type rotates on its own", [
+    nextOffBlockIndex(state.sessions, "conditioning"),
+    nextOffBlockIndex(state.sessions, "mobility"),
+    nextOffBlockIndex(state.sessions, "functional")
+  ], [1, 1, 0]);
+  state.sessions["2026-09-12"] = logged("2026-09-12", "conditioning", 1);
+  state.sessions["2026-09-19"] = logged("2026-09-19", "conditioning", 2);
+  equal("after three it wraps to version A of cycle 2",
+    [nextOffBlockIndex(state.sessions, "conditioning"), blockLetter(3), cycleNumber(3)], [3, "A", 2]);
+
+  const {setDay} = await import("../src/session.js");
+  state.current = {date: "2026-09-20", day: "legs", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}};
+  setDay("conditioning");
+  equal("switching to an off day picks up that type's next version", [state.current.blockIndex, state.current.block], [3, "A"]);
+  setDay("mobility");
+  equal("switching between off days keeps the version you were on", state.current.blockIndex, 3);
+  setDay("arms");
+  equal("switching back to lifting returns to the lifting week", state.current.blockIndex, 0);
 }
 
 section("Prescribed set counts");

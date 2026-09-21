@@ -23,6 +23,24 @@ Weekly set volume per muscle: chest 12.3, back 16.7, quads 10, hams 8, delts 13,
 
 Equipment assumed: dumbbells, EZ bar, pull-up bar, adjustable bench, cable stack. No specialty machines beyond a lat pulldown, seated row, and leg curl.
 
+## Off days
+
+Three more session types sit under the lifting buttons for the days between: **Conditioning**, **Functional** and **Mobility**. Each has its own A/B/C rotation that advances every time you log one, independent of the lifting week, so tapping Conditioning on a Saturday gives you whichever version is next and never moves the lifting week along. Each version comes back every third time, so there is still a number to beat.
+
+Every off-day session is three sections named for where you stand. You pick up a pair of dumbbells and stay in that corner, then move to the floor or the cables, then close on one machine or a pair of holds. Nothing asks you to run from the stair machine to the rack and back.
+
+| | Dumbbells | Floor or cables | Finish |
+|---|---|---|---|
+| **Conditioning** | 4 rounds, 40s on / 20s off | 3 rounds of 45s on, 1 min off | 8-10 min on the stairs |
+| **Functional** | 4-round circuit of carries, get-ups, single-arm work | 4-round cable circuit | hangs, holds, crawls |
+| **Mobility** | 2 rounds of floor stretches | 2 rounds at the bar and bench | 12-15 min walk |
+
+Conditioning cards log **reps inside the window** and the set rows read `R1`..`R4`, so the comparison is how many thrusters you got in 40 seconds against last time. Machine finishers log **level × minutes**: hit the minutes and the target asks for one more level, fall short and it asks for another minute at the same level. They add nothing to the session's tonnage.
+
+**No gym** is a toggle in the session header. It swaps every move that needs equipment for a backpack, chair or bodyweight version in one tap, and a second tap puts the gym versions back. It uses the same swap mechanism as the `swap` button, so each card can still be undone on its own and history follows the movement: a backpack row is compared against the last backpack row, not the last cable row.
+
+Off-day sessions show on the History tab under a second filter row and never interrupt the lifting `Cycle N` headers. Filter to one type and it gets its own cycle headers.
+
 ## Using it
 
 Type weight and reps into each set. The greyed-out placeholder is what you did that same set last time, so an empty box already tells you the number to beat. A ▲ appears when you beat it, `=` when you match it.
@@ -33,7 +51,7 @@ Because of the A/B/C rotation, "last time" for most lifts is a full cycle ago. L
 
 Session volume accounts for both: a walking lunge holding two 40s for 12 per leg counts 40 × 2 dumbbells × 12 reps × 2 legs.
 
-**Tap an exercise name** for a how-to: 3-4 numbered steps and the one thing people get wrong, for all 97 movements. It ships in the page, so it opens instantly with no signal. A YouTube search link sits at the bottom of the sheet for when you want to see it moving.
+**Tap an exercise name** for a how-to: 3-4 numbered steps and the one thing people get wrong, for all 165 movements. It ships in the page, so it opens instantly with no signal. A YouTube search link sits at the bottom of the sheet for when you want to see it moving.
 
 The write-ups are plain-language descriptions of standard technique, not a trainer's instruction. For the fussier moves (Copenhagen plank, Z-press, ab wheel) watch a video the first time and use the steps as a reminder afterwards.
 
@@ -156,8 +174,9 @@ Static files, ES modules, no build step.
 | | |
 |---|---|
 | `src/program.js` | the nine workouts |
-| `src/extras.js` | moves the program never prescribes but the swap sheet offers |
-| `src/howto.js` | 97 movement write-ups |
+| `src/offdays.js` | the nine off-day workouts and their no-gym substitutes |
+| `src/extras.js` | moves the program never prescribes but the swap sheet offers, including the no-gym substitutes |
+| `src/howto.js` | 165 movement write-ups |
 | `src/taxonomy.js` | movement patterns, load conventions, per-side table |
 | `src/movements.js` | derives rest times and load factors onto the program, and parses rep ranges |
 | `src/constants.js` | every tunable number |
@@ -185,7 +204,7 @@ Nothing imports `render.js` except `main.js`, and `render.js` is the only thing 
 node test/all.mjs
 ```
 
-Three suites, 318 assertions, no dependencies.
+Three suites, no dependencies.
 
 - `modules.mjs` loads every module against a DOM stub, fails on a dead export, and fails on any class the renderers emit that has no rule in `style.css`. That last check exists because a stylesheet edit once deleted the consistency grid's rules along with the ones it meant to remove, and every DOM test still passed while the grid rendered invisible.
 - `run.mjs` covers the data (every movement patterned, tagged and written up) and the logic that can silently corrupt history: rotation, progression targets, volume factors, custom-name matching, swap identity, backup merging.

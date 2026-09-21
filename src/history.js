@@ -1,5 +1,5 @@
-import {CONFIRM_WINDOW_MS, DAY_KEYS, DAYS, ICON_SWAP, ICON_UP, ICON_SAME, ICON_DOWN} from "./constants.js";
-import {workoutFor, allExercises, findExercise} from "./movements.js";
+import {CONFIRM_WINDOW_MS, DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, ICON_UP, ICON_SAME, ICON_DOWN} from "./constants.js";
+import {workoutFor, allExercises, findExercise, isOffDay} from "./movements.js";
 import {state, notify} from "./state.js";
 import {loggedCount, sessionVolume, score, topSet, priorSets} from "./progression.js";
 import {blockIndexOf, cycleNumber} from "./rotation.js";
@@ -63,9 +63,11 @@ function sessionBody(date, session, plan){
   const body = document.createElement("div");
   body.className = "hist-body";
 
-  plan.ex.forEach(slot => {
-    const line = slotLine(date, session, slot);
-    if(line) body.appendChild(line);
+  (plan.sections || [{ex: plan.ex}]).forEach(section => {
+    const lines = section.ex.map(slot => slotLine(date, session, slot)).filter(Boolean);
+    if(!lines.length) return;
+    if(section.name) body.appendChild(subLabel(section.name));
+    lines.forEach(line => body.appendChild(line));
   });
 
   const supersets = (plan.core || [])
@@ -144,10 +146,10 @@ function sessionCard(date, session, plan){
   return card;
 }
 
-function filterBar(){
+function filterBar(className, keys){
   const bar = document.createElement("div");
-  bar.className = "blockset hist-filter";
-  [null, ...DAY_KEYS].forEach(day => {
+  bar.className = className;
+  keys.forEach(day => {
     const button = document.createElement("button");
     strandButton(button, {
       label: day ? DAYS[day].short : "All",
@@ -173,7 +175,8 @@ export function renderHistory(main){
     return;
   }
 
-  main.appendChild(filterBar());
+  main.appendChild(filterBar("blockset hist-filter", [null, ...DAY_KEYS]));
+  main.appendChild(filterBar("blockset hist-filter-off", OFF_KEYS));
 
   const shown = dates.filter(date => !state.historyDay || state.sessions[date].day === state.historyDay);
   if(!shown.length){
@@ -191,7 +194,8 @@ export function renderHistory(main){
     if(!plan) return;
 
     const cycle = cycleNumber(blockIndexOf(session));
-    if(cycle !== lastCycle){
+    const ownRotation = !isOffDay(session.day) || state.historyDay === session.day;
+    if(ownRotation && cycle !== lastCycle){
       const label = document.createElement("p");
       label.className = "section-label hist-cycle";
       label.textContent = `Cycle ${cycle}`;

@@ -1,4 +1,5 @@
 import {findExercise, allExercises, workoutFor, repRange} from "./movements.js";
+import {unitSuffix} from "./format.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
         EFFORT_STEPS, STALL_EXPOSURES} from "./constants.js";
 
@@ -99,7 +100,7 @@ export function suggestTarget(exercise, prior){
   const sets = prior.sets.filter(set => set && set.r);
   const topReps = num(top.r);
   const topWeight = num(top.w);
-  const unit = exercise.unit === "sec" ? "s" : "";
+  const unit = unitSuffix(exercise);
   const effort = prior.effort || "medium";
   const step = EFFORT_STEPS[effort] === undefined ? 1 : EFFORT_STEPS[effort];
 
@@ -111,9 +112,12 @@ export function suggestTarget(exercise, prior){
   const range = repRange(exercise.r);
   if(!range) return {label: `${topWeight}×${topReps + step}${unit}`, why: "add reps"};
 
-  const toppedEverySet = sets.length >= 2 && sets.every(set => num(set.r) >= range.max);
-  if(toppedEverySet || topReps > range.max)
-    return {label: `${topWeight + WEIGHT_STEP_LB * step}×${range.min}${unit}`, why: "add weight"};
+  const toppedEverySet = (sets.length >= 2 || exercise.s === 1) && sets.every(set => num(set.r) >= range.max);
+  if(toppedEverySet || topReps > range.max){
+    const byLevel = exercise.load === "level";
+    const weightStep = byLevel ? 1 : WEIGHT_STEP_LB;
+    return {label: `${topWeight + weightStep * step}×${range.min}${unit}`, why: byLevel ? "add a level" : "add weight"};
+  }
 
   return {label: `${topWeight}×${Math.min(topReps + step, range.max)}${unit}`, why: "add reps"};
 }

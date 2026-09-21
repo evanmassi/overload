@@ -85,11 +85,15 @@ button{cursor:pointer;border:none;background:none}
 .blockset{display:flex;gap:4px}
 .blockset .sbtn{--pad:12px 8px 12px 11px}
 .blockset .sbtn-label,.blockset .sbtn-word{text-align:center}
-.blockset.sessions{margin-top:8px}
-.blockset.sessions .sbtn{flex:1;--pad:12px 8px 4px 10px}
-.blockset.sessions .sbtn-meta{padding:0 8px 10px 10px;text-align:center}
+.blockset.sessions,.blockset.offdays{margin-top:8px}
+.blockset.offdays{margin-top:4px}
+.blockset.sessions .sbtn,.blockset.offdays .sbtn{flex:1;--pad:12px 8px 4px 10px}
+.blockset.sessions .sbtn-meta,.blockset.offdays .sbtn-meta{padding:0 8px 10px 10px;text-align:center}
+.blockset.offdays .sbtn-label,.blockset.offdays .sbtn-word{font-size:calc(var(--size-control) - 1px)}
 
-.dayhead{padding:14px 0 6px}
+.dayhead{padding:14px 0 6px;position:relative}
+.dayhead .travel{position:absolute;right:0;top:12px;--pad:10px 10px 4px 10px}
+.dayhead .travel .sbtn-meta{padding:0 10px 8px;text-align:center}
 .eyebrow{
   font-family:var(--font-ui);font-size:11px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--faint);margin:0 0 3px;
@@ -257,8 +261,10 @@ button{cursor:pointer;border:none;background:none}
 .hist-line span{color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hist-line b{font-family:var(--font-ui);font-weight:500;font-variant-numeric:tabular-nums;font-size:12.5px}
 .hist-delta{flex:none;width:22px;min-height:20px}
-.hist-filter{margin:4px 0 6px}
-.hist-filter .sbtn{flex:1}
+.hist-filter{margin:4px 0 4px}
+.hist-filter-off{margin:0 0 6px}
+.hist-filter .sbtn,.hist-filter-off .sbtn{flex:1}
+.hist-filter-off .sbtn-label,.hist-filter-off .sbtn-word{font-size:calc(var(--size-control) - 1px)}
 .hist-cycle{margin-top:14px}
 
 .grid-wrap{margin-bottom:18px}

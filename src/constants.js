@@ -1,10 +1,15 @@
 export const BLOCKS = ["A", "B", "C"];
 export const DAY_KEYS = ["chest", "legs", "arms"];
 
+export const OFF_KEYS = ["conditioning", "functional", "mobility"];
+
 export const DAYS = {
   chest: {short: "Chest", label: "Chest & Back"},
   legs: {short: "Legs", label: "Legs & Back"},
-  arms: {short: "Arms", label: "Shoulders & Arms"}
+  arms: {short: "Arms", label: "Shoulders & Arms"},
+  conditioning: {short: "Cardio", label: "Conditioning"},
+  functional: {short: "Function", label: "Functional"},
+  mobility: {short: "Mobility", label: "Mobility"}
 };
 
 export const LEGACY_DAY_KEYS = {mon: "chest", wed: "legs", fri: "arms"};
@@ -52,10 +57,11 @@ export const LOAD_LABEL = {
   single: "one dumbbell",
   bar: "total w/ bar",
   stack: "stack",
-  bw: "bodyweight +"
+  bw: "bodyweight +",
+  level: "machine level"
 };
 
-export const IMPLEMENTS_PER_LOAD = {pair: 2, single: 1, bar: 1, stack: 1, bw: 1};
+export const IMPLEMENTS_PER_LOAD = {pair: 2, single: 1, bar: 1, stack: 1, bw: 1, level: 0};
 
 export const ICON_SWAP = '<i class="icon">swap_horiz</i>';
 export const ICON_UP = '<i class="icon">keyboard_double_arrow_up</i>';

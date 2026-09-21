@@ -47,8 +47,16 @@ export function prescribedMovements(){
   return seen;
 }
 
+export function offDayMovements(){
+  const seen = new Map();
+  for(const block of constants.BLOCKS) for(const day of constants.OFF_KEYS)
+    movements.allExercises(movements.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
+  return seen;
+}
+
 export function everyMovement(){
   const seen = prescribedMovements();
+  offDayMovements().forEach((e, id) => { if(!seen.has(id)) seen.set(id, e); });
   EXTRAS.forEach(e => seen.set(e.id, e));
   return seen;
 }

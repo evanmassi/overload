@@ -17,7 +17,8 @@ export function renderProgress(main){
       const bw = known ? !!known.bw : !sets.some(set => set.w);
       const top = bestEstimate(sets, bw);
       const value = Math.round(estimateFor(top, bw));
-      (byExercise[id] = byExercise[id] || {name: exerciseName(id), bw, points: []})
+      const level = !!known && known.load === "level";
+      (byExercise[id] = byExercise[id] || {name: exerciseName(id), bw, level, points: []})
         .points.push({date, value, top});
     }
   });
@@ -47,9 +48,11 @@ export function renderProgress(main){
     const latest = entry.points[entry.points.length - 1];
     const best = entry.points.reduce((a, b) => b.value > a.value ? b : a);
     const shown = point => entry.bw ? point.top.r : point.value;
-    const qualifier = !entry.bw ? "est. 1RM" : latest.top.w ? `reps at +${latest.top.w} lb` : "best reps";
+    const qualifier = !entry.bw ? "est. 1RM"
+      : entry.level ? `min at level ${latest.top.w || "?"}`
+      : latest.top.w ? `reps at +${latest.top.w} lb` : "best reps";
     const sessions = `${entry.points.length} session${entry.points.length === 1 ? "" : "s"}`;
-    const bestLabel = entry.bw && best.top.w ? `${best.top.r} at +${best.top.w}` : shown(best);
+    const bestLabel = entry.bw && best.top.w ? `${best.top.r} at ${entry.level ? "level " : "+"}${best.top.w}` : shown(best);
     const history = entry.points.length > 1 ? `${sessions} · best ${bestLabel}` : sessions;
 
     const card = document.createElement("div");

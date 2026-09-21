@@ -1,7 +1,8 @@
 import {PROGRAM} from "./program.js";
 import {EXTRAS} from "./extras.js";
+import {OFFDAYS} from "./offdays.js";
 import {LOAD, PER, PATTERNS, COMPOUND} from "./taxonomy.js";
-import {BLOCKS, DAY_KEYS, REST, IMPLEMENTS_PER_LOAD,
+import {BLOCKS, DAY_KEYS, OFF_KEYS, REST, IMPLEMENTS_PER_LOAD,
         HEAVY_REP_CEILING, LEAD_SET_COUNT} from "./constants.js";
 
 export const PATTERN_OF = {};
@@ -31,11 +32,15 @@ export function restFor(exercise){
 
 export function allExercises(plan){
   if(!plan) return [];
+  if(plan.sections) return plan.sections.flatMap(section => section.ex);
   return plan.ex.concat((plan.core || []).flat());
 }
 
+export function isOffDay(day){ return OFF_KEYS.includes(day); }
+
 function tagLoadAndSides(exercise){
   exercise.load = LOAD_OF[exercise.id] || (exercise.bw ? "bw" : "single");
+  if(exercise.load === "bw" || exercise.load === "level") exercise.bw = 1;
   exercise.per = PER_OF[exercise.id] || null;
   exercise.sides = exercise.per ? 2 : 1;
   exercise.implements = IMPLEMENTS_PER_LOAD[exercise.load];
@@ -55,6 +60,16 @@ for(const block of BLOCKS) for(const day of DAY_KEYS){
   allExercises(plan).forEach(tagLoadAndSides);
 }
 
+for(const block of BLOCKS) for(const day of OFF_KEYS){
+  OFFDAYS[block][day].sections.forEach(section => section.ex.forEach(e => {
+    if(e.s === undefined) e.s = section.rounds;
+    if(section.on){ e.win = section.on; e.r = "AMRAP"; }
+    e.rest = section.off;
+    e.restAfter = section.off;
+    tagLoadAndSides(e);
+  }));
+}
+
 EXTRAS.forEach(e => {
   e.rest = restFor(e);
   e.restAfter = REST.betweenMoves;
@@ -64,6 +79,8 @@ EXTRAS.forEach(e => {
 const BY_ID = {};
 for(const block of BLOCKS) for(const day of DAY_KEYS)
   allExercises(PROGRAM[block][day]).forEach(e => { BY_ID[e.id] = e; });
+for(const block of BLOCKS) for(const day of OFF_KEYS)
+  allExercises(OFFDAYS[block][day]).forEach(e => { if(!BY_ID[e.id]) BY_ID[e.id] = e; });
 EXTRAS.forEach(e => { BY_ID[e.id] = e; });
 
 export function findExercise(id){ return BY_ID[id] || null; }
@@ -71,7 +88,8 @@ export function findExercise(id){ return BY_ID[id] || null; }
 export function programIds(){ return Object.keys(BY_ID); }
 
 export function workoutFor(block, day){
-  return (PROGRAM[block] && PROGRAM[block][day]) || null;
+  const book = isOffDay(day) ? OFFDAYS : PROGRAM;
+  return (book[block] && book[block][day]) || null;
 }
 
-export {PROGRAM, PATTERNS, EXTRAS};
+export {PROGRAM, OFFDAYS, PATTERNS, EXTRAS};

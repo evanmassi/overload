@@ -1,7 +1,8 @@
 import {BLOCKS, AUTOSAVE_DELAY_MS} from "./constants.js";
 import {state, notify, persistSessions} from "./state.js";
 import {loggedCount} from "./progression.js";
-import {blockIndexOf, blockLetter, activeBlockIndex, nextSessionIn} from "./rotation.js";
+import {blockIndexOf, blockLetter, activeBlockIndex, nextSessionIn, nextOffBlockIndex} from "./rotation.js";
+import {isOffDay} from "./movements.js";
 
 let saveTimer = null;
 let statusHandler = () => {};
@@ -18,7 +19,9 @@ export function setBlockIndex(index){
 }
 
 export function setDay(day){
+  const crossing = isOffDay(day) !== isOffDay(state.current.day);
   state.current.day = day;
+  if(crossing) setBlockIndex(isOffDay(day) ? nextOffBlockIndex(state.sessions, day) : activeBlockIndex(state.sessions));
   state.foldFlips.clear();
 }
 

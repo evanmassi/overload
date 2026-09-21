@@ -24,4 +24,8 @@ export function elapsedLabel(startedAt, endedAt){
   return Math.floor(minutes / 60) + "h " + String(minutes % 60).padStart(2, "0") + "m";
 }
 
-export function unitSuffix(exercise){ return exercise.unit === "sec" ? "s" : ""; }
+const UNIT_SUFFIX = {sec: "s", min: "m"};
+const UNIT_NAME = {sec: "sec", min: "min"};
+
+export function unitSuffix(exercise){ return UNIT_SUFFIX[exercise.unit] || ""; }
+export function unitName(exercise){ return UNIT_NAME[exercise.unit] || "reps"; }

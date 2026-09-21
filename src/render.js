@@ -1,7 +1,7 @@
-import {BLOCKS, DAY_KEYS, DAYS, LOAD_LABEL, ICON_UP, ICON_SAME, ICON_DOWN,
+import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, LOAD_LABEL, ICON_UP, ICON_SAME, ICON_DOWN,
         EFFORT_LEVELS, STALL_EXPOSURES, STALL_BACKOFF_PERCENT,
         DEFAULT_REST} from "./constants.js";
-import {workoutFor, allExercises, findExercise} from "./movements.js";
+import {workoutFor, allExercises, findExercise, isOffDay} from "./movements.js";
 import {state, notify} from "./state.js";
 import {score, loggedCount, priorSets, sessionVolume, suggestTarget,
         prescribedCount, hasStalled} from "./progression.js";
@@ -9,7 +9,7 @@ import {cycleNumber, cycleStart, sessionsDoneIn} from "./rotation.js";
 import {resolveSlot, exerciseName} from "./swaps.js";
 import {loadDate, setBlockIndex, setDay, setsFor, queueSave, previousSameWorkout,
         setEffort, markLogged} from "./session.js";
-import {setRuns, setSummary, elapsedLabel, unitSuffix} from "./format.js";
+import {setRuns, setSummary, elapsedLabel, unitSuffix, unitName} from "./format.js";
 import {renderHistory} from "./history.js";
 import {renderProgress} from "./progress.js";
 import {openSwapSheet, openHowTo} from "./sheet.js";
@@ -58,9 +58,10 @@ function renderLog(main){
   const blocks = document.createElement("div");
   blocks.className = "blockset";
   const start = cycleStart(current.blockIndex);
+  const offDay = isOffDay(current.day);
   BLOCKS.forEach((letter, i) => {
     const button = document.createElement("button");
-    button.title = `Week ${letter}`;
+    button.title = `${offDay ? "Version" : "Week"} ${letter}`;
     strandButton(button, {label: letter, tone: "secondary", ghost: true, key: "block:" + letter});
     button.dataset.chosen = letter === current.block ? "on" : "off";
     button.setAttribute("aria-pressed", String(letter === current.block));
@@ -74,31 +75,15 @@ function renderLog(main){
   bar.append(dateField, blocks);
   main.appendChild(bar);
 
-  const done = sessionsDoneIn(state.sessions, current.blockIndex);
-  const days = document.createElement("div");
-  days.className = "blockset sessions";
-  DAY_KEYS.forEach(day => {
-    const button = document.createElement("button");
-    const isDone = done.has(day) && day !== current.day;
-    strandButton(button, {
-      label: DAYS[day].short, meta: isDone ? "done" : "",
-      tone: "secondary", ghost: true, key: "day:" + day
-    });
-    button.dataset.chosen = day === current.day ? "on" : "off";
-    button.setAttribute("aria-pressed", String(day === current.day));
-    button.addEventListener("click", () => {
-      setDay(day);
-      queueSave();
-      notify();
-    });
-    days.appendChild(button);
-  });
-  main.appendChild(days);
+  const done = offDay ? new Set() : sessionsDoneIn(state.sessions, current.blockIndex);
+  main.appendChild(dayRow("blockset sessions", DAY_KEYS, done));
+  main.appendChild(dayRow("blockset offdays", OFF_KEYS, new Set()));
 
   const plan = workoutFor(current.block, current.day);
   const head = document.createElement("div");
   head.className = "dayhead";
-  head.innerHTML = `<p class="eyebrow"><b>Week ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2>`;
+  head.innerHTML = `<p class="eyebrow"><b>${offDay ? "Version" : "Week"} ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2>`;
+  if(plan.travel) head.appendChild(travelToggle(plan));
   main.appendChild(head);
 
   const legend = document.createElement("div");
@@ -106,7 +91,18 @@ function renderLog(main){
   legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">${ICON_UP}</em> beat it</span><span><em class="same">${ICON_SAME}</em> matched</span><span><em class="down">${ICON_DOWN}</em> below</span>`;
   main.appendChild(legend);
 
-  plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot), i + 1, slot)));
+  if(plan.sections){
+    let position = 0;
+    plan.sections.forEach(section => {
+      const label = document.createElement("p");
+      label.className = "section-label";
+      label.textContent = sectionLabel(section);
+      main.appendChild(label);
+      section.ex.forEach(slot => main.appendChild(exerciseCard(resolveSlot(slot), ++position, slot)));
+    });
+  } else {
+    plan.ex.forEach((slot, i) => main.appendChild(exerciseCard(resolveSlot(slot), i + 1, slot)));
+  }
 
   if(plan.core){
     const label = document.createElement("p");
@@ -126,6 +122,59 @@ function renderLog(main){
   }
 
   main.appendChild(notesCard());
+}
+
+function dayRow(className, keys, done){
+  const current = state.current;
+  const row = document.createElement("div");
+  row.className = className;
+  keys.forEach(day => {
+    const button = document.createElement("button");
+    const isDone = done.has(day) && day !== current.day;
+    strandButton(button, {
+      label: DAYS[day].short, meta: isDone ? "done" : "",
+      tone: "secondary", ghost: true, key: "day:" + day
+    });
+    button.dataset.chosen = day === current.day ? "on" : "off";
+    button.setAttribute("aria-pressed", String(day === current.day));
+    button.addEventListener("click", () => {
+      setDay(day);
+      queueSave();
+      notify();
+    });
+    row.appendChild(button);
+  });
+  return row;
+}
+
+function sectionLabel(section){
+  if(section.on) return `${section.name} · ${section.rounds} rounds · ${section.on}s on, ${section.off}s off`;
+  if(section.rounds) return `${section.name} · ${section.rounds} rounds`;
+  return section.name;
+}
+
+function travelOn(plan){
+  const ids = Object.keys(plan.travel);
+  return ids.every(id => state.current.swaps[id] === plan.travel[id]);
+}
+
+function travelToggle(plan){
+  const button = document.createElement("button");
+  button.className = "travel";
+  const on = travelOn(plan);
+  strandButton(button, {label: "no gym", meta: on ? "on" : "off", tone: "secondary", ghost: true, key: "travel"});
+  button.dataset.chosen = on ? "on" : "off";
+  button.setAttribute("aria-pressed", String(on));
+  button.title = on ? "Back to the gym versions" : "Swap in the no-equipment versions";
+  button.addEventListener("click", () => {
+    for(const id in plan.travel){
+      if(on) delete state.current.swaps[id];
+      else state.current.swaps[id] = plan.travel[id];
+    }
+    queueSave();
+    notify();
+  });
+  return button;
 }
 
 function strayExercises(plan){
@@ -218,7 +267,7 @@ function corePairCard(pair, index, slots){
 function fillCard(card, exercise, position, slot, partnerName){
   slot = slot || exercise;
   const prior = priorSets(state.sessions, exercise.id, state.current.date);
-  const unit = exercise.unit === "sec" ? "sec" : "reps";
+  const unit = unitName(exercise);
   const suffix = unitSuffix(exercise);
 
   const head = document.createElement("div");
@@ -267,7 +316,9 @@ function fillCard(card, exercise, position, slot, partnerName){
   const prescription = exercise.r ? `${exercise.s} × ${exercise.r}${suffix}` : `${exercise.s} logged`;
   meta.innerHTML += exercise.core
     ? `<span>${exercise.s} rounds × ${exercise.r}${suffix}</span><span class="dot">·</span><span>${partnerName ? "straight into " + partnerName : `rest ${exercise.rest}s between rounds`}</span>`
-    : `<span>${prescription}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
+    : exercise.win
+      ? `<span>${exercise.s} rounds × ${exercise.win}s on</span><span class="dot">·</span><span>${exercise.rest}s off</span>`
+      : `<span>${prescription}</span><span class="dot">·</span><span>rest ${exercise.rest}s</span>`;
   card.appendChild(meta);
 
   const target = suggestTarget(exercise, prior);
@@ -291,7 +342,7 @@ function fillCard(card, exercise, position, slot, partnerName){
 
   const columns = document.createElement("div");
   columns.className = "set head";
-  columns.innerHTML = `<div>${exercise.core ? "rd" : "#"}</div><div>weight (lbs)</div><div></div><div>${unit}</div><div></div><div></div>`;
+  columns.innerHTML = `<div>${exercise.core || exercise.win ? "rd" : "#"}</div><div>${exercise.load === "level" ? "level" : "weight (lbs)"}</div><div></div><div>${unit}</div><div></div><div></div>`;
   sets.appendChild(columns);
 
   const refreshers = [];
@@ -313,16 +364,16 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
   const row = document.createElement("div");
   row.className = "set";
   const last = prior && prior.sets[index];
-  const unit = exercise.unit === "sec" ? "sec" : "reps";
+  const unit = unitName(exercise);
 
   const number = document.createElement("div");
   number.className = "set-n";
-  number.textContent = exercise.core ? "R" + (index + 1) : index + 1;
+  number.textContent = exercise.core || exercise.win ? "R" + (index + 1) : index + 1;
 
   const weight = document.createElement("input");
   weight.type = "text";
   weight.inputMode = "decimal";
-  weight.placeholder = last && last.w ? last.w : (exercise.bw ? "BW" : "WT");
+  weight.placeholder = last && last.w ? last.w : exercise.load === "level" ? "LVL" : exercise.bw ? "BW" : "WT";
   weight.value = (logged[index] && logged[index].w) || "";
   weight.setAttribute("aria-label", `${exercise.n} set ${index + 1} weight`);
 

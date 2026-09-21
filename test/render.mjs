@@ -584,6 +584,59 @@ section("A logged session cannot be relabelled by one stray tap");
   check("and do not switch on the first tap", state.current.block === "A", state.current.block);
 }
 
+section("An off day renders its sections and swaps to the travel version");
+{
+  fresh();
+  setDay("conditioning");
+  render();
+  check("two rows of session buttons", els.main.find("sessions").length === 1 && els.main.find("offdays").length === 1);
+  check("the off-day button is chosen", els.main.find("offdays")[0].children[0].dataset.chosen === "on");
+  const labels = els.main.find("section-label").map(l => l.textContent);
+  equal("three section headings say where you stand and for how long",
+    labels, ["Dumbbells · 4 rounds · 40s on, 20s off", "Floor · 3 rounds · 45s on, 60s off", "Finish"]);
+  check("nine cards", els.main.find("ex").length === 9, els.main.find("ex").length);
+  check("the eyebrow says version, not week", els.main.find("dayhead")[0].innerHTML.includes("Version A"));
+  const metas = els.main.find("meta").map(m => m.innerHTML);
+  check("interval cards read rounds and the on window", metas[0].includes("4 rounds × 40s on") && metas[0].includes("20s off"), metas[0]);
+  const heads = els.main.find("set").filter(r => r.classList.contains("head"));
+  check("a machine finisher asks for a level", heads[8].innerHTML.includes("level") && heads[8].innerHTML.includes("min"), heads[8].innerHTML);
+  check("interval set rows are rounds", els.main.find("set-n")[0].textContent === "R1");
+
+  const travel = els.main.find("travel")[0];
+  check("a no-gym toggle is offered", !!travel && travel.dataset.chosen === "off");
+  travel.fire("click");
+  render();
+  check("tapping it swaps every mapped move", state.current.swaps.thruster === "backpack_thruster" && state.current.swaps.stair_intervals === "stairwell_climb");
+  check("and marks itself on", els.main.find("travel")[0].dataset.chosen === "on");
+  check("the swapped cards say so", els.main.find("ex-swapped").length === 5, els.main.find("ex-swapped").length);
+  els.main.find("travel")[0].fire("click");
+  render();
+  check("tapping again restores the gym version", Object.keys(state.current.swaps).length === 0);
+
+  fresh();
+  state.sessions["2026-08-30"] = {
+    date: "2026-08-30", day: "conditioning", block: "A", blockIndex: 0,
+    entries: {thruster: [{w: "25", r: "14"}], stair_intervals: [{w: "8", r: "8"}]}
+  };
+  state.sessions["2026-08-31"] = {
+    date: "2026-08-31", day: "chest", block: "B", blockIndex: 1,
+    entries: {flat_db_press: [{w: "60", r: "10"}]}
+  };
+  state.view = "history";
+  render();
+  check("the second filter row lists the three off-day types", els.main.find("hist-filter-off")[0].children.length === 3);
+  const cycles = els.main.find("hist-cycle").map(l => l.textContent);
+  equal("off-day sessions do not interrupt the lifting cycle headers", cycles, ["Cycle 1"]);
+  const card = openHistoryCard(1);
+  const subs = card.find("hist-sub").map(l => l.textContent);
+  equal("an off-day card groups its lines by section", subs, ["Dumbbells", "Finish"]);
+  check("a minutes move prints its suffix", card.find("hist-line")[1].innerHTML.includes("8×8m"), card.find("hist-line")[1].innerHTML);
+  els.main.find("hist-filter-off")[0].children[0].fire("click");
+  render();
+  check("filtering to one off-day type shows only it", els.main.find("hist-day").length === 1);
+  equal("and gives it its own cycle header", els.main.find("hist-cycle").map(l => l.textContent), ["Cycle 1"]);
+}
+
 section("History shows lifts the session plan does not contain");
 {
   fresh();
@@ -642,7 +695,7 @@ section("History filters by workout, groups by cycle and marks deltas");
   check("sessions group under cycle headers",
     cycles.map(c => c.textContent).join() === "Cycle 2,Cycle 1", cycles.map(c => c.textContent).join());
   check("a header sits directly above its first session",
-    els.main.children[1].classList.contains("hist-cycle") && els.main.children[2].classList.contains("hist-day"));
+    els.main.children[2].classList.contains("hist-cycle") && els.main.children[3].classList.contains("hist-day"));
 
   filter.children[2].fire("click");
   render();
