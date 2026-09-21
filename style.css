@@ -173,6 +173,7 @@ button{cursor:pointer;border:none;background:none}
   min-height:48px;text-align:center;text-indent:var(--f-track);
   font-variant-numeric:tabular-nums;
 }
+.set .sfield-input::placeholder{opacity:.5}
 .set .sfield .sfield-frame{animation:none}
 .sfield .sfield-wash{
   inset:var(--border);color:var(--f-line);
