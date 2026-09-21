@@ -163,7 +163,7 @@ button{cursor:pointer;border:none;background:none}
   min-height:48px;text-align:center;text-indent:var(--f-track);
   font-variant-numeric:tabular-nums;
 }
-.set .sfield:has(.sfield-input:not(.filled)){--f-clock:5900ms}
+.set .sfield .sfield-frame{animation:none}
 .set .sfield:has(.sfield-input.filled) .sfield-frame{
   opacity:1;box-shadow:0 0 12px var(--f-glow-soft);animation:none;
 }
