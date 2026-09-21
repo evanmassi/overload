@@ -92,8 +92,8 @@ button{cursor:pointer;border:none;background:none}
 .blockset.offdays .sbtn-label,.blockset.offdays .sbtn-word{font-size:calc(var(--size-control) - 1px)}
 
 .dayhead{padding:14px 0 6px;position:relative}
-.dayhead .travel{position:absolute;right:0;top:12px;--pad:10px 10px 4px 10px}
-.dayhead .travel .sbtn-meta{padding:0 10px 8px;text-align:center}
+.dayhead .place{position:absolute;right:0;top:12px}
+.dayhead .place .sbtn{--pad:9px 10px 9px 11px}
 .eyebrow{
   font-family:var(--font-ui);font-size:11px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--faint);margin:0 0 3px;

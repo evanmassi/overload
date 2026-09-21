@@ -37,7 +37,7 @@ Every off-day session is three sections named for where you stand. You pick up a
 
 Conditioning cards log **reps inside the window** and the set rows read `R1`..`R4`, so the comparison is how many thrusters you got in 40 seconds against last time. Machine finishers log **level × minutes**: hit the minutes and the target asks for one more level, fall short and it asks for another minute at the same level. They add nothing to the session's tonnage.
 
-**No gym** is a toggle in the session header. It swaps every move that needs equipment for a backpack, chair or bodyweight version in one tap, and a second tap puts the gym versions back. It uses the same swap mechanism as the `swap` button, so each card can still be undone on its own and history follows the movement: a backpack row is compared against the last backpack row, not the last cable row.
+**Gym / Away** sits in the session header, gym lit by default. Tap Away and every move that needs equipment becomes a backpack, chair or bodyweight version; tap Gym to put them back. It uses the same swap mechanism as the `swap` button, so each card can still be undone on its own and history follows the movement: a backpack row is compared against the last backpack row, not the last cable row.
 
 Off-day sessions show on the History tab under a second filter row and never interrupt the lifting `Cycle N` headers. Filter to one type and it gets its own cycle headers.
 

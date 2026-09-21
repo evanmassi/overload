@@ -83,7 +83,7 @@ function renderLog(main){
   const head = document.createElement("div");
   head.className = "dayhead";
   head.innerHTML = `<p class="eyebrow"><b>${offDay ? "Version" : "Week"} ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${plan.focus}">${plan.focus}</h2>`;
-  if(plan.travel) head.appendChild(travelToggle(plan));
+  if(plan.travel) head.appendChild(placeSwitch(plan));
   main.appendChild(head);
 
   const legend = document.createElement("div");
@@ -158,23 +158,28 @@ function travelOn(plan){
   return ids.every(id => state.current.swaps[id] === plan.travel[id]);
 }
 
-function travelToggle(plan){
-  const button = document.createElement("button");
-  button.className = "travel";
-  const on = travelOn(plan);
-  strandButton(button, {label: "no gym", meta: on ? "on" : "off", tone: "secondary", ghost: true, key: "travel"});
-  button.dataset.chosen = on ? "on" : "off";
-  button.setAttribute("aria-pressed", String(on));
-  button.title = on ? "Back to the gym versions" : "Swap in the no-equipment versions";
-  button.addEventListener("click", () => {
-    for(const id in plan.travel){
-      if(on) delete state.current.swaps[id];
-      else state.current.swaps[id] = plan.travel[id];
-    }
-    queueSave();
-    notify();
+function placeSwitch(plan){
+  const row = document.createElement("div");
+  row.className = "blockset place";
+  const away = travelOn(plan);
+  [["gym", !away], ["away", away]].forEach(([place, chosen]) => {
+    const button = document.createElement("button");
+    strandButton(button, {label: place, tone: "secondary", ghost: true, key: "place:" + place});
+    button.dataset.chosen = chosen ? "on" : "off";
+    button.setAttribute("aria-pressed", String(chosen));
+    button.title = place === "gym" ? "The gym versions" : "No-equipment versions for travel";
+    button.addEventListener("click", () => {
+      if(chosen) return;
+      for(const id in plan.travel){
+        if(place === "gym") delete state.current.swaps[id];
+        else state.current.swaps[id] = plan.travel[id];
+      }
+      queueSave();
+      notify();
+    });
+    row.appendChild(button);
   });
-  return button;
+  return row;
 }
 
 function strayExercises(plan){

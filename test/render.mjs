@@ -602,16 +602,16 @@ section("An off day renders its sections and swaps to the travel version");
   check("a machine finisher asks for a level", heads[8].innerHTML.includes("level") && heads[8].innerHTML.includes("min"), heads[8].innerHTML);
   check("interval set rows are rounds", els.main.find("set-n")[0].textContent === "R1");
 
-  const travel = els.main.find("travel")[0];
-  check("a no-gym toggle is offered", !!travel && travel.dataset.chosen === "off");
-  travel.fire("click");
+  const place = els.main.find("place")[0];
+  check("a gym / away picker is offered with gym lit", place.children[0].dataset.chosen === "on" && place.children[1].dataset.chosen === "off");
+  place.children[1].fire("click");
   render();
-  check("tapping it swaps every mapped move", state.current.swaps.thruster === "backpack_thruster" && state.current.swaps.stair_intervals === "stairwell_climb");
-  check("and marks itself on", els.main.find("travel")[0].dataset.chosen === "on");
+  check("tapping away swaps every mapped move", state.current.swaps.thruster === "backpack_thruster" && state.current.swaps.stair_intervals === "stairwell_climb");
+  check("and lights away", els.main.find("place")[0].children[1].dataset.chosen === "on");
   check("the swapped cards say so", els.main.find("ex-swapped").length === 5, els.main.find("ex-swapped").length);
-  els.main.find("travel")[0].fire("click");
+  els.main.find("place")[0].children[0].fire("click");
   render();
-  check("tapping again restores the gym version", Object.keys(state.current.swaps).length === 0);
+  check("tapping gym restores the gym version", Object.keys(state.current.swaps).length === 0);
 
   fresh();
   state.sessions["2026-08-30"] = {
