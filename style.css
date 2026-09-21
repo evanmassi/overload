@@ -91,7 +91,7 @@ button{cursor:pointer;border:none;background:none}
 .blockset.sessions .sbtn,.blockset.offdays .sbtn{flex:1;--pad:12px 10px 12px 10px}
 .blockset.sessions .sbtn-label,.blockset.offdays .sbtn-label{text-indent:var(--track-control)}
 .blockset.sessions .sbtn + .sbtn,.blockset.offdays .sbtn + .sbtn{border-left:1px solid var(--line-hairline)}
-.blockset.sessions .sbtn-meta,.blockset.offdays .sbtn-meta{margin-top:-8px;padding:0 10px 10px;text-align:center}
+.day-done{position:absolute;top:4px;right:4px;pointer-events:none}
 .blockset.offdays .sbtn-label,.blockset.offdays .sbtn-word{font-size:calc(var(--size-control) - 1px)}
 
 .dayhead{padding:14px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
