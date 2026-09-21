@@ -284,7 +284,7 @@ function fillCard(card, exercise, position, slot, notch){
 
   const head = document.createElement("div");
   head.className = "ex-head";
-  head.innerHTML = `${notch ? `<span class="ex-num">${notch}</span>` : ""}<h3 class="ex-name">${exercise.n}</h3>`;
+  head.innerHTML = `${notch ? `<span class="ex-num"><i class="ex-echo">${notch}</i>${notch}</span>` : ""}<h3 class="ex-name">${exercise.n}</h3>`;
   head.querySelector(".ex-name").addEventListener("click", () => openHowTo(exercise));
 
   const summary = document.createElement("span");
