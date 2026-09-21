@@ -29,7 +29,7 @@ export const CATALOG = {
   flat_db_press: {n: "Flat DB Bench Press", pattern: "Horizontal press", load: "pair", target: "5-6", muscles: {p: ["chest", "triceps"], s: ["front delts"]}},
   incline_db_press: {n: "Incline DB Press", pattern: "Horizontal press", load: "pair", target: "8-10", muscles: {p: ["upper chest", "front delts"], s: ["triceps"]}},
   squeeze_press: {n: "DB Squeeze Press", pattern: "Horizontal press", load: "pair", target: "12", muscles: {p: ["chest", "triceps"], s: ["front delts"]}},
-  pushup_burnout: {n: "Push-ups to Failure", pattern: "Horizontal press", load: "bw", target: "AMRAP", muscles: {p: ["chest", "triceps"], s: ["front delts", "core"]}},
+  pushup_burnout: {n: "Push-ups", pattern: "Horizontal press", load: "bw", target: "AMRAP", muscles: {p: ["chest", "triceps"], s: ["front delts", "core"]}},
   feet_elev_pushup: {n: "Feet-Elevated Push-ups", pattern: "Horizontal press", load: "bw", target: "AMRAP", muscles: {p: ["upper chest", "front delts"], s: ["triceps", "core"]}},
   diamond_pushup: {n: "Diamond Push-ups", pattern: "Horizontal press", load: "bw", target: "AMRAP", muscles: {p: ["triceps", "chest"], s: ["front delts"]}},
   close_grip_press: {n: "Close-Grip EZ Press", pattern: "Horizontal press", load: "bar", target: "10", muscles: {p: ["triceps", "chest"], s: ["front delts"]}},

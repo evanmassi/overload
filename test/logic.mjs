@@ -233,7 +233,7 @@ section("Rest comes from the movement, not its place in the list");
     rest("C", "legs", "Bulgarian Split Squat"), 120);
 
   equal("an AMRAP lead is still a lead", rest("A", "chest", "Pull-ups"), 120);
-  equal("an AMRAP finisher is not", rest("A", "chest", "Push-ups to Failure"), 90);
+  equal("an AMRAP finisher is not", rest("A", "chest", "Push-ups"), 90);
 
   const slot = prescribedExercises().get("hip_thrust");
   equal("restFor reads the prescription, not the program", restFor(slot), 120);
