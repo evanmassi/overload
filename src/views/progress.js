@@ -1,9 +1,9 @@
-import {CONSISTENCY_WEEKS} from "../data/constants.js";
+import {CONSISTENCY_WEEKS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {state} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
-import {loggedCount, bestEstimate, estimateFor, loggedAsBodyweight} from "../rules/progression.js";
-import {iso} from "../rules/format.js";
+import {loggedCount, topSet, score, loggedAsBodyweight, progressSince} from "../rules/progression.js";
+import {iso, shortDate, unitSuffix, unitName, weightUnit} from "../rules/format.js";
 import {isLogged} from "../rules/sets.js";
 import {makePanel} from "../ui/panel.js";
 import {el, escapeHtml} from "./dom.js";
@@ -15,45 +15,50 @@ export function renderProgress(main){
     for(const id in (session.entries || {})){
       const sets = session.entries[id].filter(isLogged);
       if(!sets.length) continue;
-      const known = findExercise(id);
-      const bw = loggedAsBodyweight(known, sets);
-      const top = bestEstimate(sets, bw);
-      const value = Math.round(estimateFor(top, bw));
-      const level = !!known && known.load === "level";
-      (byExercise[id] = byExercise[id] || {name: exerciseName(id), bw, level, points: []})
-        .points.push({date: session.date, value, top});
+      const exercise = findExercise(id);
+      const bw = loggedAsBodyweight(exercise, sets);
+      const top = topSet(sets, bw);
+      const entry = byExercise[id] = byExercise[id] || {name: exerciseName(id), exercise, bw, points: []};
+      entry.day = session.day;
+      entry.points.push({date: session.date, value: Math.round(score(top, bw)), top});
     }
   });
 
   const ids = Object.keys(byExercise).sort((a, b) => byExercise[b].points.length - byExercise[a].points.length);
   if(!ids.length) main.appendChild(el("p", "empty", "Log two sessions of the same lift and the trend line shows up here."));
   main.append(el("p", "section-label", "Consistency"), consistencyGrid());
-  if(!ids.length) return;
 
-  main.appendChild(el("p", "section-label", "Top set trend · est. 1RM"));
-
-  ids.forEach(id => {
-    const entry = byExercise[id];
-    const latest = entry.points[entry.points.length - 1];
-    const best = entry.points.reduce((a, b) => b.value > a.value ? b : a);
-    const shown = point => entry.bw ? point.top.r : point.value;
-    const qualifier = !entry.bw ? "est. 1RM"
-      : entry.level ? `min at level ${latest.top.w || "?"}`
-      : latest.top.w ? `reps at +${latest.top.w} lb` : "best reps";
-    const sessions = `${entry.points.length} session${entry.points.length === 1 ? "" : "s"}`;
-    const bestLabel = entry.bw && best.top.w ? `${best.top.r} at ${entry.level ? "level " : "+"}${best.top.w}` : shown(best);
-    const history = entry.points.length > 1 ? `${sessions} · best ${bestLabel}` : sessions;
-
-    const lastSet = `${latest.top.w ? latest.top.w + "×" : ""}${latest.top.r} on ${latest.date.slice(5)}`;
-    const card = el("div", "prog panel-flat");
-    makePanel(card);
-    card.innerHTML = `<h3>${escapeHtml(entry.name)}</h3>
-      <div class="best">${escapeHtml(shown(latest))}<em>${escapeHtml(qualifier)}</em></div>
-      <div class="meta">${escapeHtml(history)}</div>
-      <div class="meta" style="text-align:right">${escapeHtml(lastSet)}</div>`;
-    if(entry.points.length > 1) card.appendChild(sparkline(entry.points.map(p => p.value)));
-    main.appendChild(card);
+  [...DAY_KEYS, ...OFF_KEYS].forEach(day => {
+    const inDay = ids.filter(id => byExercise[id].day === day);
+    if(!inDay.length) return;
+    main.appendChild(el("p", "section-label", DAYS[day].label));
+    inDay.forEach(id => main.appendChild(progressCard(byExercise[id])));
   });
+}
+
+function progressCard(entry){
+  const {points, exercise} = entry;
+  const latest = points[points.length - 1];
+  const bestIndex = points.reduce((best, point, i) => point.value > points[best].value ? i : best, 0);
+  const best = points[bestIndex].top;
+  const suffix = exercise ? unitSuffix(exercise) : "";
+  const tag = text => `<small class="unit-tag">${text}</small>`;
+  const weight = latest.top.w ? `${escapeHtml(latest.top.w)}${tag(weightUnit(exercise))} × ` : "";
+  const reps = `${escapeHtml(latest.top.r)}${tag(exercise ? unitName(exercise) : "reps")}`;
+  const change = points.length > 1 ? progressSince(exercise, points[0].top, latest.top, entry.bw) : null;
+
+  const card = el("div", "prog panel-flat");
+  makePanel(card);
+  card.innerHTML = `<h3>${escapeHtml(entry.name)}</h3>`
+    + (change ? `<i class="prog-change ${change.direction}">${TREND_ICON[change.direction]}${change.text}</i>` : "<i></i>")
+    + `<div class="prog-top">${weight}${reps}</div>`
+    + (entry.bw ? "" : `<div class="prog-est">est. 1RM<span>${latest.value}</span></div>`);
+  if(points.length > 1) card.appendChild(sparkline(points.map(point => point.value), bestIndex));
+
+  const count = `${points.length} session${points.length === 1 ? "" : "s"}`;
+  const bestText = points.length > 1 ? ` · best ${best.w ? best.w + "×" : ""}${best.r}${suffix}` : "";
+  card.appendChild(el("p", "prog-foot", `${count}${bestText} · last ${shortDate(latest.date)}`));
+  return card;
 }
 
 function consistencyGrid(){
@@ -87,7 +92,7 @@ function consistencyGrid(){
   return wrap;
 }
 
-function sparkline(values){
+function sparkline(values, bestIndex){
   const ns = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(ns, "svg");
   svg.setAttribute("viewBox", "0 0 100 36");
@@ -111,13 +116,19 @@ function sparkline(values){
   line.setAttribute("stroke-linejoin", "round");
   line.setAttribute("vector-effect", "non-scaling-stroke");
 
-  const dot = document.createElementNS(ns, "circle");
-  dot.setAttribute("cx", points[points.length - 1][0]);
-  dot.setAttribute("cy", points[points.length - 1][1]);
-  dot.setAttribute("r", "2.5");
-  dot.setAttribute("fill", "var(--ui-accent)");
-  dot.setAttribute("vector-effect", "non-scaling-stroke");
+  const dots = points.map(([x, y], i) => {
+    const dot = document.createElementNS(ns, "line");
+    dot.setAttribute("x1", x);
+    dot.setAttribute("y1", y);
+    dot.setAttribute("x2", x);
+    dot.setAttribute("y2", y);
+    dot.setAttribute("stroke", i === bestIndex ? "var(--success)" : "var(--ui-accent)");
+    dot.setAttribute("stroke-width", i === bestIndex ? "7" : "4");
+    dot.setAttribute("stroke-linecap", "round");
+    dot.setAttribute("vector-effect", "non-scaling-stroke");
+    return dot;
+  });
 
-  svg.append(area, line, dot);
+  svg.append(area, line, ...dots);
   return svg;
 }

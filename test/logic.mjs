@@ -153,6 +153,13 @@ section("Progression targets");
     [changeOf(press, [[45, 10], [45, 10]]), changeOf(press, [[45, 9], [45, 8]]), changeOf({r: "45", unit: "sec", bw: 1}, [["", 45]])],
     ["+5 lb", "+1 rep", "+1s"]);
   equal("a top set already at the ceiling asks for it on every set", changeOf(press, [[45, 10], [45, 8], [45, 7]]), "every set");
+  const {progressSince} = progression;
+  const set = (w, r) => ({w: String(w), r: String(r)});
+  equal("progress reads the weight gained first", progressSince(press, set(45, 10), set(55, 9), false), {text: "+10 lb", direction: "up"});
+  equal("and its arrow follows the strength estimate, like the graph",
+    progressSince(press, set(45, 10), set(55, 8), false).direction, "up");
+  equal("then reps at the same weight", progressSince(press, set(45, 8), set(45, 10), false), {text: "+2 reps", direction: "up"});
+  equal("and a drop says so", progressSince({r: "45", unit: "sec", bw: 1}, set("", 45), set("", 40), true), {text: "−5s", direction: "down"});
 }
 
 section("Session volume counts implements and sides");
@@ -271,27 +278,24 @@ section("Rest comes from the movement, not its place in the list");
     positional.some(same => !same));
 }
 
-section("The progress card reads the best estimate, not the biggest pile");
+section("Every comparison scores a set by its strength estimate, not the biggest pile");
 {
-  const {bestEstimate, estimateFor} = progression;
+  const {topSet, score, trend} = progression;
 
   const sets = [{w: "50", r: "20"}, {w: "65", r: "10"}];
-  equal("volume would pick the lighter, longer set",
-    sets.reduce((a, b) => progression.score(b, false) > progression.score(a, false) ? b : a),
-    {w: "50", r: "20"});
-  equal("the estimate picks the heavier one", bestEstimate(sets, false), {w: "65", r: "10"});
-  equal("65x10 estimates to 87", Math.round(estimateFor({w: "65", r: "10"}, false)), 87);
-  equal("50x20 only estimates to 83", Math.round(estimateFor({w: "50", r: "20"}, false)), 83);
+  equal("the top set is the heavier one, not the longer", topSet(sets, false), {w: "65", r: "10"});
+  equal("65x10 estimates to 87", Math.round(score({w: "65", r: "10"}, false)), 87);
+  equal("50x20 only estimates to 83", Math.round(score({w: "50", r: "20"}, false)), 83);
+  equal("more weight at the bottom of the range counts as up", trend({w: "55", r: "8"}, {w: "50", r: "10"}, false), "up");
 
   equal("a bodyweight move is scored on reps",
-    bestEstimate([{w: "", r: "12"}, {w: "", r: "18"}], true), {w: "", r: "18"});
-  equal("and its value is the rep count",
-    estimateFor({w: "", r: "18"}, true), 18);
+    topSet([{w: "", r: "12"}, {w: "", r: "18"}], true), {w: "", r: "18"});
+  equal("and its value is the rep count", score({w: "", r: "18"}, true), 18);
   equal("added weight on a bodyweight move counts, as it does on the log",
-    bestEstimate([{w: "", r: "15"}, {w: "45", r: "8"}], true), {w: "45", r: "8"});
+    topSet([{w: "", r: "15"}, {w: "45", r: "8"}], true), {w: "45", r: "8"});
 
-  equal("no logged sets means no best", bestEstimate([{w: "50", r: ""}], false), null);
-  equal("an empty list too", bestEstimate([], false), null);
+  equal("no logged sets means no best", topSet([{w: "50", r: ""}], false), null);
+  equal("an empty list too", topSet([], false), null);
 }
 
 section("One formatter serves both views");

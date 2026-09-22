@@ -32,6 +32,11 @@ export function elapsedLabel(startedAt, endedAt){
 const UNIT_SUFFIX = {sec: "s", min: "m"};
 const UNIT_NAME = {sec: "sec", min: "min"};
 
+export function weightUnit(exercise){ return exercise && exercise.load === "level" ? "level" : "lbs"; }
+
+export const shortDate = dateStr =>
+  new Date(dateStr + "T12:00:00").toLocaleDateString("en-US", {month: "short", day: "numeric"});
+
 export function unitSuffix(exercise){ return UNIT_SUFFIX[exercise.unit] || ""; }
 export function unitName(exercise){ return UNIT_NAME[exercise.unit] || "reps"; }
 

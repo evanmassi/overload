@@ -14,7 +14,7 @@ export function score(set, isBodyweight){
   if(!isLogged(set)) return 0;
   return isBodyweight
     ? num(set.r) * (1 + num(set.w) / BODYWEIGHT_LOAD_EQUIVALENT_LB)
-    : num(set.w) * num(set.r);
+    : num(set.w) * (1 + num(set.r) / EPLEY_DIVISOR);
 }
 
 export function trend(set, prior, isBodyweight){
@@ -27,8 +27,6 @@ export function loggedAsBodyweight(exercise, sets){
   return exercise ? !!exercise.bw : !sets.some(set => set.w);
 }
 
-function estimatedMax(weight, reps){ return weight * (1 + reps / EPLEY_DIVISOR); }
-
 export function loggedCount(session){
   let n = 0;
   for(const id in (session.entries || {})) n += session.entries[id].filter(isLogged).length;
@@ -37,18 +35,6 @@ export function loggedCount(session){
 
 export function prescribedCount(workout){
   return workoutSlots(workout).reduce((total, exercise) => total + exercise.s, 0);
-}
-
-export function estimateFor(set, isBodyweight){
-  if(!isLogged(set)) return 0;
-  return isBodyweight ? score(set, true) : estimatedMax(num(set.w), num(set.r));
-}
-
-export function bestEstimate(sets, isBodyweight){
-  const logged = (sets || []).filter(isLogged);
-  if(!logged.length) return null;
-  return logged.reduce((best, set) =>
-    estimateFor(set, isBodyweight) > estimateFor(best, isBodyweight) ? set : best);
 }
 
 export function topSet(sets, isBodyweight){
@@ -122,7 +108,7 @@ export function suggestTarget(exercise, prior, held){
   const effort = prior.effort || "medium";
   const step = EFFORT_STEPS[effort] === undefined ? 1 : EFFORT_STEPS[effort];
   const aim = (w, r, change) => ({w: w ? String(w) : "", r: String(r), change, isPush: w > topWeight || r > topReps});
-  const addReps = reps => aim(topWeight, reps, reps > topReps ? moreOf(reps - topReps, unitSuffix(exercise)) : "every set");
+  const addReps = reps => aim(topWeight, reps, reps > topReps ? countChange(reps - topReps, unitSuffix(exercise)) : "every set");
 
   if(held) return aim(topWeight, topReps, "match it");
   if(effort === "hard") return aim(topWeight, topReps, "repeat it");
@@ -140,8 +126,20 @@ export function suggestTarget(exercise, prior, held){
   return addReps(Math.min(topReps + step, range.max));
 }
 
-function moreOf(n, suffix){
-  if(suffix === "s") return `+${n}s`;
-  if(suffix === "m") return `+${n} min`;
-  return `+${n} rep${n === 1 ? "" : "s"}`;
+const signed = n => (n > 0 ? "+" : "−") + Math.abs(n);
+
+function countChange(n, suffix){
+  if(suffix === "s") return `${signed(n)}s`;
+  if(suffix === "m") return `${signed(n)} min`;
+  return `${signed(n)} rep${Math.abs(n) === 1 ? "" : "s"}`;
+}
+
+export function progressSince(exercise, first, latest, isBodyweight){
+  const weightGain = num(latest.w) - num(first.w);
+  const repGain = num(latest.r) - num(first.r);
+  const byLevel = !!exercise && exercise.load === "level";
+  const text = weightGain
+    ? `${signed(weightGain)} ${byLevel ? "level" + (Math.abs(weightGain) === 1 ? "" : "s") : "lb"}`
+    : repGain ? countChange(repGain, exercise ? unitSuffix(exercise) : "") : "same";
+  return {text, direction: trend(latest, first, isBodyweight)};
 }

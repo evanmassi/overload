@@ -1,9 +1,9 @@
-import {LOAD_LABEL, TREND_ICON, EFFORT_LEVELS, STALL_EXPOSURES} from "../data/constants.js";
+import {LOAD_LABEL, TREND_ICON, EFFORT_LEVELS, STALL_EXPOSURES, HOLD_RELEASE_MARGIN} from "../data/constants.js";
 import {musclesOf} from "../rules/exercises.js";
 import {restAfterSet} from "../rules/workouts.js";
 import {suggestTarget, hasStalled, trend, backoffWeight} from "../rules/progression.js";
 import {isLogged} from "../rules/sets.js";
-import {setRuns, setSummary, unitSuffix, unitName} from "../rules/format.js";
+import {setRuns, setSummary, unitSuffix, unitName, weightUnit} from "../rules/format.js";
 import {state, changes} from "../store/state.js";
 import {isHeld, holdExercise, releaseExercise} from "../store/holds.js";
 import {setEffort, logSet, swapSlot, nextRest, openSetIndex, currentSets, lastTimeFor} from "../store/session.js";
@@ -179,10 +179,10 @@ function fillCard(card, exercise, position, slot, notch){
 function targetBand(exercise, target){
   const band = el("div", "target");
   const weight = target.w
-    ? `${target.w}<small class="target-unit">${exercise.load === "level" ? "level" : "lbs"}</small>`
+    ? `${target.w}<small class="unit-tag">${weightUnit(exercise)}</small>`
     : exercise.bw ? "BW" : "—";
   band.innerHTML = `<span class="target-tag">goal</span><div></div><b>${weight}</b><div class="x">×</div>`
-    + `<b>${target.r}<small class="target-unit">${unitName(exercise)}</small></b>`
+    + `<b>${target.r}<small class="unit-tag">${unitName(exercise)}</small></b>`
     + `<i class="target-change">${TREND_ICON[target.isPush ? "up" : "same"]}${target.change}</i>`;
   return band;
 }
@@ -270,7 +270,7 @@ function stallPrompt(exercise, slot, prior){
 
 function holdNotice(exercise){
   const release = calloutAction("push", "stall-release:" + exercise.id, () => { releaseExercise(exercise.id); changes.notify(); });
-  return callout("secondary", "anchor", "Holding", "Match it. Beat it by 10% and the push comes back.", [release]);
+  return callout("secondary", "anchor", "Holding", `Match it. Beat it by ${HOLD_RELEASE_MARGIN * 100}% and the push comes back.`, [release]);
 }
 
 function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){

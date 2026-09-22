@@ -113,7 +113,7 @@ section("A prior session drives placeholders and a target");
   check("a target band appears", els.main.find("target").length >= 1);
   const band = els.main.find("target")[0];
   check("it asks for more weight after topping the range",
-    band.innerHTML.includes("<b>50<small class=\"target-unit\">lbs</small></b>") && band.innerHTML.includes("<b>8<small class=\"target-unit\">reps</small></b>") && band.innerHTML.includes("+5 lb"), band.innerHTML);
+    band.innerHTML.includes("<b>50<small class=\"unit-tag\">lbs</small></b>") && band.innerHTML.includes("<b>8<small class=\"unit-tag\">reps</small></b>") && band.innerHTML.includes("+5 lb"), band.innerHTML);
   const row = els.main.find("set").filter(r => !r.classList.contains("head"))[0];
   check("last time's weight is the placeholder", wt(row).attrs === undefined || wt(row).placeholder === "45", wt(row).placeholder);
 }
@@ -192,6 +192,10 @@ section("History and progress views render");
     els.main.find("prog")[0].innerHTML.includes("est. 1RM"),
     els.main.find("prog")[0].innerHTML);
   check("two data points draw a sparkline", els.main.find("prog")[0].children.some(c => c.tag === "svg"));
+  check("cards sit under their workout", els.main.find("section-label").some(l => l.textContent === "Chest & Back"));
+  check("the headline is the latest top set", els.main.find("prog")[0].innerHTML.includes("45<small class=\"unit-tag\">lbs</small> × 10"),
+    els.main.find("prog")[0].innerHTML);
+  check("with the change since the first session", els.main.find("prog")[0].innerHTML.includes("+5 lb"));
 }
 
 section("Collapsing and the set bar");
