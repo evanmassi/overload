@@ -14,7 +14,8 @@ import {byId, el, escapeHtml} from "./dom.js";
 import {actionButton, choiceRow} from "./controls.js";
 import {openSwapSheet} from "./sheets/swapSheet.js";
 import {openHowTo} from "./sheets/howtoSheet.js";
-import {start as startTimer, startWork, setIdleRest, restRunningFor} from "./timer.js";
+import {start as startTimer, startWork, startHold, endHold, waitForSide, holdRunningFor, sideWaitingFor,
+        setIdleRest, restRunningFor} from "./timer.js";
 import {updateSaveBar} from "./saveBar.js";
 
 function isFolded(exercise){
@@ -162,8 +163,8 @@ function fillCard(card, exercise, position, slot, notch){
   const columns = el("div", "set head");
   columns.innerHTML = `<div>${exercise.core || exercise.win ? "rd" : "#"}</div><div>${exercise.load === "level" ? "level" : "weight (lbs)"}</div><div></div><div>${unit}</div>`;
   const timeCell = el("div");
-  const windowSeconds = workWindowSeconds(exercise);
-  if(windowSeconds) timeCell.appendChild(workWindowButton(exercise, windowSeconds));
+  if(exercise.win) timeCell.appendChild(workWindowButton(exercise));
+  else if(exercise.unit === "sec") timeCell.appendChild(holdButton(exercise, prior));
   columns.append(timeCell, el("div"));
   sets.appendChild(columns);
 
@@ -179,36 +180,54 @@ function fillCard(card, exercise, position, slot, notch){
   }
 }
 
-function workWindowSeconds(exercise){
-  if(exercise.win) return exercise.win;
-  return exercise.unit === "sec" ? Number(exercise.r) || 0 : 0;
-}
-
-function workWindowButton(exercise, seconds){
+function timeButton(exercise, icon, label, onPress){
   const button = el("button", "ex-time");
-  const label = `Time ${seconds}s`;
   makeIconButton(button, {
-    icon: "timer", label, tone: "primary", ghost: true, size: 30, glyph: 18,
+    icon, label, tone: "primary", ghost: true, size: 30, glyph: 18,
     key: "time:" + exercise.id
   });
   button.title = label;
-  button.addEventListener("click", () => {
-    const index = openSetIndex(exercise);
-    if(index < 0) return;
-    startWork(seconds, () => {
-      if(exercise.win) startRestAfter(exercise, index);
-      else logTimedSet(exercise, index, seconds);
-    });
-  });
+  button.addEventListener("click", onPress);
   return button;
 }
 
-function logTimedSet(exercise, index, seconds){
+function workWindowButton(exercise){
+  return timeButton(exercise, "timer", `Time ${exercise.win}s`, () => {
+    const index = openSetIndex(exercise);
+    if(index < 0) return;
+    startWork(exercise.win, () => startRestAfter(exercise, index));
+  });
+}
+
+function timedSetIndex(exercise, isFor){
+  for(let i = 0; i < exercise.s; i++) if(isFor(setTag(exercise, i))) return i;
+  return -1;
+}
+
+function holdButton(exercise, prior){
+  const running = timedSetIndex(exercise, holdRunningFor) >= 0;
+  return timeButton(exercise, running ? "stop" : "timer", running ? "Stop the hold" : "Time the hold", () => {
+    const holding = timedSetIndex(exercise, holdRunningFor);
+    if(holding >= 0){ finishHold(exercise, holding); return; }
+    const waiting = timedSetIndex(exercise, sideWaitingFor);
+    const index = waiting >= 0 ? waiting : openSetIndex(exercise);
+    if(index < 0) return;
+    const aim = waiting >= 0 ? currentSets(exercise.id)[index] : prior && prior.sets[index];
+    startHold(Number(aim && aim.r) || Number(exercise.r) || 0, setTag(exercise, index));
+    changes.notify();
+  });
+}
+
+function finishHold(exercise, index){
+  const seconds = endHold();
   const existing = currentSets(exercise.id)[index];
-  if(isLogged(existing)) return;
-  recordSet(exercise, index, {w: (existing && existing.w) || "", r: String(seconds)});
+  const secondSide = !!exercise.per && isLogged(existing);
+  const held = secondSide ? Math.min(Number(existing.r) || seconds, seconds) : seconds;
+  recordSet(exercise, index, {w: (existing && existing.w) || "", r: String(held)});
+  setIdleRest(nextRest());
+  if(exercise.per && !secondSide) waitForSide(setTag(exercise, index));
+  else startRestAfter(exercise, index);
   changes.notify();
-  startRestAfter(exercise, index);
 }
 
 function calloutAction(label, key, act){

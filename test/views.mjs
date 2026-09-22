@@ -970,55 +970,48 @@ const longPress = async () => {
   els.timer.fire("click");
 };
 
-section("A work window times the set and rolls into the rest");
+section("A timed hold counts up, pauses, and waits for the second side");
 {
   const {stop} = await import("../src/views/timer.js");
   fresh();
   render();
   stop();
-  const timed = timedCards();
-  check("only seconds-based cards get a timer button", timed.length > 0 &&
-    timed.every(card => /\d+s<\/span>/.test(card.find("meta")[0].innerHTML)), timed.length);
-  const card = timed[0];
-  const seconds = +card.find("ex-time")[0].title.match(/(\d+)s/)[1];
-  const restSeconds = +card.find("meta")[0].innerHTML.match(/rest (\d+)s/)[1];
-  const cardNow = () => { render(); return timedCards().find(move => move.id === card.id); };
-  const rowsNow = () => cardNow().find("set").filter(r => !r.classList.contains("head"));
-  check("the button names the prescribed seconds",
-    card.find("meta")[0].innerHTML.includes(`× ${seconds}s`), card.find("meta")[0].innerHTML);
+  const cardFor = id => { render(); return els.main.find("ex-item").find(move => move.id === "card-" + id); };
+  const rowsOf = id => cardFor(id).find("set").filter(r => !r.classList.contains("head"));
+  const later = (ms, act) => { Date.now = () => realNow() + ms; act(); Date.now = realNow; };
+  const tapHold = (id, ms = 0) => later(ms, () => cardFor(id).find("ex-time")[0].fire("click"));
+  const tapClock = ms => later(ms, () => els.timer.fire("click"));
 
-  card.find("ex-time")[0].fire("click");
-  check("tapping it counts the prescribed seconds", els.timer.dataset.label === clockFace(seconds), els.timer.dataset.label);
-  check("on the secondary tone, not the rest tone", els.timer.dataset.tone === "secondary", els.timer.dataset.tone);
+  check("only seconds-based cards get a timer button", timedCards().length > 0 &&
+    timedCards().every(card => /\d+s<\/span>/.test(card.find("meta")[0].innerHTML)), timedCards().length);
 
-  comeBackAfter((seconds + 1) * 1000);
-  check("and the rest starts by itself", els.timer.dataset.label === clockFace(restSeconds), els.timer.dataset.label);
-  check("on the rest tone", els.timer.dataset.tone === "primary", els.timer.dataset.tone);
-  check("when it ends the set is logged as the prescribed seconds", rp(rowsNow()[0]).value === String(seconds), rp(rowsNow()[0]).value);
+  tapHold("plank");
+  equal("the clock counts up from zero", els.timer.dataset.label, "0:00");
+  equal("on the secondary tone", els.timer.dataset.tone, "secondary");
+  equal("the card button turns into a stop", cardFor("plank").find("ex-time")[0].dataset.label, "stop");
+  tapHold("plank", 50000);
+  equal("stopping logs the time held, past the target", rp(rowsOf("plank")[0]).value, "50");
+  equal("and starts the rest", els.timer.dataset.tone, "primary");
   stop();
 
-  cardNow().find("ex-time")[0].fire("click");
-  comeBackAfter((seconds + 1) * 1000);
-  check("the next tap fills the next open set", rp(rowsNow()[1]).value === String(seconds), rp(rowsNow()[1]).value);
+  tapHold("plank");
+  tapClock(10000);
+  equal("tapping the clock pauses the hold", els.timer.dataset.paused, "on");
+  tapClock(40000);
+  equal("and again resumes it", els.timer.dataset.paused, "off");
+  tapHold("plank", 70000);
+  equal("the pause does not count", rp(rowsOf("plank")[1]).value, "40");
   stop();
 
-  const before = els.timer.dataset.label;
-  cardNow().find("ex-time")[0].fire("click");
-  check("with every set logged the button does nothing", els.timer.dataset.label === before, els.timer.dataset.label);
-  stop();
-
-  fresh();
-  render();
-  stop();
-  const away = timedCards()[0];
-  away.find("ex-time")[0].fire("click");
-  state.view = "history";
-  render();
-  comeBackAfter((seconds + 1) * 1000);
-  const loggedWhileAway = Object.values(state.current.entries).find(sets => sets[0] && sets[0].r === String(seconds));
-  check("a window that ends on another tab still logs the set", !!loggedWhileAway, JSON.stringify(state.current.entries));
-  check("and still starts the rest", /^\d+:\d\d$/.test(els.timer.dataset.label) && els.timer.dataset.tone === "primary", els.timer.dataset.label);
-  state.view = "log";
+  tapHold("side_plank");
+  tapHold("side_plank", 35000);
+  equal("the first side fills the box", rp(rowsOf("side_plank")[0]).value, "35");
+  equal("and the clock waits for side two", els.timer.dataset.label, "side 2");
+  tapHold("side_plank", 60000);
+  tapHold("side_plank", 90000);
+  equal("the second side keeps the lower time", rp(rowsOf("side_plank")[0]).value, "30");
+  equal("in the same set", rp(rowsOf("side_plank")[1]).value, "");
+  equal("then the rest starts", els.timer.dataset.tone, "primary");
   stop();
 }
 

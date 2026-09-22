@@ -9,6 +9,8 @@ Open it at **https://evanmassi.github.io/overload/**
 - Logs weight and reps for each set, with last time's numbers shown as a guide.
 - Tells you when you beat, matched or fell short of last time, and suggests what to go for next.
 - Starts a rest timer after each set, with beeps when it's time to go.
+- Times holds like planks: tap the timer on the card to start and stop, tap the clock to pause. Moves done on each
+  side run twice.
 - Lets you swap any exercise for the day, or add your own.
 - Keeps your history by workout and charts your progress on each lift.
 

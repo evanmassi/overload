@@ -247,6 +247,7 @@ button{cursor:pointer;border:none;background:none}
 }
 .timer .btn-label,.timer .btn-word{box-sizing:content-box;width:6ch;text-align:center}
 .timer[data-urgent="on"]{animation:tick-pulse 1s ease-in-out infinite}
+.timer[data-paused="on"]{opacity:.5}
 .timer[data-urgent="on"] .btn-frame,.timer[data-urgent="on"] .btn-glow{
   animation:hud-charge 500ms ease-in-out infinite alternate;
 }
