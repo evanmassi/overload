@@ -171,6 +171,8 @@ button{cursor:pointer;border:none;background:none}
 }
 .set .field-input::placeholder{opacity:.5}
 .set .field .field-frame{animation:none}
+.set .field[data-state="focus"] .field-frame{animation:focus-flicker var(--flicker-focus) linear var(--f-lag) infinite}
+@keyframes focus-flicker{0%,42%,47%,54%,86%,90%,100%{opacity:1}45%{opacity:.7}51%{opacity:.84}88%{opacity:.76}}
 .set .field:not([data-state="focus"]):has(.field-input:not(.filled)) .field-frame{
   opacity:1;box-shadow:none;border-color:color-mix(in oklab,var(--f-line) 34%,transparent);
 }
@@ -394,7 +396,7 @@ button{cursor:pointer;border:none;background:none}
   text-transform:uppercase;padding:3px 7px;
   background:var(--surface-2);color:var(--muted);border:1px solid var(--line);
 }
-.tag.muscle{color:var(--muted)}
+.tag.muscle{background:transparent;border:1px dotted var(--secondary-mid);color:var(--secondary)}
 .tag.side{background:var(--ui-accent-soft);color:var(--ui-accent);border-color:transparent;font-weight:700}
 .ex-swap,.ex-fold{flex:none;align-self:flex-start}
 .set.head .ex-time{margin:-6px auto}

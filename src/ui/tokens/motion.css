@@ -34,6 +34,7 @@
   --flicker-primary: calc(3100ms * var(--flicker-pace));
   --flicker-warning: calc(3800ms * var(--flicker-pace));
   --flicker-danger: calc(2400ms * var(--flicker-pace));
+  --flicker-focus: calc(1800ms * var(--flicker-pace));
   --flicker-icon: calc(2800ms * var(--flicker-pace));
   --flicker-secondary: calc(5200ms * var(--flicker-pace));
 }
