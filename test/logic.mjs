@@ -107,6 +107,26 @@ section("Each workout rotates through its own versions");
     ["earlier today", "yesterday", "5 days ago"]);
 }
 
+section("The calendar counts weeks from Monday");
+{
+  const {mondayOf, weekTally, weekStreak, trainingDays} = await import("../src/rules/calendar.js");
+  const {iso} = await import("../src/rules/format.js");
+  reset();
+  equal("a Wednesday's week starts on Monday", iso(mondayOf(new Date(2026, 8, 23))), "2026-09-21");
+  equal("a Sunday belongs to the week before", iso(mondayOf(new Date(2026, 8, 27))), "2026-09-21");
+  const week = (monday, days) => days.forEach((day, i) => {
+    const date = iso(new Date(2026, 8, monday + i));
+    state.sessions[date] = logged(date, day, 0);
+  });
+  week(7, ["chest", "legs", "arms"]);
+  week(14, ["chest", "mobility", "legs"]);
+  week(21, ["chest"]);
+  const wednesday = new Date(2026, 8, 23);
+  equal("this week so far", weekTally(state.sessions, wednesday), {lifting: 1, off: 0});
+  equal("an unfinished week does not break the streak", weekStreak(state.sessions, wednesday), 2);
+  equal("off days are marked apart from lifting", trainingDays(state.sessions)["2026-09-15"], {count: 1, isLifting: false});
+}
+
 section("A workout done in the last seven days is marked");
 {
   reset();

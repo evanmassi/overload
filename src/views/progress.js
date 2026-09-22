@@ -1,12 +1,13 @@
-import {CONSISTENCY_WEEKS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON} from "../data/constants.js";
+import {CONSISTENCY_WEEKS, STREAK_WORKOUTS, WEEKDAY_LABELS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
-import {state} from "../store/state.js";
+import {state, changes} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
-import {loggedCount, topSet, score, loggedAsBodyweight, progressSince} from "../rules/progression.js";
-import {iso, shortDate, unitSuffix, unitName, weightUnit} from "../rules/format.js";
+import {topSet, score, loggedAsBodyweight, progressSince} from "../rules/progression.js";
+import {iso, shortDate, monthLabel, unitSuffix, unitName, weightUnit} from "../rules/format.js";
+import {addDays, mondayOf, trainingDays, weekTally, weekStreak} from "../rules/calendar.js";
 import {isLogged} from "../rules/sets.js";
 import {makePanel} from "../ui/panel.js";
-import {el, escapeHtml} from "./dom.js";
+import {byId, el, escapeHtml} from "./dom.js";
 
 export function renderProgress(main){
   const byExercise = {};
@@ -62,34 +63,50 @@ function progressCard(entry){
 }
 
 function consistencyGrid(){
-  const wrap = el("div", "grid-wrap");
-
-  const weeks = CONSISTENCY_WEEKS;
   const today = new Date();
-  const start = new Date(today);
-  start.setDate(start.getDate() - (weeks * 7 - 1));
+  const todayKey = iso(today);
+  const start = addDays(mondayOf(today), -7 * (CONSISTENCY_WEEKS - 1));
+  const days = trainingDays(state.sessions);
 
   const grid = el("div", "grid");
-  let trained = 0;
-  const setsByDate = {};
-  for(const key in state.sessions){
-    const session = state.sessions[key];
-    setsByDate[session.date] = (setsByDate[session.date] || 0) + loggedCount(session);
+  ["", ...WEEKDAY_LABELS].forEach(label => grid.appendChild(el("span", "grid-label", label)));
+  for(let week = 0; week < CONSISTENCY_WEEKS; week++){
+    const monday = addDays(start, week * 7);
+    grid.appendChild(el("span", "grid-month", week === 0 || monday.getDate() <= 7 ? monthLabel(monday) : ""));
+    for(let d = 0; d < 7; d++){
+      const date = iso(addDays(monday, d));
+      grid.appendChild(dayCell(date, days[date], date > todayKey));
+    }
   }
 
-  for(let i = 0; i < weeks * 7; i++){
-    const day = new Date(start);
-    day.setDate(day.getDate() + i);
-    const key = iso(day);
-    const sets = setsByDate[key] || 0;
-    const cell = el("i", "cell" + (sets ? " lit" + Math.min(3, Math.ceil(sets / 10)) : ""));
-    cell.title = key + (sets ? " · " + sets + " sets" : "");
-    grid.appendChild(cell);
-    if(sets) trained++;
-  }
+  const tally = weekTally(state.sessions, today);
+  const streak = weekStreak(state.sessions, today);
+  const note = `This week: ${tally.lifting} lifting · ${tally.off} off day${tally.off === 1 ? "" : "s"}`
+    + (streak ? ` · ${streak} week${streak === 1 ? "" : "s"} in a row with ${STREAK_WORKOUTS}+` : "");
+  const legend = el("p", "grid-legend");
+  legend.innerHTML = '<span><i class="cell lift"></i>lifting</span><span><i class="cell off"></i>off day</span>'
+    + '<span><i class="cell lift double"></i>two in a day</span>';
 
-  wrap.append(grid, el("p", "grid-note", `${trained} session${trained === 1 ? "" : "s"} in the last ${weeks} weeks`));
+  const wrap = el("div", "grid-wrap");
+  wrap.append(grid, el("p", "grid-note", note), legend);
   return wrap;
+}
+
+function dayCell(date, day, isFuture){
+  const kind = isFuture ? " future" : day ? (day.isLifting ? " lift" : " off") + (day.count > 1 ? " double" : "") : "";
+  const cell = el("i", "cell" + kind);
+  cell.title = date + (day ? ` · ${day.count} workout${day.count === 1 ? "" : "s"}` : "");
+  if(day) cell.addEventListener("click", () => openDay(date));
+  return cell;
+}
+
+function openDay(date){
+  state.view = "history";
+  state.historyDay = null;
+  state.historyOpen = new Set(Object.keys(state.sessions).filter(key => state.sessions[key].date === date));
+  changes.notify();
+  const open = byId("main").querySelector(".hist-expanded");
+  if(open) open.scrollIntoView({block: "start"});
 }
 
 function sparkline(values, bestIndex){

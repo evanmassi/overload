@@ -34,6 +34,8 @@ const UNIT_NAME = {sec: "sec", min: "min"};
 
 export function weightUnit(exercise){ return exercise && exercise.load === "level" ? "level" : "lbs"; }
 
+export const monthLabel = date => date.toLocaleDateString("en-US", {month: "short"});
+
 export const shortDate = dateStr =>
   new Date(dateStr + "T12:00:00").toLocaleDateString("en-US", {month: "short", day: "numeric"});
 

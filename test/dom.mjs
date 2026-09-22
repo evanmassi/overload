@@ -19,6 +19,7 @@ class FakeNode {
     this.hidden = false;
     this.scrollTop = 0;
   }
+  scrollIntoView(){}
   get className(){ return this._class; }
   set className(v){ this._class = String(v); }
   get classList(){

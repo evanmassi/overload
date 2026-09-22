@@ -75,7 +75,9 @@ export const EFFORT_STEPS = {easy: 2, medium: 1, hard: 0};
 export const STALL_EXPOSURES = 3;
 export const STALL_BACKOFF_PERCENT = 10;
 export const HOLD_RELEASE_MARGIN = 0.05;
-export const CONSISTENCY_WEEKS = 26;
+export const CONSISTENCY_WEEKS = 12;
+export const STREAK_WORKOUTS = 3;
+export const WEEKDAY_LABELS = ["M", "", "W", "", "F", "", ""];
 export const RECENT_DAYS = 7;
 
 export const LONG_PRESS_MS = 500;

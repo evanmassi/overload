@@ -359,16 +359,22 @@ section("Consistency grid");
   state.view = "progress";
   render();
   check("the grid renders with no data", els.main.find("grid").length === 1);
-  check("26 weeks of cells", els.main.find("cell").length === 182, els.main.find("cell").length);
-  check("none are lit", els.main.find("cell").every(c => c._class === "cell"));
+  equal("twelve weeks of days", els.main.find("cell").length, 84);
+  check("none are lit", els.main.find("cell").every(c => !/lift|off/.test(c._class)));
+  equal("rows are weekdays, Monday first", els.main.find("grid-label").slice(1, 4).map(l => l.textContent), ["M", "", "W"]);
 
-  const today = new Date();
-  const key = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") +
-    "-" + String(today.getDate()).padStart(2, "0");
-  state.sessions[key] = {date: key, day: "chest", block: "A", blockIndex: 0,
-    entries: {flat_db_press: [{w: "50", r: "10"}]}};
+  const today = iso(new Date());
+  state.sessions[today + "T08:00:00"] = {date: today, day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "50", r: "10"}]}};
+  state.sessions[today + "T18:00:00"] = {date: today, day: "mobility", block: "A", blockIndex: 0, entries: {pigeon: [{w: "", r: "45"}]}};
   render();
-  check("a logged day lights a cell", els.main.find("cell").some(c => c._class.includes("lit")));
+  const lit = els.main.find("cell").filter(c => /lift|off/.test(c._class));
+  equal("today lights as lifting, twice over", lit.map(c => c._class), ["cell lift double"]);
+  check("the note counts this week by kind", els.main.find("grid-note")[0].textContent.startsWith("This week: 1 lifting · 1 off day"),
+    els.main.find("grid-note")[0].textContent);
+
+  lit[0].fire("click");
+  equal("tapping a day opens it in history", [state.view, [...state.historyOpen].length], ["history", 2]);
+  state.view = "log";
 }
 
 section("Logging updates the page without a re-render");
