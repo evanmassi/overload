@@ -1,5 +1,5 @@
 import {state, changes, hydrate} from "./store/state.js";
-import {loadDate, flushNow} from "./store/session.js";
+import {followToday, flushNow} from "./store/session.js";
 import {iso} from "./rules/format.js";
 import {render} from "./views/app.js";
 import {mountSheet} from "./views/sheets/sheet.js";
@@ -29,13 +29,16 @@ byId("tabs").addEventListener("click", event => {
 
 document.addEventListener("visibilitychange", () => {
   if(document.visibilityState === "hidden") flushNow();
-  else unlockAudio();
+  else {
+    unlockAudio();
+    followToday(iso(new Date()));
+  }
 });
 window.addEventListener("pagehide", flushNow);
 
 changes.subscribe(render);
 hydrate();
-loadDate(iso(new Date()));
+followToday(iso(new Date()));
 
 const LOCAL_HOST = /^(localhost|127\.|\[?::1\]?$|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/;
 const isLocalDev = LOCAL_HOST.test(location.hostname);

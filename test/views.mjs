@@ -13,7 +13,7 @@ const {openTimerSheet} = await import("../src/views/sheets/timerSheet.js");
 const {mountTimer} = await import("../src/views/timer.js");
 const {mountSaveStatus} = await import("../src/views/saveStatus.js");
 const {findExercise} = await import("../src/rules/exercises.js");
-const {loadDate, setDay} = await import("../src/store/session.js");
+const {loadDate, setDay, followToday} = await import("../src/store/session.js");
 const {clockFace, iso} = await import("../src/rules/format.js");
 
 mountTimer(els.timer, {onHold: openTimerSheet});
@@ -1137,6 +1137,28 @@ section("Typed names and numbers reach the page as text, not markup");
   render();
   const head = els.main.find("ex-head").find(h => h.innerHTML.includes("Curl"));
   check("and the exercise card", head && head.innerHTML.includes("Curl &lt;3"), head && head.innerHTML);
+}
+
+section("Coming back on a new day opens today unless something is logged");
+{
+  fresh();
+  followToday("2026-09-01");
+  followToday("2026-09-02");
+  equal("an empty session moves to the new day", state.current.date, "2026-09-02");
+
+  render();
+  const row = els.main.find("ex-item")[0].find("set").filter(r => !r.classList.contains("head"))[0];
+  wt(row).value = "50";
+  rp(row).value = "10";
+  rp(row).fire("change");
+  followToday("2026-09-03");
+  equal("a started session stays on its day", state.current.date, "2026-09-02");
+
+  loadDate("2026-08-20");
+  followToday("2026-09-03");
+  equal("a date picked by hand stays put the same day", state.current.date, "2026-08-20");
+  followToday("2026-09-04");
+  equal("and the next day too", state.current.date, "2026-08-20");
 }
 
 process.exit(report() ? 0 : 1);

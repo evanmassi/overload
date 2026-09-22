@@ -9,6 +9,7 @@ import {isLogged} from "../rules/sets.js";
 import {iso} from "../rules/format.js";
 
 let saveTimer = null;
+let shownToday = null;
 
 export const saveStatus = channel();
 
@@ -117,6 +118,13 @@ function openSession(key, dateStr, day){
 export function loadDate(dateStr){
   const latest = sessionsOn(state.sessions, dateStr).pop();
   openSession(latest || newSessionKey(dateStr), dateStr, null);
+}
+
+export function followToday(today){
+  if(today === shownToday) return;
+  const wasOnToday = shownToday === null || state.current.date === shownToday;
+  shownToday = today;
+  if(wasOnToday && !state.sessions[state.current.key]) loadDate(today);
 }
 
 export function loadSession(key){

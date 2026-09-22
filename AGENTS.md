@@ -127,6 +127,8 @@ version of a key exists.
 - **A screen wake lock holds the phone awake during a rest.** Switching apps still pauses timers, so the clock is
   computed from its end time, and a rest that ended while away shows `GO` with no sound.
 - **Session time runs from the first logged set to the last**, so reopening an old session never inflates it.
+- **A PWA resumes where it left off, even days later.** Coming back to the front on a new day opens today, unless
+  the open session has something saved or its date was picked by hand (`followToday` in `session.js`).
 
 ## Service Worker
 
