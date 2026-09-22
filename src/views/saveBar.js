@@ -1,9 +1,9 @@
 import {workoutOf} from "../rules/workouts.js";
 import {state} from "../store/state.js";
-import {loggedCount, sessionVolume, prescribedCount} from "../rules/progression.js";
+import {loggedCount, prescribedCount} from "../rules/progression.js";
 import {resolvedExercises} from "../store/slots.js";
 import {isLogged} from "../rules/sets.js";
-import {previousSameWorkout, currentSets} from "../store/session.js";
+import {currentSets} from "../store/session.js";
 import {elapsedLabel} from "../rules/format.js";
 import {byId, el} from "./dom.js";
 
@@ -50,22 +50,9 @@ export function updateSaveBar(){
   const current = state.current;
   const total = prescribedCount(workoutOf(current));
   const count = loggedCount(current);
-  const volume = sessionVolume(current);
   updateSetBar(setBarGroups(), count, total);
 
-  byId("volume").textContent = volume ? `${volume.toLocaleString()} lb` : (count ? `${count} sets` : "0");
   byId("tally").textContent = `${count}/${total}`;
-
-  if(!count){ byId("volnote").textContent = "nothing logged yet"; return; }
-
-  const parts = [];
-  const elapsed = elapsedLabel(current.startedAt, current.lastLoggedAt);
-  if(elapsed) parts.push(elapsed);
-
-  const previous = previousSameWorkout();
-  if(previous){
-    const before = sessionVolume(previous.session);
-    if(before) parts.push(`${volume - before >= 0 ? "+" : ""}${(volume - before).toLocaleString()} vs ${previous.date.slice(5)}`);
-  }
-  byId("volnote").textContent = parts.length ? parts.join(" · ") : "first set in";
+  byId("sessiontime").textContent = count ? elapsedLabel(current.startedAt, current.lastLoggedAt) || "under 1 min" : "—";
+  byId("timenote").textContent = count ? "session time" : "starts with your first set";
 }

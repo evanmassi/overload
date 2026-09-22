@@ -57,7 +57,7 @@ section("The log view renders a full session");
   check("a notes box renders", els.main.find("notes").length === 1);
   check("the legend renders", els.main.find("legend").length === 1);
   check("no target band before any history exists", els.main.find("target").length === 0);
-  check("footer reports an empty session", els.volnote.textContent === "nothing logged yet", els.volnote.textContent);
+  check("footer waits for the first set", els.sessiontime.textContent === "—" && els.timenote.textContent === "starts with your first set", els.timenote.textContent);
 }
 
 section("Logging a set updates the view");
@@ -72,7 +72,7 @@ section("Logging a set updates the view");
   reps.fire("change");
 
   check("the set is recorded on the current session", state.current.entries.flat_db_press[0].r === "10");
-  check("volume reflects a pair of dumbbells", els.volume.textContent === "1,000 lb", els.volume.textContent);
+  check("the first set starts the session clock", els.sessiontime.textContent === "under 1 min", els.sessiontime.textContent);
   check("the rest timer started", /^\d+:\d\d$/.test(els.timer.dataset.label), els.timer.dataset.label);
 
   const panel = els.main.find("ex")[0];
@@ -223,9 +223,6 @@ section("Collapsing and the set bar");
     els.setbar.children.filter(t => t.dataset.state === "on").length === 4);
   check("the sets still to come on the move in hand read as pending",
     els.setbar.children.filter(t => t.dataset.state === "now").length > 0);
-  check("the tally carries the count, not the note",
-    els.tally.textContent === "4/41" && !els.volnote.textContent.includes("sets"),
-    els.volnote.textContent);
 
   els.main.find("ex-fold")[0].fire("click");
   render();
@@ -438,7 +435,7 @@ section("Time in the gym is first log to last log");
   state.current.startedAt = state.current.lastLoggedAt - minutes(52);
   render();
   check("the footer shows the gap between them",
-    els.volnote.textContent.includes("52 min"), els.volnote.textContent);
+    els.sessiontime.textContent === "52 min", els.sessiontime.textContent);
 
   const stamped = state.current.lastLoggedAt;
   state.current.lastLoggedAt = stamped - minutes(5);

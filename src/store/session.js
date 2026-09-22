@@ -264,13 +264,3 @@ export function nextRest(){
   }
   return null;
 }
-
-export function previousSameWorkout(){
-  const {sessions, current} = state;
-  const keys = Object.keys(sessions).filter(key => key < current.key).sort().reverse();
-  for(const key of keys){
-    const session = sessions[key];
-    if(session.day === current.day && session.block === current.block) return {date: session.date, session};
-  }
-  return null;
-}
