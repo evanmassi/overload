@@ -10,7 +10,6 @@
   --glow:0 0 14px var(--accent-glow-soft);
   --glass:var(--bg-panel);
   --fringe:0 0 10px var(--accent-glow-soft);
-  --scanlines:repeating-linear-gradient(var(--scanline-ground) 0 1px,transparent 1px 3px);
   color-scheme:dark;
 }
 html{overflow-x:clip}
@@ -33,8 +32,7 @@ button{cursor:pointer;border:none;background:none}
 }
 
 .topbar{
-  position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--surface) 82%,transparent);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  position:sticky;top:0;z-index:20;background:var(--surface);
   border-bottom:1px solid var(--line);
   padding-top:env(safe-area-inset-top);
 }
@@ -214,8 +212,7 @@ button{cursor:pointer;border:none;background:none}
 .delta.none{color:var(--ink-4)}
 
 .savebar{
-  position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 82%,transparent);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);
   border-top:1px solid var(--line);
   padding:0 calc(14px + env(safe-area-inset-right)) calc(9px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
 }
@@ -434,7 +431,6 @@ button{cursor:pointer;border:none;background:none}
 .sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;overflow-x:clip}
 .sheet-back{
   position:absolute;inset:0;background:rgba(6,8,10,.72);
-  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
 }
 .sheet-panel{
   position:relative;width:100%;min-width:0;max-width:100%;
@@ -576,10 +572,6 @@ button{cursor:pointer;border:none;background:none}
 .panel[data-dim="on"] .ex-num::after{opacity:.05}
 .section-label::before,.eyebrow::before{content:"// ";color:var(--faint)}
 
-.topbar::after,.savebar::after{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:var(--scanlines);mix-blend-mode:multiply;
-}
 .ex-num{font-size:12.5px}
 .ex-echo{
   position:absolute;inset:0;padding:0 0 0 1px;display:flex;align-items:center;justify-content:center;
