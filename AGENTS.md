@@ -1,7 +1,7 @@
 # Overload - Agent Development Guide
 
 Overload is a phone-first strength training log. It answers one question at the rack: what did I do last time, and
-can I beat it? `README.md` is the product spec. This file is how to change the code.
+can I beat it? `README.md` is for people using the app. This file is how to change the code.
 
 ## Architecture Overview
 
@@ -117,6 +117,17 @@ version of a key exists.
 
 ---
 
+## Phone Behavior to Keep
+
+- **Beeps are scheduled on the audio clock** when a rest starts, never fired from the display tick: Safari slows page
+  timers once the page is not in front.
+- **Safari parks audio in an `interrupted` state** after a lock or another app's audio, and stops its clock. The app
+  resumes it on every tap, timer start and return to the foreground, and rebuilds the beep schedule from the wall
+  clock so nothing plays late. The silent switch mutes it entirely; **Test sound** exists for that.
+- **A screen wake lock holds the phone awake during a rest.** Switching apps still pauses timers, so the clock is
+  computed from its end time, and a rest that ended while away shows `GO` with no sound.
+- **Session time runs from the first logged set to the last**, so reopening an old session never inflates it.
+
 ## Service Worker
 
 `ASSETS` in `sw.js` lists every file the app loads. A new module, stylesheet or icon goes into that list in the same
@@ -143,7 +154,7 @@ localhost, `main.js` unregisters the worker and clears caches so development alw
 2. **Verify exact field names.** Sets are `{w, r}`. Every workout is `sections`, each with a `kind` (`straight`,
    `core`, `interval`, `circuit`, `finish`) and its slots in `ex`. How a slot rests and counts follows its kind.
 3. **Find the owner.** Search for the module that already does the job before writing a new function.
-4. **Check the README section** for the behavior you are changing. It records decisions and why they were made.
+4. **Check `git log`** for the behavior you are changing. Commit messages record decisions and why they were made.
 
 ### Write-Time Discipline
 
@@ -191,7 +202,7 @@ Match the surrounding code. It is consistent, and a new file should be indisting
 | CSS classes | lowercase-hyphen; a primitive's parts carry its prefix | `.ex-summary`, `.btn-glyph` |
 
 - **Generic filenames are banned**: no `utils.js`, `helpers.js`, `misc.js`. Name the file after what it contains.
-- **One file, one concern.** A new concern gets a new file and a line in the README layout table.
+- **One file, one concern.** A new concern gets a new file in the folder for its layer.
 - **A pop-up is a file** in `views/sheets/`, named for what it shows plus `Sheet`: `swapSheet.js`.
 
 ---
@@ -256,8 +267,9 @@ with one caller gets inlined. Watch for:
 
 ### Docs Follow the Code
 
-A behavior change updates `README.md` in the same commit. The README explains decisions and the reasons for them;
-keep those reasons when editing. A README claim with no code behind it is dead code in prose: delete it.
+The README is for someone using the app: what it does, what's in it, how to put it on a phone, where the data
+lives. Keep it that short and in plain words. Code notes belong in this file, and the reason for a decision goes in
+the commit message. A README claim with no code behind it is dead code in prose: delete it.
 
 ---
 
