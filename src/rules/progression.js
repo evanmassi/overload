@@ -119,25 +119,29 @@ export function suggestTarget(exercise, prior, held){
   const sets = prior.sets.filter(isLogged);
   const topReps = num(top.r);
   const topWeight = num(top.w);
-  const unit = unitSuffix(exercise);
   const effort = prior.effort || "medium";
   const step = EFFORT_STEPS[effort] === undefined ? 1 : EFFORT_STEPS[effort];
-  const same = `${topWeight ? topWeight + "×" : ""}${topReps}${unit}`;
+  const aim = (w, r, change) => ({w: w ? String(w) : "", r: String(r), change, isPush: w > topWeight || r > topReps});
+  const addReps = reps => aim(topWeight, reps, reps > topReps ? moreOf(reps - topReps, unitSuffix(exercise)) : "every set");
 
-  if(held) return {label: same, why: "match it"};
-  if(effort === "hard") return {label: same, why: "repeat it"};
-
-  if(!topWeight) return {label: `${topReps + step}${unit || " reps"}`, why: "add reps"};
+  if(held) return aim(topWeight, topReps, "match it");
+  if(effort === "hard") return aim(topWeight, topReps, "repeat it");
 
   const range = repRange(exercise.r);
-  if(!range) return {label: `${topWeight}×${topReps + step}${unit}`, why: "add reps"};
+  if(!topWeight || !range) return addReps(topReps + step);
 
   const toppedEverySet = (sets.length >= 2 || exercise.s === 1) && sets.every(set => num(set.r) >= range.max);
   if(toppedEverySet || topReps > range.max){
     const byLevel = exercise.load === "level";
-    const weightStep = byLevel ? 1 : WEIGHT_STEP_LB;
-    return {label: `${topWeight + weightStep * step}×${range.min}${unit}`, why: byLevel ? "add a level" : "add weight"};
+    const added = (byLevel ? 1 : WEIGHT_STEP_LB) * step;
+    return aim(topWeight + added, range.min, byLevel ? `+${added} level${added === 1 ? "" : "s"}` : `+${added} lb`);
   }
 
-  return {label: `${topWeight}×${Math.min(topReps + step, range.max)}${unit}`, why: "add reps"};
+  return addReps(Math.min(topReps + step, range.max));
+}
+
+function moreOf(n, suffix){
+  if(suffix === "s") return `+${n}s`;
+  if(suffix === "m") return `+${n} min`;
+  return `+${n} rep${n === 1 ? "" : "s"}`;
 }

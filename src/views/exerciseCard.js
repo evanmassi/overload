@@ -147,11 +147,7 @@ function fillCard(card, exercise, position, slot, notch){
 
   const held = isHeld(exercise.id);
   const target = suggestTarget(exercise, prior, held);
-  if(target){
-    const band = el("div", "target");
-    band.innerHTML = `<span>go for</span><b>${target.label}</b><i>${target.why}</i>`;
-    card.appendChild(band);
-  }
+  if(target) card.appendChild(targetBand(exercise, target));
 
   if(held) card.appendChild(holdNotice(exercise));
   else if(!exercise.stray && hasStalled(state.sessions, exercise, state.current.key, state.current.day))
@@ -178,6 +174,17 @@ function fillCard(card, exercise, position, slot, notch){
   if(prior){
     card.appendChild(el("p", "ex-cue prior", `${prior.date} — ${setSummary(prior.sets, suffix)}`));
   }
+}
+
+function targetBand(exercise, target){
+  const band = el("div", "target");
+  const weight = target.w
+    ? `${target.w}<small class="target-unit">${exercise.load === "level" ? "level" : "lbs"}</small>`
+    : exercise.bw ? "BW" : "—";
+  band.innerHTML = `<span class="target-tag">goal</span><div></div><b>${weight}</b><div class="x">×</div>`
+    + `<b>${target.r}<small class="target-unit">${unitName(exercise)}</small></b>`
+    + `<i class="target-change">${TREND_ICON[target.isPush ? "up" : "same"]}${target.change}</i>`;
+  return band;
 }
 
 function timeButton(exercise, icon, label, onPress){

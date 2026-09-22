@@ -8,6 +8,7 @@ import {
 const {BLOCKS, DAY_KEYS, OFF_KEYS, IMPLEMENTS_PER_LOAD} = constants;
 const {nextBlockIndex, nextLiftingDay, recentDays, previousOf, blockLetter, withLetter} = rotation;
 const {suggestTarget, sessionVolume, loggedCount, priorSets} = progression;
+const aimed = target => (target.w ? target.w + "×" : "") + target.r;
 
 const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01");
 const prescribedCountFor = (block, day) => progression.prescribedCount(workouts.workoutFor(block, day));
@@ -127,7 +128,7 @@ section("Progression targets");
   const press = {r: "8-10", bw: 0};
   const target = (ex, pairs) => {
     const t = suggestTarget(ex, {date: "2026-09-01", sets: setsOf(pairs)});
-    return t && t.label;
+    return t && aimed(t);
   };
 
   equal("topping the range on every set asks for weight",
@@ -142,11 +143,16 @@ section("Progression targets");
     target(press, [[45, 12], [45, 11]]), "50×8");
   equal("no history means no suggestion", suggestTarget(press, null), null);
   equal("bodyweight progresses on reps",
-    target({r: "AMRAP", bw: 1}, [["", 8], ["", 7]]), "9 reps");
+    target({r: "AMRAP", bw: 1}, [["", 8], ["", 7]]), "9");
   equal("a weighted bodyweight move keeps its weight",
     target({r: "6-8", bw: 1}, [[25, 6], [25, 5]]), "25×7");
   equal("a timed hold progresses on seconds",
-    target({r: "45", unit: "sec", bw: 1}, [["", 45], ["", 45]]), "46s");
+    target({r: "45", unit: "sec", bw: 1}, [["", 45], ["", 45]]), "46");
+  const changeOf = (ex, pairs) => suggestTarget(ex, {date: "2026-09-01", sets: setsOf(pairs)}).change;
+  equal("the change says what moved",
+    [changeOf(press, [[45, 10], [45, 10]]), changeOf(press, [[45, 9], [45, 8]]), changeOf({r: "45", unit: "sec", bw: 1}, [["", 45]])],
+    ["+5 lb", "+1 rep", "+1s"]);
+  equal("a top set already at the ceiling asks for it on every set", changeOf(press, [[45, 10], [45, 8], [45, 7]]), "every set");
 }
 
 section("Session volume counts implements and sides");
@@ -391,24 +397,24 @@ section("Effort tunes the next target");
     suggestTarget(press, {date: "2026-09-01", sets: setsOf(pairs), effort});
 
   equal("no effort recorded behaves as medium",
-    at([[45, 10], [45, 10]]).label, at([[45, 10], [45, 10]], "medium").label);
+    aimed(at([[45, 10], [45, 10]])), aimed(at([[45, 10], [45, 10]], "medium")));
   equal("medium adds one step of weight",
-    at([[45, 10], [45, 10]], "medium").label, "50×8");
+    aimed(at([[45, 10], [45, 10]], "medium")), "50×8");
   equal("easy adds two steps",
-    at([[45, 10], [45, 10]], "easy").label, "55×8");
+    aimed(at([[45, 10], [45, 10]], "easy")), "55×8");
   equal("hard repeats the same set",
-    at([[45, 10], [45, 10]], "hard").label, "45×10");
-  equal("hard says so", at([[45, 10], [45, 10]], "hard").why, "repeat it");
+    aimed(at([[45, 10], [45, 10]], "hard")), "45×10");
+  equal("hard says so", at([[45, 10], [45, 10]], "hard").change, "repeat it");
   equal("a held lift asks only for a match",
-    suggestTarget(press, {sets: setsOf([[60, 12], [60, 10]]), effort: "easy"}, true), {label: "60×12", why: "match it"});
+    suggestTarget(press, {sets: setsOf([[60, 12], [60, 10]]), effort: "easy"}, true), {w: "60", r: "12", change: "match it", isPush: false});
   equal("easy mid-range adds two reps",
-    at([[45, 8], [45, 8]], "easy").label, "45×10");
+    aimed(at([[45, 8], [45, 8]], "easy")), "45×10");
   equal("easy cannot push reps past the top of the range",
-    at([[45, 9], [45, 9]], "easy").label, "45×10");
+    aimed(at([[45, 9], [45, 9]], "easy")), "45×10");
 
   const pullup = {id: "pullup", r: "AMRAP", bw: 1};
   equal("bodyweight easy adds two reps",
-    suggestTarget(pullup, {sets: setsOf([["", 8]]), effort: "easy"}).label, "10 reps");
+    aimed(suggestTarget(pullup, {sets: setsOf([["", 8]]), effort: "easy"})), "10");
 
   equal("the top set is the one with the most weight x reps",
     topSet(setsOf([[40, 10], [60, 10], [45, 9]]), false).w, "60");
@@ -486,9 +492,9 @@ section("Off days sit beside the program, not inside it");
   equal("a lift reused on an off day keeps its lifting definition", [liftingGoblet.r, liftingGoblet.win], ["10-12", undefined]);
 
   equal("a machine finisher that hit its minutes goes up a level",
-    suggestTarget(stairs, {sets: setsOf([[8, 8]])}), {label: "9×8m", why: "add a level"});
+    suggestTarget(stairs, {sets: setsOf([[8, 8]])}), {w: "9", r: "8", change: "+1 level", isPush: true});
   equal("one that fell short keeps the level and adds a minute",
-    suggestTarget(stairs, {sets: setsOf([[8, 6]])}).label, "8×7m");
+    aimed(suggestTarget(stairs, {sets: setsOf([[8, 6]])})), "8×7");
 
   reset();
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
