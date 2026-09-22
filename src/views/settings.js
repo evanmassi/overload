@@ -13,8 +13,8 @@ function backupControls(){
 
   const box = el("div", "backup");
   box.append(
-    actionButton("Export backup", {tone: "primary"}, exportSessions),
-    actionButton("Import backup", {tone: "primary"}, () => picker.click()),
+    actionButton("Export backup", {tone: "primary", steady: true}, exportSessions),
+    actionButton("Import backup", {tone: "primary", steady: true}, () => picker.click()),
     picker,
     el("span", "backup-result", state.backupResult));
   return box;
@@ -29,7 +29,7 @@ function soundControls(){
   paint();
 
   const note = el("p", "sound-result");
-  const test = actionButton("Test sound", {tone: "primary"}, () => {
+  const test = actionButton("Test sound", {tone: "primary", steady: true}, () => {
     const played = testTone();
     note.textContent = played
       ? "Played. Heard nothing? Check the ring/silent switch."

@@ -20,7 +20,7 @@ function face(label, tone, urgent){
 }
 
 export function mountTimer(buttonEl, options = {}){
-  button = makeButton(buttonEl, {tone: "primary"});
+  button = makeButton(buttonEl, {tone: "primary", steady: true});
   button.addEventListener("click", () => {
     if(press.fired){ press.fired = false; return; }
     timer.mode ? stop() : start(timer.idle);

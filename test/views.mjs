@@ -1139,6 +1139,19 @@ section("Typed names and numbers reach the page as text, not markup");
   check("and the exercise card", head && head.innerHTML.includes("Curl &lt;3"), head && head.innerHTML);
 }
 
+section("The date, clock, backup and test sound controls hold still");
+{
+  fresh();
+  render();
+  check("the date field", "steady" in els.main.find("date-input")[0].parentNode.dataset);
+  check("the clock", "steady" in els.timer.dataset);
+  state.view = "history";
+  render();
+  const steady = els.main.find("btn").filter(b => "steady" in b.dataset).map(b => b.dataset.label);
+  equal("the backup and test sound buttons, nothing else", steady, ["Test sound", "Export backup", "Import backup"]);
+  state.view = "log";
+}
+
 section("Coming back on a new day opens today unless something is logged");
 {
   fresh();

@@ -30,7 +30,7 @@ export function renderLog(main){
     onPick: () => chooseBlock(start + i)
   })));
   const bar = el("div", "daybar");
-  bar.append(makeField(date), blocks);
+  bar.append(makeField(date, {steady: true}), blocks);
   main.appendChild(bar);
 
   const done = offDay ? new Set() : sessionsDoneIn(state.sessions, current.blockIndex);

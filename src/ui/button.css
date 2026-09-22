@@ -4,8 +4,10 @@
   touch-action:manipulation;
   --pad:var(--pad-control);--hx:3px;--hy:3px;--lsh:0 0 0;
   --s-steps:7;--s-steps-echo:5;--s-echo-gap:60ms;--s-echo-lag:55ms;
+  --flicker-text:hud-text-flicker;--flicker-frame:hud-flicker;--flicker-glow:hud-glow-drift;
 }
-.btn[data-ghost]{--pad:var(--pad-control-quiet);--hx:2.5px;--hy:2.5px}
+.btn[data-ghost]{--pad:var(--pad-control-quiet);--hx:2.5px;--hy:2.5px;--flicker-glow:hud-glow-drift-soft}
+.btn[data-steady]{--flicker-text:none;--flicker-frame:none;--flicker-glow:none}
 .btn:disabled{opacity:.38;cursor:not-allowed}
 
 .btn[data-tone="primary"]{
@@ -78,9 +80,9 @@
   position:absolute;inset:-18px;
   background:radial-gradient(60% 60% at 50% 50%,var(--s-line),transparent 70%);
   filter:blur(14px);opacity:.34;pointer-events:none;
-  animation:hud-glow-drift calc(var(--idle) + 1100ms) linear var(--s-lag,0ms) infinite;
+  animation:var(--flicker-glow) calc(var(--idle) + 1100ms) linear var(--s-lag,0ms) infinite;
 }
-.btn[data-ghost] .btn-glow{filter:blur(18px);opacity:.15;animation-name:hud-glow-drift-soft}
+.btn[data-ghost] .btn-glow{filter:blur(18px);opacity:.15}
 .btn[data-tone="secondary"] .btn-glow{display:none}
 
 .btn-bloom{
@@ -94,7 +96,7 @@
   position:absolute;inset:0;border:1px solid var(--s-line);background:var(--bg-panel);
   box-shadow:0 0 12px var(--hg1),inset 0 0 10px var(--hg2);
   opacity:.62;pointer-events:none;transition:opacity 240ms ease,box-shadow 240ms ease;
-  animation:hud-flicker var(--idle) linear var(--s-lag,0ms) infinite;
+  animation:var(--flicker-frame) var(--idle) linear var(--s-lag,0ms) infinite;
 }
 .btn[data-tone="secondary"] .btn-frame{
   border-color:color-mix(in oklab,var(--s-line) 42%,transparent);
@@ -172,22 +174,22 @@
 .btn-word{
   position:absolute;inset:0;color:var(--s-mid);font-weight:var(--weight-control);
   transform:translate(var(--hx),var(--hy));pointer-events:none;text-shadow:0 0 10px var(--lgl);
-  animation:hud-text-flicker var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite;
+  animation:var(--flicker-text) var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite;
 }
 .btn[data-ghost] .btn-word{opacity:.72}
 .btn[data-tone="secondary"] .btn-word{display:none}
-.btn[data-fired] .btn-word{animation:hud-text-flicker var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite,hud-word-kick calc(var(--clock) + 90ms) var(--ease-settle) 0ms 1 both}
-.btn[data-state="held"] .btn-word{animation:hud-text-flicker var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite,hud-word-hold 170ms ease-out both}
+.btn[data-fired] .btn-word{animation:var(--flicker-text) var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite,hud-word-kick calc(var(--clock) + 90ms) var(--ease-settle) 0ms 1 both}
+.btn[data-state="held"] .btn-word{animation:var(--flicker-text) var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite,hud-word-hold 170ms ease-out both}
 
 .btn-label{
   position:relative;color:var(--lc);font-weight:var(--weight-control);
   text-shadow:0 0 10px var(--lgl);
-  animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite;
+  animation:var(--flicker-text) var(--idle) linear var(--s-lag,0ms) infinite;
 }
 .btn[data-tone="secondary"] .btn-label{font-weight:var(--weight-quiet)}
-.btn[data-state="hover"] .btn-label{animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite,hud-lock-label 260ms ease-out both}
-.btn[data-fired] .btn-label{animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite,hud-lit calc(var(--clock) + 20ms) var(--ease-settle) 0ms 1 both}
-.btn[data-state="held"] .btn-label{animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite,hud-label-hold 170ms ease-out both}
+.btn[data-state="hover"] .btn-label{animation:var(--flicker-text) var(--idle) linear var(--s-lag,0ms) infinite,hud-lock-label 260ms ease-out both}
+.btn[data-fired] .btn-label{animation:var(--flicker-text) var(--idle) linear var(--s-lag,0ms) infinite,hud-lit calc(var(--clock) + 20ms) var(--ease-settle) 0ms 1 both}
+.btn[data-state="held"] .btn-label{animation:var(--flicker-text) var(--idle) linear var(--s-lag,0ms) infinite,hud-label-hold 170ms ease-out both}
 
 .btn-face{position:absolute;inset:1px;background:var(--s-line);opacity:0;pointer-events:none}
 .btn[data-ghost] .btn-face,.btn[data-tone="secondary"] .btn-face{display:none}

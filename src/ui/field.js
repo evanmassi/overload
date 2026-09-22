@@ -7,10 +7,11 @@ const CLOCK_SPREAD_MS = 12000;
 let phase = 0;
 
 export function makeField(input, options = {}){
-  const {tone = "primary"} = options;
+  const {tone = "primary", steady = false} = options;
   const host = document.createElement("span");
   host.className = "field";
   host.dataset.tone = tone;
+  if(steady) host.dataset.steady = "";
   const index = phase++;
   host.style.setProperty("--f-clock", Math.round(CLOCK_MIN_MS + (index * GOLDEN % 1) * CLOCK_SPREAD_MS) + "ms");
   host.style.setProperty("--f-lag", -(index * PHASE_STEP_MS) + "ms");

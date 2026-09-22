@@ -4,7 +4,9 @@
   --f-glow:var(--accent-glow);--f-glow-soft:var(--accent-glow-soft);
   --f-pad:15px 16px 15px 18px;--f-size:var(--size-control);--f-track:.14em;
   --f-clock:calc(5900ms * var(--flicker-pace));--f-lag:0ms;
+  --flicker-frame:hud-flicker;
 }
+.field[data-steady]{--flicker-frame:none}
 .field[data-tone="success"]{
   --f-line:var(--success);--f-plate:var(--success-deep);
   --f-glow:var(--success-glow);--f-glow-soft:var(--success-glow-soft);
@@ -30,7 +32,7 @@
   --hg1:color-mix(in oklab,var(--f-line) 45%,transparent);
   --hg2:color-mix(in oklab,var(--f-line) 22%,transparent);
   transition:opacity 200ms ease,box-shadow 200ms ease;
-  animation:hud-flicker var(--f-clock) linear var(--f-lag) infinite;
+  animation:var(--flicker-frame) var(--f-clock) linear var(--f-lag) infinite;
 }
 .field[data-state="hover"] .field-frame{animation:hud-lock-edge var(--dur-hover-in) ease-out both}
 .field[data-state="focus"] .field-frame{opacity:1;box-shadow:0 0 16px var(--f-glow);animation:none}

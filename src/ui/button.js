@@ -81,7 +81,7 @@ function wire(el, key){
 }
 
 export function makeButton(el, options = {}){
-  const {tone = "primary", ghost = false, key} = options;
+  const {tone = "primary", ghost = false, steady = false, key} = options;
   const text = options.label === undefined ? el.textContent : options.label;
   el.textContent = "";
   el.type = "button";
@@ -89,6 +89,7 @@ export function makeButton(el, options = {}){
   el.dataset.tone = tone;
   el.style.setProperty("--s-lag", -(phase++ * PHASE_STEP_MS) + "ms");
   if(ghost) el.dataset.ghost = "";
+  if(steady) el.dataset.steady = "";
   LAYERS.forEach(name => layer(el, name));
   brackets(el);
   const word = layer(el, "word");
