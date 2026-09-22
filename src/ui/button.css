@@ -77,12 +77,21 @@
 .btn[data-state="held"] .btn-plate{animation:hud-plate-hold 170ms ease-out both}
 
 .btn-glow{
-  position:absolute;inset:-18px;
-  background:radial-gradient(60% 60% at 50% 50%,var(--s-line),transparent 70%);
-  filter:blur(14px);opacity:.34;pointer-events:none;
+  position:absolute;inset:-22px;
+  background:radial-gradient(55% 65% at 50% 50%,
+    color-mix(in srgb,var(--s-line) 67%,transparent),color-mix(in srgb,var(--s-line) 55%,transparent) 20%,
+    color-mix(in srgb,var(--s-line) 34%,transparent) 40%,color-mix(in srgb,var(--s-line) 13%,transparent) 60%,
+    color-mix(in srgb,var(--s-line) 2%,transparent) 80%,transparent);
+  opacity:.34;pointer-events:none;
   animation:var(--flicker-glow) calc(var(--idle) + 1100ms) linear var(--s-lag,0ms) infinite;
 }
-.btn[data-ghost] .btn-glow{filter:blur(18px);opacity:.15}
+.btn[data-ghost] .btn-glow{
+  inset:-26px;opacity:.15;
+  background:radial-gradient(55% 70% at 50% 50%,
+    color-mix(in srgb,var(--s-line) 57%,transparent),color-mix(in srgb,var(--s-line) 46%,transparent) 20%,
+    color-mix(in srgb,var(--s-line) 28%,transparent) 40%,color-mix(in srgb,var(--s-line) 10%,transparent) 60%,
+    color-mix(in srgb,var(--s-line) 2%,transparent) 80%,transparent);
+}
 .btn[data-tone="secondary"] .btn-glow{display:none}
 
 .btn-bloom{
@@ -185,7 +194,8 @@
   text-shadow:0 0 10px var(--lgl);
   animation:var(--flicker-text) var(--idle) linear var(--s-lag,0ms) infinite;
 }
-.btn[data-tone="secondary"] .btn-label{font-weight:var(--weight-quiet)}
+.btn[data-tone="secondary"] .btn-label{font-weight:var(--weight-quiet);text-shadow:none}
+.btn[data-tone="secondary"]:not([data-chosen="off"]) .btn-label{text-shadow:0 0 10px var(--lgl)}
 .btn[data-state="hover"] .btn-label{animation:var(--flicker-text) var(--idle) linear var(--s-lag,0ms) infinite,hud-lock-label 260ms ease-out both}
 .btn[data-fired] .btn-label{animation:var(--flicker-text) var(--idle) linear var(--s-lag,0ms) infinite,hud-lit calc(var(--clock) + 20ms) var(--ease-settle) 0ms 1 both}
 .btn[data-state="held"] .btn-label{animation:var(--flicker-text) var(--idle) linear var(--s-lag,0ms) infinite,hud-label-hold 170ms ease-out both}
