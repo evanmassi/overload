@@ -124,14 +124,13 @@
 
 .btn-stripe{
   position:absolute;inset:1px;color:var(--s-line);
-  background:repeating-linear-gradient(0deg,currentColor 0 1px,transparent 1px var(--stripe-pitch));
-  background-size:100% var(--stripe-pitch);
   -webkit-mask-image:var(--stripe-mask);
   mask-image:var(--stripe-mask);
   opacity:0;pointer-events:none;transition:opacity 220ms ease;
 }
 .btn[data-ghost] .btn-stripe{display:none}
-.btn[data-state="hover"] .btn-stripe{animation:hud-stripe-in 460ms var(--ease-settle) both,var(--stripe-drift) var(--stripe-clock) linear infinite}
+.btn[data-state="hover"] .btn-stripe{animation:hud-stripe-in 460ms var(--ease-settle) both}
+.btn[data-state="hover"] .btn-stripe::before{animation:hud-stripe-slide var(--stripe-clock) linear infinite}
 
 .btn-halo{
   position:absolute;inset:0;border:2px solid var(--s-line);box-shadow:0 0 22px var(--s-line);

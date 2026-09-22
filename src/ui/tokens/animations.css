@@ -18,10 +18,7 @@
 @keyframes hud-fill-in{0%{opacity:0}40%{opacity:.1}100%{opacity:.08}}
 @keyframes hud-fill-flicker{0%,100%{opacity:.08}46%{opacity:.09}48%{opacity:.05}51%{opacity:.09}}
 @keyframes hud-stripe-in{0%{opacity:0}30%{opacity:.21}55%{opacity:.12}100%{opacity:.17}}
-@keyframes hud-stripe-drift-a{from{background-position:0 0}to{background-position:0 4.5px}}
-@keyframes hud-stripe-drift-b{from{background-position:0 0}to{background-position:0 -5.5px}}
-@keyframes hud-stripe-drift-c{from{background-position:0 0}to{background-position:0 3.5px}}
-@keyframes hud-stripe-slide{from{transform:translateY(0)}to{transform:translateY(4px)}}
+@keyframes hud-stripe-slide{from{transform:translateY(0)}to{transform:translateY(calc(var(--stripe-pitch) * var(--stripe-direction)))}}
 
 /* Hold ------------------------------------------------------------------ */
 @keyframes hud-charge{from{opacity:.66}to{opacity:1}}

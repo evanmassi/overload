@@ -39,12 +39,11 @@
 
 .field-wash{
   position:absolute;inset:var(--border);color:var(--f-line);
-  background:repeating-linear-gradient(0deg,currentColor 0 1px,transparent 1px var(--stripe-pitch));
-  background-size:100% var(--stripe-pitch);
   -webkit-mask-image:var(--stripe-mask);mask-image:var(--stripe-mask);
   opacity:0;pointer-events:none;transition:opacity 220ms ease;
 }
-.field[data-state="focus"] .field-wash{animation:hud-stripe-in 460ms var(--ease-settle) both,var(--stripe-drift) var(--stripe-clock) linear infinite}
+.field[data-state="focus"] .field-wash{animation:hud-stripe-in 460ms var(--ease-settle) both}
+.field[data-state="focus"] .field-wash::before{animation:hud-stripe-slide var(--stripe-clock) linear infinite}
 
 .field-input{
   position:relative;width:100%;box-sizing:border-box;
