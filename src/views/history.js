@@ -1,4 +1,4 @@
-import {DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
+import {DAY_KEYS, CROSS_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {workoutOf, corePairs} from "../rules/workouts.js";
 import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
@@ -132,7 +132,7 @@ export function renderHistory(main){
   }
 
   main.appendChild(filterBar("blockset hist-filter", [null, ...DAY_KEYS]));
-  main.appendChild(filterBar("blockset hist-filter-off", OFF_KEYS));
+  main.appendChild(filterBar("blockset hist-filter-cross", CROSS_KEYS));
 
   const shown = keys.filter(key => !state.historyDay || state.sessions[key].day === state.historyDay);
   if(!shown.length){

@@ -1,6 +1,6 @@
 import {PROGRAM} from "../data/program.js";
-import {OFFDAYS} from "../data/offdays.js";
-import {BLOCKS, DAY_KEYS, OFF_KEYS, REST, HEAVY_REP_CEILING, LEAD_SET_COUNT} from "../data/constants.js";
+import {CROSS_TRAINING} from "../data/crossTraining.js";
+import {BLOCKS, DAY_KEYS, CROSS_KEYS, REST, HEAVY_REP_CEILING, LEAD_SET_COUNT} from "../data/constants.js";
 import {findExercise, isCompound} from "./exercises.js";
 
 export function repRange(reps){
@@ -21,7 +21,7 @@ export function restAfterSet(exercise, index){
   return index + 1 >= exercise.s ? exercise.restAfter : exercise.rest;
 }
 
-export function isOffDay(day){ return OFF_KEYS.includes(day); }
+export function isCrossTraining(day){ return CROSS_KEYS.includes(day); }
 
 function ready(slot, placement){
   return Object.assign({}, findExercise(slot.id), slot, {unit: slot.unit || null}, placement);
@@ -62,10 +62,10 @@ function buildBook(book, days){
 }
 
 const LIFTING = buildBook(PROGRAM, DAY_KEYS);
-const OFF_DAYS = buildBook(OFFDAYS, OFF_KEYS);
+const CROSS_BOOK = buildBook(CROSS_TRAINING, CROSS_KEYS);
 
 export function workoutFor(block, day){
-  const book = isOffDay(day) ? OFF_DAYS : LIFTING;
+  const book = isCrossTraining(day) ? CROSS_BOOK : LIFTING;
   return (book[block] && book[block][day]) || null;
 }
 

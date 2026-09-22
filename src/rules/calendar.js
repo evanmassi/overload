@@ -1,6 +1,6 @@
 import {STREAK_WORKOUTS} from "../data/constants.js";
 import {loggedCount} from "./progression.js";
-import {isOffDay} from "./workouts.js";
+import {isCrossTraining} from "./workouts.js";
 import {iso} from "./format.js";
 
 export const addDays = (date, n) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
@@ -22,15 +22,15 @@ export function trainingDays(sessions){
   loggedSessions(sessions).forEach(s => {
     const day = days[s.date] = days[s.date] || {count: 0, isLifting: false};
     day.count++;
-    if(!isOffDay(s.day)) day.isLifting = true;
+    if(!isCrossTraining(s.day)) day.isLifting = true;
   });
   return days;
 }
 
 export function weekTally(sessions, today){
   const week = sessionsInWeek(sessions, mondayOf(today));
-  const lifting = week.filter(s => !isOffDay(s.day)).length;
-  return {lifting, off: week.length - lifting};
+  const lifting = week.filter(s => !isCrossTraining(s.day)).length;
+  return {lifting, cross: week.length - lifting};
 }
 
 export function weekStreak(sessions, today){

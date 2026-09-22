@@ -15,7 +15,7 @@ overload/
 ├── manifest.json
 ├── src/
 │   ├── main.js       # Entry: mounts the views, subscribes the app view, registers the service worker
-│   ├── data/         # The exercise catalog, the program, off days, how-tos, constants
+│   ├── data/         # The exercise catalog, the program, cross-training, how-tos, constants
 │   ├── rules/        # Pure rules over exercises and sets: scoring, rotation, formatting
 │   ├── store/        # Saved state and every edit to it: storage, sessions, custom exercises, holds, backup
 │   ├── views/        # DOM and audio: one file per screen or piece of one
@@ -59,7 +59,7 @@ The folder is the layer. A file imports only from its own layer or the ones list
   read the card's structure from the page (`closest`, `querySelectorAll`), never from properties stored on elements.
 - Every signal is a `channel()` from `state.js`: `changes` for re-renders, `saveStatus` in `session.js` for the save
   dot. A new signal is a new channel, not a new callback setter.
-- The rest timer knows which set it belongs to (`start(seconds, forSet)`, `restRunningFor`), so a cardio window's rest
+- The rest timer knows which set it belongs to (`start(seconds, forSet)`, `restRunningFor`), so a conditioning window's rest
   is not restarted when you type that round's count.
 - `store/session.js` owns the session being edited. Views change it only through its functions (`logSet`,
   `swapSlot`, `setTravel`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves. `logSet` does not
@@ -199,7 +199,7 @@ Match the surrounding code. It is consistent, and a new file should be indisting
 | Files | named for the concern; lowercase for one word, camelCase for more | `rotation.js`, `saveBar.js` |
 | Functions | camelCase, verb first | `activeBlockIndex`, `openSwapSheet` |
 | Constants | UPPER_CASE | `AUTOSAVE_DELAY_MS` |
-| Booleans | is/has prefix | `isOffDay`, `hasStalled` |
+| Booleans | is/has prefix | `isCrossTraining`, `hasStalled` |
 | Design system primitives | `make` + primitive | `makeButton`, `makeField` |
 | CSS classes | lowercase-hyphen; a primitive's parts carry its prefix | `.ex-summary`, `.btn-glyph` |
 

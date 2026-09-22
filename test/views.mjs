@@ -369,7 +369,7 @@ section("Consistency grid");
   render();
   const lit = els.main.find("cell").filter(c => /lift|off/.test(c._class));
   equal("today lights as lifting, twice over", lit.map(c => c._class), ["cell lift double"]);
-  check("the note counts this week by kind", els.main.find("grid-note")[0].textContent.startsWith("This week: 1 lifting · 1 off day"),
+  check("the note counts this week by kind", els.main.find("grid-note")[0].textContent.startsWith("This week: 1 lifting · 1 cross-training"),
     els.main.find("grid-note")[0].textContent);
 
   lit[0].fire("click");
@@ -1023,7 +1023,7 @@ section("A timed hold counts up, pauses, and waits for the second side");
   stop();
 }
 
-section("A cardio round runs the window then the rest without a restart");
+section("A conditioning round runs the window then the rest without a restart");
 {
   const {stop} = await import("../src/views/timer.js");
   fresh();
@@ -1148,7 +1148,7 @@ section("Workouts done in the last week carry a check, and relabelling picks a v
   state.sessions[daysAgo(3)] = {date: daysAgo(3), day: "mobility", block: "A", blockIndex: 0, entries: {pigeon: [{w: "", r: "45"}]}};
   state.sessions[daysAgo(10)] = {date: daysAgo(10), day: "arms", block: "A", blockIndex: 0, entries: {ez_curl: [{w: "60", r: "10"}]}};
   render();
-  const marked = [...els.main.find("sessions")[0].children, ...els.main.find("offdays")[0].children]
+  const marked = [...els.main.find("sessions")[0].children, ...els.main.find("cross")[0].children]
     .filter(button => button.find("day-done").length).map(button => button.dataset.label);
   equal("legs and mobility this week, not arms from ten days ago", marked, ["Legs", "Mobility"]);
   loadDate(iso(new Date()));

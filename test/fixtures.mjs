@@ -42,9 +42,9 @@ export function prescribedExercises(){
   return seen;
 }
 
-export function offDayExercises(){
+export function crossTrainingExercises(){
   const seen = new Map();
-  for(const block of constants.BLOCKS) for(const day of constants.OFF_KEYS)
+  for(const block of constants.BLOCKS) for(const day of constants.CROSS_KEYS)
     workouts.workoutSlots(workouts.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
   return seen;
 }

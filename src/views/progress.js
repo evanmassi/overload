@@ -1,4 +1,4 @@
-import {CONSISTENCY_WEEKS, STREAK_WORKOUTS, WEEKDAY_LABELS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON} from "../data/constants.js";
+import {CONSISTENCY_WEEKS, STREAK_WORKOUTS, WEEKDAY_LABELS, DAY_KEYS, CROSS_KEYS, DAYS, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {state, changes} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
@@ -29,7 +29,7 @@ export function renderProgress(main){
   if(!ids.length) main.appendChild(el("p", "empty", "Log two sessions of the same lift and the trend line shows up here."));
   main.append(el("p", "section-label", "Consistency"), consistencyGrid());
 
-  [...DAY_KEYS, ...OFF_KEYS].forEach(day => {
+  [...DAY_KEYS, ...CROSS_KEYS].forEach(day => {
     const inDay = ids.filter(id => byExercise[id].day === day);
     if(!inDay.length) return;
     main.appendChild(el("p", "section-label", DAYS[day].label));
@@ -81,10 +81,10 @@ function consistencyGrid(){
 
   const tally = weekTally(state.sessions, today);
   const streak = weekStreak(state.sessions, today);
-  const note = `This week: ${tally.lifting} lifting · ${tally.off} off day${tally.off === 1 ? "" : "s"}`
+  const note = `This week: ${tally.lifting} lifting · ${tally.cross} cross-training`
     + (streak ? ` · ${streak} week${streak === 1 ? "" : "s"} in a row with ${STREAK_WORKOUTS}+` : "");
   const legend = el("p", "grid-legend");
-  legend.innerHTML = '<span><i class="cell lift"></i>lifting</span><span><i class="cell off"></i>off day</span>'
+  legend.innerHTML = '<span><i class="cell lift"></i>lifting</span><span><i class="cell cross"></i>cross-training</span>'
     + '<span><i class="cell lift double"></i>two in a day</span>';
 
   const wrap = el("div", "grid-wrap");
@@ -93,7 +93,7 @@ function consistencyGrid(){
 }
 
 function dayCell(date, day, isFuture){
-  const kind = isFuture ? " future" : day ? (day.isLifting ? " lift" : " off") + (day.count > 1 ? " double" : "") : "";
+  const kind = isFuture ? " future" : day ? (day.isLifting ? " lift" : " cross") + (day.count > 1 ? " double" : "") : "";
   const cell = el("i", "cell" + kind);
   cell.title = date + (day ? ` · ${day.count} workout${day.count === 1 ? "" : "s"}` : "");
   if(day) cell.addEventListener("click", () => openDay(date));

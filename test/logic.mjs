@@ -1,11 +1,11 @@
 import {section, check, equal, report} from "./checks.mjs";
 import {
-  reset, logged, setsOf, everyExercise, prescribedExercises, offDayExercises,
+  reset, logged, setsOf, everyExercise, prescribedExercises, crossTrainingExercises,
   state, hydrate, constants, exercises, workouts, progression, rotation, customs, slots, backup,
   HOWTO, CATALOG, PATTERNS, PROGRAM
 } from "./fixtures.mjs";
 
-const {BLOCKS, DAY_KEYS, OFF_KEYS, IMPLEMENTS_PER_LOAD} = constants;
+const {BLOCKS, DAY_KEYS, CROSS_KEYS, IMPLEMENTS_PER_LOAD} = constants;
 const {nextBlockIndex, nextLiftingDay, recentDays, previousOf, blockLetter, withLetter} = rotation;
 const {suggestTarget, sessionVolume, loggedCount, priorSets} = progression;
 const aimed = target => (target.w ? target.w + "×" : "") + target.r;
@@ -21,12 +21,12 @@ section("Program data");
 
   const prescribed = prescribedExercises();
   check("9 lifting sessions prescribe 93 of them", prescribed.size === 93, prescribed.size);
-  const offDay = offDayExercises();
-  check("9 off-day sessions prescribe 74", offDay.size === 74, offDay.size);
+  const crossTraining = crossTrainingExercises();
+  check("9 cross-training sessions prescribe 74", crossTraining.size === 74, crossTraining.size);
 
-  const uncatalogued = [...prescribed.keys(), ...offDay.keys()].filter(id => !CATALOG[id]);
+  const uncatalogued = [...prescribed.keys(), ...crossTraining.keys()].filter(id => !CATALOG[id]);
   equal("every slot names a catalogued exercise", uncatalogued, []);
-  const swapOnly = [...known.keys()].filter(id => !prescribed.has(id) && !offDay.has(id));
+  const swapOnly = [...known.keys()].filter(id => !prescribed.has(id) && !crossTraining.has(id));
   check("17 exercises are only offered as swaps", swapOnly.length === 17, swapOnly.length);
 
   const unpatterned = Object.keys(CATALOG).filter(id => !PATTERNS[CATALOG[id].pattern]);
@@ -122,9 +122,9 @@ section("The calendar counts weeks from Monday");
   week(14, ["chest", "mobility", "legs"]);
   week(21, ["chest"]);
   const wednesday = new Date(2026, 8, 23);
-  equal("this week so far", weekTally(state.sessions, wednesday), {lifting: 1, off: 0});
+  equal("this week so far", weekTally(state.sessions, wednesday), {lifting: 1, cross: 0});
   equal("an unfinished week does not break the streak", weekStreak(state.sessions, wednesday), 2);
-  equal("off days are marked apart from lifting", trainingDays(state.sessions)["2026-09-15"], {count: 1, isLifting: false});
+  equal("cross-training is marked apart from lifting", trainingDays(state.sessions)["2026-09-15"], {count: 1, isLifting: false});
 }
 
 section("A workout done in the last seven days is marked");
@@ -489,9 +489,9 @@ section("Stall detection");
   check("no history is not a stall", !hasStalledFor(press));
 }
 
-section("Off days sit beside the program, not inside it");
+section("Cross-training sits beside the program, not inside it");
 {
-  for(const block of BLOCKS) for(const day of OFF_KEYS){
+  for(const block of BLOCKS) for(const day of CROSS_KEYS){
     const workout = workouts.workoutFor(block, day);
     check(`${block}/${day} has three sections`, workout.sections.length === 3, workout.sections.length);
     check(`${block}/${day} prescribes 15-36 sets`,
@@ -513,7 +513,7 @@ section("Off days sit beside the program, not inside it");
   equal("a machine finisher logs level and minutes", [stairs.load, stairs.unit, stairs.implements, !!stairs.bw], ["level", "min", 0, true]);
 
   const liftingGoblet = prescribedExercises().get("goblet_squat");
-  equal("a lift reused on an off day keeps its lifting definition", [liftingGoblet.r, liftingGoblet.win], ["10-12", undefined]);
+  equal("a lift reused in cross-training keeps its lifting definition", [liftingGoblet.r, liftingGoblet.win], ["10-12", undefined]);
 
   equal("a machine finisher that hit its minutes goes up a level",
     suggestTarget(stairs, {sets: setsOf([[8, 8]])}), {w: "9", r: "8", change: "+1 level", isPush: true});
@@ -524,8 +524,8 @@ section("Off days sit beside the program, not inside it");
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
   state.sessions["2026-09-05"] = logged("2026-09-05", "conditioning", 0);
   state.sessions["2026-09-06"] = logged("2026-09-06", "mobility", 0);
-  equal("off days do not move the lifting rotation", nextLiftingDay(state.sessions), "legs");
-  equal("each off-day type rotates on its own", [
+  equal("cross-training does not move the lifting rotation", nextLiftingDay(state.sessions), "legs");
+  equal("each cross-training type rotates on its own", [
     nextBlockIndex(state.sessions, "conditioning"),
     nextBlockIndex(state.sessions, "mobility"),
     nextBlockIndex(state.sessions, "functional")
@@ -565,9 +565,9 @@ section("Last time is looked up within the same kind of session");
   state.sessions["2026-08-20"] = logged("2026-08-20", "arms", 2, {push_press: setsOf([[40, 8], [40, 8]])});
   state.sessions["2026-08-30"] = logged("2026-08-30", "conditioning", 0, {push_press: setsOf([[20, 22]])});
   const onArms = priorSets(state.sessions, "push_press", "2026-09-01", "arms");
-  check("an arms card looks past the cardio interval", onArms && onArms.date === "2026-08-20", onArms && onArms.date);
-  const onCardio = priorSets(state.sessions, "push_press", "2026-09-01", "conditioning");
-  check("a cardio card sees the interval", onCardio && onCardio.date === "2026-08-30", onCardio && onCardio.date);
+  check("an arms card looks past the conditioning interval", onArms && onArms.date === "2026-08-20", onArms && onArms.date);
+  const onConditioning = priorSets(state.sessions, "push_press", "2026-09-01", "conditioning");
+  check("a conditioning card sees the interval", onConditioning && onConditioning.date === "2026-08-30", onConditioning && onConditioning.date);
   const unscoped = priorSets(state.sessions, "push_press", "2026-09-01");
   check("without a day it still finds the latest of either", unscoped && unscoped.date === "2026-08-30", unscoped && unscoped.date);
   const heavy = {id: "push_press", bw: 0};

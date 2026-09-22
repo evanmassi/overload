@@ -1,4 +1,4 @@
-import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS} from "../../data/constants.js";
+import {BLOCKS, DAY_KEYS, CROSS_KEYS, DAYS} from "../../data/constants.js";
 import {state} from "../../store/state.js";
 import {relabelSession} from "../../store/session.js";
 import {el} from "../dom.js";
@@ -16,7 +16,7 @@ export function openRelabelSheet(key, letter){
     chosen: option === letter,
     onPick: () => openRelabelSheet(key, option)
   }))));
-  [...DAY_KEYS, ...OFF_KEYS].forEach(day => {
+  [...DAY_KEYS, ...CROSS_KEYS].forEach(day => {
     const isCurrent = day === session.day && letter === session.block;
     const button = el("button", "sheet-item" + (isCurrent ? " current" : ""));
     button.innerHTML = `<span>${DAYS[day].label} ${letter}</span>`;

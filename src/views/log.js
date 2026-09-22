@@ -1,4 +1,4 @@
-import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON, DEFAULT_REST, RECENT_DAYS} from "../data/constants.js";
+import {BLOCKS, DAY_KEYS, CROSS_KEYS, DAYS, TREND_ICON, DEFAULT_REST, RECENT_DAYS, LIFTING_LABEL, CROSS_LABEL} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {workoutOf, corePairs} from "../rules/workouts.js";
 import {recentDays, previousOf} from "../rules/rotation.js";
@@ -33,7 +33,8 @@ export function renderLog(main){
   main.appendChild(bar);
 
   const recent = recentDays(state.sessions, new Date());
-  main.append(dayRow("blockset sessions", DAY_KEYS, recent), dayRow("blockset offdays", OFF_KEYS, recent));
+  main.append(dayGroup(LIFTING_LABEL, "blockset sessions", DAY_KEYS, recent),
+    dayGroup(CROSS_LABEL, "blockset cross", CROSS_KEYS, recent));
 
   const head = el("div", "dayhead");
   head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>Version ${current.block}</b>${lastTimeNote()}</p><h2 data-text="${workout.focus}">${workout.focus}</h2></div>`;
@@ -63,6 +64,12 @@ export function renderLog(main){
   }
 
   main.appendChild(notesCard());
+}
+
+function dayGroup(label, className, keys, done){
+  const group = el("div", "day-group");
+  group.append(el("span", "day-group-label", label), dayRow(className, keys, done));
+  return group;
 }
 
 function dayRow(className, keys, done){

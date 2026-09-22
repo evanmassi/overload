@@ -2,7 +2,7 @@ const CACHE = 'overload-v6';
 
 const ASSETS = [
   './', './index.html', './manifest.json', './src/main.js',
-  './src/data/catalog.js', './src/data/constants.js', './src/data/howto.js', './src/data/offdays.js',
+  './src/data/catalog.js', './src/data/constants.js', './src/data/howto.js', './src/data/crossTraining.js',
   './src/data/program.js',
   './src/rules/calendar.js', './src/rules/exercises.js', './src/rules/format.js', './src/rules/progression.js', './src/rules/rotation.js',
   './src/rules/sets.js', './src/rules/workouts.js',

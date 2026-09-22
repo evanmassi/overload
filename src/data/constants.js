@@ -1,14 +1,16 @@
 export const BLOCKS = ["A", "B", "C"];
 export const DAY_KEYS = ["chest", "legs", "arms"];
 
-export const OFF_KEYS = ["conditioning", "functional", "mobility"];
+export const CROSS_KEYS = ["conditioning", "functional", "mobility"];
+export const LIFTING_LABEL = "Weightlifting";
+export const CROSS_LABEL = "Cross-training";
 
 export const DAYS = {
   chest: {short: "Chest", label: "Chest & Back"},
   legs: {short: "Legs", label: "Legs & Back"},
   arms: {short: "Arms", label: "Shoulders & Arms"},
-  conditioning: {short: "Cardio", label: "Cardio"},
-  functional: {short: "Function", label: "Function"},
+  conditioning: {short: "Conditioning", label: "Conditioning"},
+  functional: {short: "Functional", label: "Functional"},
   mobility: {short: "Mobility", label: "Mobility"}
 };
 

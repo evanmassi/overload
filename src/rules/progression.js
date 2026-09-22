@@ -1,5 +1,5 @@
 import {findExercise} from "./exercises.js";
-import {workoutSlots, workoutOf, repRange, isOffDay} from "./workouts.js";
+import {workoutSlots, workoutOf, repRange, isCrossTraining} from "./workouts.js";
 import {unitSuffix} from "./format.js";
 import {isLogged} from "./sets.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
@@ -52,9 +52,9 @@ export function backoffWeight(sets, isBodyweight){
 }
 
 function earlierKeysOfSameKind(sessions, beforeKey, day){
-  const offDay = day === undefined ? null : isOffDay(day);
+  const crossTraining = day === undefined ? null : isCrossTraining(day);
   return Object.keys(sessions)
-    .filter(key => key < beforeKey && (offDay === null || isOffDay(sessions[key].day) === offDay))
+    .filter(key => key < beforeKey && (crossTraining === null || isCrossTraining(sessions[key].day) === crossTraining))
     .sort().reverse();
 }
 
