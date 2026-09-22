@@ -6,7 +6,7 @@
 @keyframes hud-pin-flicker{0%,100%{opacity:.8}42%{opacity:.85}45%{opacity:.34}47%{opacity:.9}51%{opacity:.52}54%{opacity:.83}85%{opacity:.77}87%{opacity:.39}89%{opacity:.83}}
 @keyframes hud-pin-flicker-echo{0%,100%{opacity:.3}18%{opacity:.35}20%{opacity:.12}23%{opacity:.37}61%{opacity:.34}63%{opacity:.14}66%{opacity:.35}}
 @keyframes hud-veil-edge{0%,100%{opacity:.62}48%{opacity:.66}50%{opacity:.48}53%{opacity:.64}}
-@keyframes hud-text-flicker{0%,100%{text-shadow:0 0 10px var(--lgl);opacity:.94}40%{text-shadow:0 0 13px var(--lgl);opacity:1}43%{text-shadow:0 0 3px var(--lgl);opacity:.72}46%{text-shadow:0 0 17px var(--lgl);opacity:1}50%{text-shadow:0 0 6px var(--lgl);opacity:.84}54%{text-shadow:0 0 12px var(--lgl);opacity:.97}84%{text-shadow:0 0 11px var(--lgl);opacity:.95}86%{text-shadow:0 0 4px var(--lgl);opacity:.76}89%{text-shadow:0 0 14px var(--lgl);opacity:1}}
+@keyframes hud-text-flicker{0%,100%{opacity:.94}40%{opacity:1}43%{opacity:.72}46%{opacity:1}50%{opacity:.84}54%{opacity:.97}84%{opacity:.95}86%{opacity:.76}89%{opacity:1}}
 
 /* Hover ----------------------------------------------------------------- */
 @keyframes hud-lock-edge{to{opacity:1;box-shadow:0 0 18px var(--hg1,rgba(95,227,240,.5)), inset 0 0 14px var(--hg2,rgba(95,227,240,.26))}}

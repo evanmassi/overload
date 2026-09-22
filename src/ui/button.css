@@ -171,7 +171,7 @@
 }
 .btn-word{
   position:absolute;inset:0;color:var(--s-mid);font-weight:var(--weight-control);
-  transform:translate(var(--hx),var(--hy));pointer-events:none;
+  transform:translate(var(--hx),var(--hy));pointer-events:none;text-shadow:0 0 10px var(--lgl);
   animation:hud-text-flicker var(--s-word-idle) linear calc(var(--s-lag,0ms) + 420ms) infinite;
 }
 .btn[data-ghost] .btn-word{opacity:.72}
@@ -184,7 +184,7 @@
   text-shadow:0 0 10px var(--lgl);
   animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite;
 }
-.btn[data-tone="secondary"] .btn-label{font-weight:var(--weight-quiet);text-shadow:none}
+.btn[data-tone="secondary"] .btn-label{font-weight:var(--weight-quiet)}
 .btn[data-state="hover"] .btn-label{animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite,hud-lock-label 260ms ease-out both}
 .btn[data-fired] .btn-label{animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite,hud-lit calc(var(--clock) + 20ms) var(--ease-settle) 0ms 1 both}
 .btn[data-state="held"] .btn-label{animation:hud-text-flicker var(--idle) linear var(--s-lag,0ms) infinite,hud-label-hold 170ms ease-out both}

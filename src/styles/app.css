@@ -576,7 +576,7 @@ button{cursor:pointer;border:none;background:none}
 .ex-echo{
   position:absolute;inset:0;padding:0 0 0 1px;display:flex;align-items:center;justify-content:center;
   font-style:normal;color:var(--accent-mid);opacity:.7;transform:translate(2.5px,2.5px);pointer-events:none;z-index:-1;
-  text-shadow:none;animation:hud-text-flicker calc(7290ms * var(--flicker-pace)) linear 420ms infinite;
+  text-shadow:0 0 10px var(--lgl);animation:hud-text-flicker calc(7290ms * var(--flicker-pace)) linear 420ms infinite;
 }
 .ex-num::before,.hist-day .chip.live::before,.notes label::before{
   content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
