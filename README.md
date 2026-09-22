@@ -51,7 +51,7 @@ Because of the A/B/C rotation, "last time" for most lifts is a full cycle ago. L
 
 Session volume accounts for both: a walking lunge holding two 40s for 12 per leg counts 40 × 2 dumbbells × 12 reps × 2 legs.
 
-**Every card names the muscles it works** in a muted tag on the chip line, primary movers only, so `PER DUMBBELL · CHEST · TRICEPS` reads as one glance. The how-to sheet lists the secondary ones too. Card text never wraps: display names are capped at 22 characters, and the meta is two fixed lines on every card, chips above and prescription below.
+**Every card names the muscles it works** in a dotted grey-blue tag on the chip line, set apart from the tags that say how to log the numbers, primary movers only, so `PER DUMBBELL · CHEST · TRICEPS` reads as one glance. The how-to sheet lists the secondary ones too. Card text never wraps: display names are capped at 22 characters, and the meta is two fixed lines on every card, chips above and prescription below.
 
 **Tap an exercise name** for a how-to: 3-4 numbered steps and the one thing people get wrong, for all 165 movements. It ships in the page, so it opens instantly with no signal. A YouTube search link sits at the bottom of the sheet for when you want to see it moving.
 
