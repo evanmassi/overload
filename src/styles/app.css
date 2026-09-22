@@ -299,7 +299,6 @@ button{cursor:pointer;border:none;background:none}
 .hist-filter-off{margin:0 0 6px}
 .hist-filter .btn,.hist-filter-off .btn{flex:1}
 .hist-filter-off .btn-label,.hist-filter-off .btn-word{font-size:calc(var(--size-control) - 1px)}
-.hist-cycle{margin-top:14px}
 
 .grid-wrap{margin-bottom:18px}
 .grid{

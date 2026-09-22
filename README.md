@@ -16,8 +16,8 @@ Open it at **https://evanmassi.github.io/overload/**
 
 ## What's in it
 
-- Three lifting workouts (Chest & Back, Legs & Back, Shoulders & Arms) that rotate through three weeks, each week
-  with a different focus, and each ending with a short core finisher.
+- Three lifting workouts (Chest & Back, Legs & Back, Shoulders & Arms), each with three versions (A, B, C) that
+  take turns so the same muscles get a different routine each time, and each ending with a short core finisher.
 - Cardio, Function and Mobility sessions for the days in between.
 - 165 exercises, each with a short how-to and the muscles it works.
 - Built for dumbbells, an EZ bar, a pull-up bar, a bench and a cable stack. Away mode swaps in bodyweight and backpack

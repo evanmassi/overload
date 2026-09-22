@@ -35,6 +35,13 @@ const UNIT_NAME = {sec: "sec", min: "min"};
 export function unitSuffix(exercise){ return UNIT_SUFFIX[exercise.unit] || ""; }
 export function unitName(exercise){ return UNIT_NAME[exercise.unit] || "reps"; }
 
+const dayNumber = dateStr => Date.UTC(...dateStr.split("-").map((part, i) => Number(part) - (i === 1 ? 1 : 0))) / 86400000;
+
+export function daysAgoLabel(fromDate, toDate){
+  const days = Math.round(dayNumber(toDate) - dayNumber(fromDate));
+  return days <= 0 ? "earlier today" : days === 1 ? "yesterday" : `${days} days ago`;
+}
+
 export const clockFace = seconds => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
 export function parseClock(text){

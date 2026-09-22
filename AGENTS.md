@@ -243,7 +243,7 @@ no storage key before something writes it.
 | Whether a set counts as logged | `isLogged` in `sets.js` | `set && set.r` |
 | Rest after a set | `restAfterSet` in `rules/exercises.js` | Rewriting the ternary |
 | Which move fills a slot, and strays | `resolveSlot(slot, swaps)`, `strayIds` in `store/slots.js` | Reading `swaps` by hand |
-| Week and version rotation | `rotation.js` | Counting sessions in a view |
+| Version rotation and recent workouts | `rotation.js` | Counting sessions in a view |
 | Exercise lookup and derived fields | `findExercise` in `rules/exercises.js` | Reading `CATALOG` by hand |
 | A workout and its slots | `workoutFor`, `workoutSlots` in `rules/workouts.js` | Walking `PROGRAM` by hand |
 | Buttons, inputs, panels | `ui/` | Hand-built markup |

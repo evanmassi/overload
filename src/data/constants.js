@@ -76,6 +76,7 @@ export const STALL_EXPOSURES = 3;
 export const STALL_BACKOFF_PERCENT = 10;
 export const HOLD_RELEASE_MARGIN = 0.1;
 export const CONSISTENCY_WEEKS = 26;
+export const RECENT_DAYS = 7;
 
 export const LONG_PRESS_MS = 500;
 export const TIMER_PRESETS = [15, 30, 45, 60, 90, 120, 180, 300, 600];

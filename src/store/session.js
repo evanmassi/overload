@@ -1,8 +1,8 @@
 import {AUTOSAVE_DELAY_MS} from "../data/constants.js";
 import {state, changes, channel, persistSessions} from "./state.js";
 import {loggedCount, priorSets} from "../rules/progression.js";
-import {blockIndexOf, blockLetter, activeBlockIndex, nextSessionIn, nextOffBlockIndex} from "../rules/rotation.js";
-import {isOffDay, workoutOf, restAfterSet} from "../rules/workouts.js";
+import {blockIndexOf, blockLetter, withLetter, nextBlockIndex, nextLiftingDay} from "../rules/rotation.js";
+import {workoutOf, restAfterSet} from "../rules/workouts.js";
 import {idsTakenElsewhere, resolvedExercises} from "./slots.js";
 import {releaseIfBeaten} from "./holds.js";
 import {isLogged} from "../rules/sets.js";
@@ -27,8 +27,8 @@ function sessionsOn(sessions, dateStr){
   return Object.keys(sessions).filter(key => sessions[key] && sessions[key].date === dateStr).sort();
 }
 
-function sessionKeyFor(dateStr, day){
-  return sessionsOn(state.sessions, dateStr).filter(key => state.sessions[key].day === day).pop() || null;
+function latestOn(dateStr, isMatch){
+  return sessionsOn(state.sessions, dateStr).filter(key => isMatch(state.sessions[key])).pop() || null;
 }
 
 function setBlockIndex(index){
@@ -37,45 +37,38 @@ function setBlockIndex(index){
   state.foldFlips.clear();
 }
 
-export function chooseBlock(index){
-  setBlockIndex(index);
+function switchSession(existing, day, blockIndex){
+  const current = state.current;
+  if(!loggedCount(current) && !existing){
+    current.day = day;
+    setBlockIndex(blockIndex === null ? nextBlockIndex(state.sessions, day) : blockIndex);
+  } else {
+    stash();
+    openSession(existing || newSessionKey(current.date), current.date, day, blockIndex);
+  }
   queueSave();
   changes.notify();
+}
+
+export function chooseBlock(letter){
+  const current = state.current;
+  if(letter === current.block) return;
+  const existing = latestOn(current.date, s => s.day === current.day && s.block === letter);
+  switchSession(existing, current.day, withLetter(current.blockIndex, letter));
 }
 
 export function setDay(day){
   const current = state.current;
   if(day === current.day) return;
-  const existing = sessionKeyFor(current.date, day);
-  if(!loggedCount(current) && !existing){
-    const crossing = isOffDay(day) !== isOffDay(current.day);
-    current.day = day;
-    if(crossing) setBlockIndex(isOffDay(day) ? nextOffBlockIndex(state.sessions, day) : activeBlockIndex(state.sessions));
-    state.foldFlips.clear();
-  } else {
-    stash();
-    openSession(existing || newSessionKey(current.date), current.date, day);
-  }
-  queueSave();
-  changes.notify();
+  switchSession(latestOn(current.date, s => s.day === day), day, null);
 }
 
-function sessionsExcept(key){
-  const rest = {};
-  for(const other in state.sessions) if(other !== key) rest[other] = state.sessions[other];
-  return rest;
-}
-
-export function relabelSession(key, day){
+export function relabelSession(key, day, letter){
   const session = state.sessions[key];
   if(!session) return;
-  const crossing = isOffDay(day) !== isOffDay(session.day);
   session.day = day;
-  if(isOffDay(day) || crossing){
-    const others = sessionsExcept(key);
-    session.blockIndex = isOffDay(day) ? nextOffBlockIndex(others, day) : activeBlockIndex(others);
-    session.block = blockLetter(session.blockIndex);
-  }
+  session.blockIndex = withLetter(blockIndexOf(session), letter);
+  session.block = letter;
   persistSessions();
   if(key === state.current.key){
     state.current.day = day;
@@ -84,7 +77,7 @@ export function relabelSession(key, day){
   changes.notify();
 }
 
-function openSession(key, dateStr, day){
+function openSession(key, dateStr, day, blockIndex){
   const current = state.current;
   const saved = state.sessions[key];
   current.key = key;
@@ -93,12 +86,9 @@ function openSession(key, dateStr, day){
   if(saved){
     setBlockIndex(blockIndexOf(saved));
     current.day = saved.day;
-  } else if(day){
-    current.day = day;
-    setBlockIndex(isOffDay(day) ? nextOffBlockIndex(state.sessions, day) : activeBlockIndex(state.sessions));
   } else {
-    setBlockIndex(activeBlockIndex(state.sessions));
-    current.day = nextSessionIn(state.sessions, current.blockIndex);
+    current.day = day || nextLiftingDay(state.sessions);
+    setBlockIndex(blockIndex === null ? nextBlockIndex(state.sessions, current.day) : blockIndex);
   }
 
   state.foldFlips.clear();
@@ -117,7 +107,7 @@ function openSession(key, dateStr, day){
 
 export function loadDate(dateStr){
   const latest = sessionsOn(state.sessions, dateStr).pop();
-  openSession(latest || newSessionKey(dateStr), dateStr, null);
+  openSession(latest || newSessionKey(dateStr), dateStr, null, null);
 }
 
 export function followToday(today){
@@ -130,7 +120,7 @@ export function followToday(today){
 export function loadSession(key){
   const saved = state.sessions[key];
   if(!saved){ loadDate(state.current.date); return; }
-  openSession(key, saved.date, saved.day);
+  openSession(key, saved.date, saved.day, null);
 }
 
 function markLogged(){

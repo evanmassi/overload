@@ -13,7 +13,7 @@ const {openTimerSheet} = await import("../src/views/sheets/timerSheet.js");
 const {mountTimer} = await import("../src/views/timer.js");
 const {mountSaveStatus} = await import("../src/views/saveStatus.js");
 const {findExercise} = await import("../src/rules/exercises.js");
-const {loadDate, setDay, followToday} = await import("../src/store/session.js");
+const {loadDate, setDay, chooseBlock, followToday} = await import("../src/store/session.js");
 const {clockFace, iso} = await import("../src/rules/format.js");
 
 mountTimer(els.timer, {onHold: openTimerSheet});
@@ -107,6 +107,7 @@ section("A prior session drives placeholders and a target");
   };
   loadDate("2026-09-01");
   setDay("chest");
+  chooseBlock("A");
   render();
 
   check("a target band appears", els.main.find("target").length >= 1);
@@ -249,6 +250,7 @@ section("Carry-forward repeat button");
   };
   loadDate("2026-09-01");
   setDay("chest");
+  chooseBlock("A");
   render();
 
   const rows = els.main.find("ex-item")[0].find("set").filter(r => !r.classList.contains("head"));
@@ -311,6 +313,7 @@ section("A stalled lift offers swap, drop and hold");
   });
   loadDate("2026-09-01");
   setDay("arms");
+  chooseBlock("A");
   render();
   const curl = els.main.find("ex-item").find(m => m.id === "card-ez_curl");
   check("the stall prompt shows as a warning callout", curl.find("stall").length === 1 && curl.find("stall")[0].dataset.tone === "warning");
@@ -691,7 +694,7 @@ section("History shows lifts the session plan does not contain");
   render();
 }
 
-section("History filters by workout, groups by cycle and marks deltas");
+section("History filters by workout and marks deltas");
 {
   fresh();
   const chest = (date, blockIndex, weight) => ({
@@ -714,12 +717,6 @@ section("History filters by workout, groups by cycle and marks deltas");
     filter.children.map(b => b.dataset.label).join());
   check("all is pressed by default", filter.children[0].getAttribute("aria-pressed") === "true");
   check("every session shows unfiltered", els.main.find("hist-day").length === 4, els.main.find("hist-day").length);
-
-  const cycles = els.main.find("hist-cycle");
-  check("sessions group under cycle headers",
-    cycles.map(c => c.textContent).join() === "Cycle 2,Cycle 1", cycles.map(c => c.textContent).join());
-  check("a header sits directly above its first session",
-    els.main.children[2].classList.contains("hist-cycle") && els.main.children[3].classList.contains("hist-day"));
 
   filter.children[2].fire("click");
   render();
@@ -1130,6 +1127,37 @@ section("Typed names and numbers reach the page as text, not markup");
   render();
   const head = els.main.find("ex-head").find(h => h.innerHTML.includes("Curl"));
   check("and the exercise card", head && head.innerHTML.includes("Curl &lt;3"), head && head.innerHTML);
+}
+
+section("Workouts done in the last week carry a check, and relabelling picks a version");
+{
+  fresh();
+  const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d); };
+  state.sessions[daysAgo(2)] = {date: daysAgo(2), day: "legs", block: "A", blockIndex: 0, entries: {goblet_squat: [{w: "60", r: "10"}]}};
+  state.sessions[daysAgo(3)] = {date: daysAgo(3), day: "mobility", block: "A", blockIndex: 0, entries: {pigeon: [{w: "", r: "45"}]}};
+  state.sessions[daysAgo(10)] = {date: daysAgo(10), day: "arms", block: "A", blockIndex: 0, entries: {ez_curl: [{w: "60", r: "10"}]}};
+  render();
+  const marked = [...els.main.find("sessions")[0].children, ...els.main.find("offdays")[0].children]
+    .filter(button => button.find("day-done").length).map(button => button.dataset.label);
+  equal("legs and mobility this week, not arms from ten days ago", marked, ["Legs", "Mobility"]);
+  loadDate(iso(new Date()));
+  setDay("legs");
+  render();
+  check("the open workout keeps its check", els.main.find("sessions")[0].children[1].find("day-done").length === 1);
+  equal("the next version is picked", state.current.block, "B");
+  check("and the header says what came last", els.main.find("dayhead")[0].innerHTML.includes("last time A, 2 days ago"),
+    els.main.find("dayhead")[0].innerHTML);
+
+  state.view = "history";
+  render();
+  openHistoryCard(1).find("hist-actions")[0].children[1].fire("click");
+  const versions = els.sheetbody.find("blockset")[0].children;
+  equal("the chooser offers the three versions", versions.map(b => b.dataset.label), ["A", "B", "C"]);
+  versions[2].fire("click");
+  els.sheetbody.find("sheet-item")[0].fire("click");
+  const refiled = state.sessions[daysAgo(3)];
+  equal("picking C then Chest files it as Chest C", [refiled.day, refiled.block], ["chest", "C"]);
+  state.view = "log";
 }
 
 section("The date, clock, backup and test sound controls hold still");

@@ -1,5 +1,6 @@
-import {BLOCKS, DAY_KEYS} from "../data/constants.js";
+import {BLOCKS, DAY_KEYS, RECENT_DAYS} from "../data/constants.js";
 import {loggedCount} from "./progression.js";
+import {iso} from "./format.js";
 
 export function blockIndexOf(session){
   if(!session) return 0;
@@ -10,36 +11,35 @@ export function blockIndexOf(session){
 
 export function blockLetter(blockIndex){ return BLOCKS[blockIndex % BLOCKS.length]; }
 
-export function cycleNumber(blockIndex){ return Math.floor(blockIndex / BLOCKS.length) + 1; }
-
-export function cycleStart(blockIndex){ return Math.floor(blockIndex / BLOCKS.length) * BLOCKS.length; }
-
-function loggedSessions(sessions){
-  return Object.keys(sessions).map(date => sessions[date])
-    .filter(s => s && loggedCount(s) && DAY_KEYS.includes(s.day));
+export function withLetter(blockIndex, letter){
+  return Math.floor(blockIndex / BLOCKS.length) * BLOCKS.length + BLOCKS.indexOf(letter);
 }
 
-export function sessionsDoneIn(sessions, blockIndex){
-  const done = new Set();
-  loggedSessions(sessions).forEach(s => { if(blockIndexOf(s) === blockIndex) done.add(s.day); });
-  return done;
-}
-
-export function activeBlockIndex(sessions){
-  const logged = loggedSessions(sessions);
-  if(!logged.length) return 0;
-  const latest = logged.reduce((max, s) => Math.max(max, blockIndexOf(s)), 0);
-  return sessionsDoneIn(sessions, latest).size >= DAY_KEYS.length ? latest + 1 : latest;
-}
-
-export function nextOffBlockIndex(sessions, day){
-  const done = Object.keys(sessions).map(date => sessions[date])
+function loggedOf(sessions, day){
+  return Object.keys(sessions).sort().map(key => sessions[key])
     .filter(s => s && s.day === day && loggedCount(s));
-  if(!done.length) return 0;
-  return done.reduce((max, s) => Math.max(max, blockIndexOf(s)), 0) + 1;
 }
 
-export function nextSessionIn(sessions, blockIndex){
-  const done = sessionsDoneIn(sessions, blockIndex);
-  return DAY_KEYS.find(day => !done.has(day)) || DAY_KEYS[0];
+function latestOf(sessions, day){ return loggedOf(sessions, day).pop() || null; }
+
+export function previousOf(sessions, day, beforeKey){
+  const earlier = Object.keys(sessions).filter(key => key < beforeKey).sort().map(key => sessions[key])
+    .filter(s => s && s.day === day && loggedCount(s));
+  return earlier.pop() || null;
+}
+
+export function nextBlockIndex(sessions, day){
+  const latest = latestOf(sessions, day);
+  return latest ? blockIndexOf(latest) + 1 : 0;
+}
+
+export function nextLiftingDay(sessions){
+  const lastDate = day => { const latest = latestOf(sessions, day); return latest ? latest.date : ""; };
+  return DAY_KEYS.reduce((pick, day) => lastDate(day) < lastDate(pick) ? day : pick);
+}
+
+export function recentDays(sessions, today){
+  const since = iso(new Date(today.getFullYear(), today.getMonth(), today.getDate() - RECENT_DAYS + 1));
+  return new Set(Object.keys(sessions).map(key => sessions[key])
+    .filter(s => s && s.date >= since && loggedCount(s)).map(s => s.day));
 }

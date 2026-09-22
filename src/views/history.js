@@ -1,8 +1,7 @@
 import {DAY_KEYS, OFF_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
-import {workoutOf, isOffDay, corePairs} from "../rules/workouts.js";
+import {workoutOf, corePairs} from "../rules/workouts.js";
 import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
-import {blockIndexOf, cycleNumber} from "../rules/rotation.js";
 import {isLogged} from "../rules/sets.js";
 import {setSummary, elapsedLabel, unitSuffix} from "../rules/format.js";
 import {state, changes} from "../store/state.js";
@@ -54,7 +53,7 @@ function sessionActions(key){
   edit.title = "Open this session on the Log tab";
   const relabel = actionButton("relabel", {tone: "secondary", ghost: true, key: "hist-relabel:" + key}, event => {
     event.stopPropagation();
-    openRelabelSheet(key);
+    openRelabelSheet(key, state.sessions[key].block);
   });
   relabel.title = "File this session under a different workout";
   const remove = confirmButton("delete", "sure?", {tone: "danger", ghost: true, key: "hist-delete:" + key},
@@ -141,18 +140,10 @@ export function renderHistory(main){
     return;
   }
 
-  let lastCycle = null;
   shown.forEach(key => {
     const session = state.sessions[key];
     const workout = workoutOf(session);
     if(!workout) return;
-
-    const cycle = cycleNumber(blockIndexOf(session));
-    const ownRotation = !isOffDay(session.day) || state.historyDay === session.day;
-    if(ownRotation && cycle !== lastCycle){
-      main.appendChild(el("p", "section-label hist-cycle", `Cycle ${cycle}`));
-      lastCycle = cycle;
-    }
     main.appendChild(sessionCard(key, session, workout));
   });
 

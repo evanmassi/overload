@@ -6,7 +6,7 @@ import {
 } from "./fixtures.mjs";
 
 const {BLOCKS, DAY_KEYS, OFF_KEYS, IMPLEMENTS_PER_LOAD} = constants;
-const {activeBlockIndex, nextSessionIn, sessionsDoneIn, blockLetter, cycleNumber, nextOffBlockIndex} = rotation;
+const {nextBlockIndex, nextLiftingDay, recentDays, previousOf, blockLetter, withLetter} = rotation;
 const {suggestTarget, sessionVolume, loggedCount, priorSets} = progression;
 
 const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01");
@@ -65,38 +65,57 @@ section("Program data");
   }
 }
 
-section("Rotation follows work done, not the calendar");
+section("Each workout rotates through its own versions");
 {
   reset();
-  equal("a fresh app opens Week A, Chest", [activeBlockIndex(state.sessions), nextSessionIn(state.sessions, 0)], [0, "chest"]);
+  equal("a fresh app opens Chest, version A", [nextLiftingDay(state.sessions), nextBlockIndex(state.sessions, "chest")], ["chest", 0]);
 
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
-  equal("after Chest it offers Legs", nextSessionIn(state.sessions, activeBlockIndex(state.sessions)), "legs");
+  equal("after Chest it offers Legs", nextLiftingDay(state.sessions), "legs");
+  equal("and Chest moves on to B while Legs stays on A",
+    [blockLetter(nextBlockIndex(state.sessions, "chest")), blockLetter(nextBlockIndex(state.sessions, "legs"))], ["B", "A"]);
 
   state.sessions["2026-09-04"] = logged("2026-09-04", "arms", 0);
-  equal("skipping Legs for Arms still leaves Legs queued",
-    [activeBlockIndex(state.sessions), nextSessionIn(state.sessions, 0)], [0, "legs"]);
-
+  equal("skipping Legs for Arms still leaves Legs next", nextLiftingDay(state.sessions), "legs");
   state.sessions["2026-09-06"] = logged("2026-09-06", "legs", 0);
-  equal("finishing all three advances to Week B, Chest",
-    [activeBlockIndex(state.sessions), blockLetter(1), nextSessionIn(state.sessions, 1)], [1, "B", "chest"]);
+  equal("with all three done the oldest comes round again", nextLiftingDay(state.sessions), "chest");
 
-  reset();
-  state.sessions = {};
-  let day = 1;
-  for(const blockIndex of [0, 1, 2]) for(const key of DAY_KEYS){
-    const date = `2026-09-${String(day++).padStart(2, "0")}`;
-    state.sessions[date] = logged(date, key, blockIndex);
-  }
-  equal("a full cycle wraps to Week A of cycle 2",
-    [activeBlockIndex(state.sessions), blockLetter(3), cycleNumber(3)], [3, "A", 2]);
+  state.sessions["2026-09-08"] = logged("2026-09-08", "chest", 1);
+  state.sessions["2026-09-10"] = logged("2026-09-10", "chest", 2);
+  equal("after C a workout wraps to A", blockLetter(nextBlockIndex(state.sessions, "chest")), "A");
 
-  reset();
   state.sessions = {"2026-09-01": {date: "2026-09-01", day: "chest", blockIndex: 0, block: "A", entries: {}}};
-  equal("an opened but empty session does not count as done", activeBlockIndex(state.sessions), 0);
-
+  equal("an opened but empty session does not count", nextBlockIndex(state.sessions, "chest"), 0);
   state.sessions = {"2026-09-01": {date: "2026-09-01", day: "chest", block: "B", entries: {x: [{w: "1", r: "1"}]}}};
-  equal("a session with no blockIndex infers it from its letter", activeBlockIndex(state.sessions), 1);
+  equal("a session with no blockIndex infers it from its letter", nextBlockIndex(state.sessions, "chest"), 2);
+
+  equal("picking a letter stays in the same round", [withLetter(4, "A"), withLetter(4, "C")], [3, 5]);
+
+  state.sessions = {
+    "2026-09-01": logged("2026-09-01", "chest", 0),
+    "2026-09-08T09:00:00": logged("2026-09-08", "chest", 1),
+    "2026-09-15T09:00:00": logged("2026-09-15", "chest", 2)
+  };
+  equal("last time is the one before the open session",
+    previousOf(state.sessions, "chest", "2026-09-15T09:00:00").date, "2026-09-08");
+  equal("an older date-keyed session still counts", previousOf(state.sessions, "chest", "2026-09-08T09:00:00").date, "2026-09-01");
+  equal("and the first has none", previousOf(state.sessions, "chest", "2026-09-01"), null);
+  const {daysAgoLabel} = await import("../src/rules/format.js");
+  equal("days ago reads plainly",
+    [daysAgoLabel("2026-09-22", "2026-09-22"), daysAgoLabel("2026-09-21", "2026-09-22"), daysAgoLabel("2026-08-28", "2026-09-02")],
+    ["earlier today", "yesterday", "5 days ago"]);
+}
+
+section("A workout done in the last seven days is marked");
+{
+  reset();
+  state.sessions = {
+    "2026-09-15": logged("2026-09-15", "chest", 0),
+    "2026-09-16": logged("2026-09-16", "legs", 0),
+    "2026-09-21": logged("2026-09-21", "mobility", 0),
+    "2026-09-22": {date: "2026-09-22", day: "arms", block: "A", blockIndex: 0, entries: {}}
+  };
+  equal("counting today as one of the seven", [...recentDays(state.sessions, new Date(2026, 8, 22))].sort(), ["legs", "mobility"]);
 }
 
 section("Progression targets");
@@ -475,27 +494,28 @@ section("Off days sit beside the program, not inside it");
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
   state.sessions["2026-09-05"] = logged("2026-09-05", "conditioning", 0);
   state.sessions["2026-09-06"] = logged("2026-09-06", "mobility", 0);
-  equal("off days do not count toward the lifting week",
-    [activeBlockIndex(state.sessions), nextSessionIn(state.sessions, 0), [...sessionsDoneIn(state.sessions, 0)]],
-    [0, "legs", ["chest"]]);
+  equal("off days do not move the lifting rotation", nextLiftingDay(state.sessions), "legs");
   equal("each off-day type rotates on its own", [
-    nextOffBlockIndex(state.sessions, "conditioning"),
-    nextOffBlockIndex(state.sessions, "mobility"),
-    nextOffBlockIndex(state.sessions, "functional")
+    nextBlockIndex(state.sessions, "conditioning"),
+    nextBlockIndex(state.sessions, "mobility"),
+    nextBlockIndex(state.sessions, "functional")
   ], [1, 1, 0]);
-  state.sessions["2026-09-12"] = logged("2026-09-12", "conditioning", 1);
-  state.sessions["2026-09-19"] = logged("2026-09-19", "conditioning", 2);
-  equal("after three it wraps to version A of cycle 2",
-    [nextOffBlockIndex(state.sessions, "conditioning"), blockLetter(3), cycleNumber(3)], [3, "A", 2]);
 
-  const {setDay} = await import("../src/store/session.js");
-  state.current = {date: "2026-09-20", day: "legs", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}};
+  const {setDay, chooseBlock} = await import("../src/store/session.js");
+  state.current = {key: "2026-09-20T09:00:00", date: "2026-09-20", day: "legs", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}};
   setDay("conditioning");
-  equal("switching to an off day picks up that type's next version", [state.current.blockIndex, state.current.block], [3, "A"]);
-  setDay("mobility");
-  equal("switching between off days keeps the version you were on", state.current.blockIndex, 3);
-  setDay("arms");
-  equal("switching back to lifting returns to the lifting week", state.current.blockIndex, 0);
+  equal("switching an empty session picks up that type's next version", state.current.block, "B");
+  setDay("chest");
+  equal("and back to lifting picks up that workout's next", state.current.block, "B");
+
+  state.current.entries = {flat_db_press: [{w: "50", r: "10"}]};
+  const firstKey = state.current.key;
+  chooseBlock("A");
+  check("a version picked after logging opens its own workout", state.current.key !== firstKey && state.current.block === "A");
+  check("and leaves the logged one whole", state.sessions[firstKey].block === "B" && !!state.sessions[firstKey].entries.flat_db_press);
+  check("with nothing carried over", !state.current.entries.flat_db_press);
+  chooseBlock("B");
+  equal("picking the first version again returns to it", state.current.key, firstKey);
 }
 
 section("Prescribed set counts");
@@ -528,25 +548,16 @@ section("Last time is looked up within the same kind of session");
   check("a stall counts only lifting sessions", progression.hasStalled(state.sessions, heavy, "2026-09-01", "arms"));
 }
 
-section("Relabelling a session gives it the right week index");
+section("Relabelling a session sets its workout and version");
 {
   const {relabelSession} = await import("../src/store/session.js");
   reset();
-  for(let i = 0; i < 7; i++){
-    const date = `2026-07-0${i + 1}`;
-    state.sessions[date] = logged(date, "conditioning", i);
-  }
-  state.sessions["2026-08-03"] = logged("2026-08-03", "chest", 3);
-  state.sessions["2026-08-05"] = logged("2026-08-05", "legs", 3);
   state.sessions["2026-08-08"] = logged("2026-08-08", "conditioning", 7);
-  relabelSession("2026-08-08", "chest");
+  relabelSession("2026-08-08", "chest", "A");
   const refiled = state.sessions["2026-08-08"];
-  check("a cardio session refiled as lifting joins the open week", refiled.blockIndex === 3 && refiled.block === "A", refiled.blockIndex);
-  check("so the active week stays put", activeBlockIndex(state.sessions) === 3, activeBlockIndex(state.sessions));
-  relabelSession("2026-08-08", "mobility");
-  check("refiled back to an off-day it takes that day's next version", state.sessions["2026-08-08"].blockIndex === 0, state.sessions["2026-08-08"].blockIndex);
-  relabelSession("2026-08-05", "arms");
-  check("lifting to lifting keeps its week", state.sessions["2026-08-05"].blockIndex === 3, state.sessions["2026-08-05"].blockIndex);
+  check("it takes the day and letter asked for", refiled.day === "chest" && refiled.block === "A" && refiled.blockIndex === 6, refiled.blockIndex);
+  relabelSession("2026-08-08", "chest", "C");
+  check("a new letter stays in the same round", refiled.block === "C" && refiled.blockIndex === 8, refiled.blockIndex);
 }
 
 process.exit(report() ? 0 : 1);

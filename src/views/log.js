@@ -1,7 +1,8 @@
-import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON, DEFAULT_REST} from "../data/constants.js";
+import {BLOCKS, DAY_KEYS, OFF_KEYS, DAYS, TREND_ICON, DEFAULT_REST, RECENT_DAYS} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
-import {workoutOf, isOffDay, corePairs} from "../rules/workouts.js";
-import {cycleNumber, cycleStart, sessionsDoneIn} from "../rules/rotation.js";
+import {workoutOf, corePairs} from "../rules/workouts.js";
+import {recentDays, previousOf} from "../rules/rotation.js";
+import {daysAgoLabel} from "../rules/format.js";
 import {state} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
 import {resolveSlot, strayIds} from "../store/slots.js";
@@ -14,30 +15,28 @@ import {exerciseCard, corePairCard} from "./exerciseCard.js";
 
 export function renderLog(main){
   const current = state.current;
-  const offDay = isOffDay(current.day);
   const workout = workoutOf(current);
 
   const date = el("input", "date-input");
   date.type = "date";
   date.value = current.date;
   date.addEventListener("change", () => { if(date.value) loadDate(date.value); });
-  const start = cycleStart(current.blockIndex);
-  const blocks = choiceRow("blockset", BLOCKS.map((letter, i) => ({
+  const blocks = choiceRow("blockset", BLOCKS.map(letter => ({
     label: letter,
     key: "block:" + letter,
-    title: `${offDay ? "Version" : "Week"} ${letter}`,
+    title: "Version " + letter,
     chosen: letter === current.block,
-    onPick: () => chooseBlock(start + i)
+    onPick: () => chooseBlock(letter)
   })));
   const bar = el("div", "daybar");
   bar.append(makeField(date, {steady: true}), blocks);
   main.appendChild(bar);
 
-  const done = offDay ? new Set() : sessionsDoneIn(state.sessions, current.blockIndex);
-  main.append(dayRow("blockset sessions", DAY_KEYS, done), dayRow("blockset offdays", OFF_KEYS, new Set()));
+  const recent = recentDays(state.sessions, new Date());
+  main.append(dayRow("blockset sessions", DAY_KEYS, recent), dayRow("blockset offdays", OFF_KEYS, recent));
 
   const head = el("div", "dayhead");
-  head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>${offDay ? "Version" : "Week"} ${current.block}</b> · Cycle ${cycleNumber(current.blockIndex)}</p><h2 data-text="${workout.focus}">${workout.focus}</h2></div>`;
+  head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>Version ${current.block}</b>${lastTimeNote()}</p><h2 data-text="${workout.focus}">${workout.focus}</h2></div>`;
   if(workout.travel) head.appendChild(placeSwitch(workout));
   main.appendChild(head);
 
@@ -75,12 +74,18 @@ function dayRow(className, keys, done){
     onPick: () => setDay(day)
   })), {ghost: true});
   keys.forEach((day, i) => {
-    if(!done.has(day) || day === current.day) return;
+    if(!done.has(day)) return;
     const mark = el("i", "icon day-done", "check");
-    mark.title = "Logged this week";
+    mark.title = `Done in the last ${RECENT_DAYS} days`;
     row.children[i].appendChild(mark);
   });
   return row;
+}
+
+function lastTimeNote(){
+  const current = state.current;
+  const previous = previousOf(state.sessions, current.day, current.key);
+  return previous ? ` · last time ${previous.block}, ${daysAgoLabel(previous.date, current.date)}` : "";
 }
 
 const SECTION_LABEL = {
@@ -121,7 +126,7 @@ function notesCard(){
   const area = el("textarea");
   area.id = "notes";
   area.value = state.current.notes || "";
-  area.placeholder = "How it felt, what was occupied, anything worth remembering next cycle.";
+  area.placeholder = "How it felt, what was occupied, anything worth remembering next time.";
   const save = () => setNotes(area.value);
   area.addEventListener("change", save);
   area.addEventListener("blur", save);
