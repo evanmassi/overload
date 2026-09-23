@@ -66,7 +66,7 @@ export const CATALOG = {
   wall_sit: {n: "Wall Sit", pattern: "Squat pattern", load: "bw", unit: "sec", target: "45", muscles: {p: ["quads"], s: ["glutes"]}},
   goblet_squat: {n: "DB Goblet Squat", pattern: "Squat pattern", load: "single", target: "10-12", muscles: {p: ["quads", "glutes"], s: ["core"]}},
   bulgarian: {n: "Bulgarian Split Squat", pattern: "Squat pattern", load: "pair", per: "leg", target: "8", muscles: {p: ["quads", "glutes"], s: ["hamstrings", "core"]}},
-  walking_lunge: {n: "DB Walking Lunge", pattern: "Squat pattern", load: "pair", per: "leg", target: "12", muscles: {p: ["quads", "glutes"], s: ["hamstrings", "core"]}},
+  walking_lunge: {n: "DB Walking Lunge", pattern: "Squat pattern", load: "pair", target: "12", muscles: {p: ["quads", "glutes"], s: ["hamstrings", "core"]}},
   db_front_squat: {n: "DB Front Squat", pattern: "Squat pattern", load: "pair", target: "8-10", muscles: {p: ["quads", "glutes"], s: ["core", "upper back"]}},
   db_step_up: {n: "DB Step-up", pattern: "Squat pattern", load: "pair", per: "leg", target: "10", muscles: {p: ["quads", "glutes"], s: ["hamstrings"]}},
   reverse_lunge: {n: "DB Reverse Lunge", pattern: "Squat pattern", load: "pair", per: "leg", target: "12", muscles: {p: ["quads", "glutes"], s: ["hamstrings"]}},
