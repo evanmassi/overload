@@ -4,6 +4,7 @@ import {state, changes} from "../../store/state.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor} from "../../store/customs.js";
 import {idsTakenElsewhere} from "../../store/slots.js";
 import {swapSlot, lastTimeFor} from "../../store/session.js";
+import {shortDate} from "../../rules/format.js";
 import {el, escapeHtml} from "../dom.js";
 import {actionButton, confirmButton} from "../controls.js";
 import {openSheet, closeSheet, sheetGroup, sheetEntry} from "./sheet.js";
@@ -18,7 +19,7 @@ function pick(slot, id){
 
 function lastDate(id){
   const last = lastTimeFor(id);
-  return last ? last.date.slice(5) : "";
+  return last ? "last " + shortDate(last.date) : "";
 }
 
 function exerciseRow(slot, id){

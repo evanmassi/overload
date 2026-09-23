@@ -538,11 +538,10 @@ button{cursor:pointer;border:none;background:none}
   font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;
 }
 .sheet-item.current{color:var(--ui-accent)}
-.sheet-mine{display:flex;align-items:center;gap:6px;padding:3px 6px}
-.sheet-mine .pick{
-  flex:1;text-align:left;padding:8px 0;font-size:14px;min-width:0;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
+.sheet-mine{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:2px 6px;padding:3px 6px 9px}
+.sheet-mine .pick{grid-column:1 / -1;min-width:0;text-align:left;padding:8px 0 2px;font-size:14px;overflow-wrap:anywhere}
+.sheet-mine .btn{--pad:6px 9px 6px 11px}
+.sheet-mine :is(.btn-label,.btn-word){font-size:var(--size-micro)}
 .sheet-mine em{
   font-style:normal;font-family:var(--font-ui);font-size:11px;
   color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap;
