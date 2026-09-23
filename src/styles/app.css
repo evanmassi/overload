@@ -85,8 +85,8 @@ button{cursor:pointer;border:none;background:none}
 .blockset{display:flex;gap:4px}
 .blockset .btn{--pad:12px 8px 12px 11px}
 .blockset .btn-label,.blockset .btn-word{text-align:center}
-.day-group{position:relative;margin-top:16px;border-top:1px solid var(--line-hairline);padding-top:6px}
-.day-group + .day-group{margin-top:28px}
+.day-group{position:relative;margin-top:22px;border-top:1px solid var(--line-hairline)}
+.day-group + .day-group{margin-top:30px}
 .day-group-label{
   position:absolute;top:0;left:10px;transform:translateY(-50%);padding:0 7px;background:var(--ground);
   font-family:var(--font-ui);font-size:9.5px;line-height:1;letter-spacing:.2em;text-transform:uppercase;
@@ -95,13 +95,15 @@ button{cursor:pointer;border:none;background:none}
 .day-group::before{content:"";position:absolute;top:-1px;left:0;width:10px;height:1px;background:var(--ui-accent)}
 .blockset.sessions,.blockset.cross{gap:8px;--track-control:.16em}
 .blockset.sessions .btn,.blockset.cross .btn{border-bottom:1px solid var(--line-hairline)}
-.blockset.sessions .btn > :not(.btn-label):not(.btn-word):not(.day-done),
-.blockset.cross .btn > :not(.btn-label):not(.btn-word):not(.day-done){display:none}
+.blockset.sessions .btn > :is(.btn-plate,.btn-glow,.btn-frame,.btn-fill,.btn-stripe,.btn-bracket),
+.blockset.cross .btn > :is(.btn-plate,.btn-glow,.btn-frame,.btn-fill,.btn-stripe,.btn-bracket){display:none}
 .blockset.sessions .btn[data-chosen="on"]::after,.blockset.cross .btn[data-chosen="on"]::after{
   content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;pointer-events:none;
   background:var(--ui-accent);box-shadow:0 0 6px 1px var(--accent-glow);
 }
-.blockset.sessions .btn,.blockset.cross .btn{flex:1 1 0;min-width:0;--pad:12px 4px}
+.blockset.sessions .btn,.blockset.cross .btn{flex:1 1 0;min-width:0;--pad:14px 4px 10px}
+.blockset.sessions .day-done,.blockset.cross .day-done{top:auto;bottom:-7px;right:0;font-size:13px}
+.blockset.sessions .btn[data-chosen="on"]:has(.day-done)::after,.blockset.cross .btn[data-chosen="on"]:has(.day-done)::after{right:19px}
 .blockset.sessions :is(.btn-label,.btn-word),.blockset.cross :is(.btn-label,.btn-word){font-size:12px}
 .blockset.sessions .btn-label,.blockset.cross .btn-label{text-indent:var(--track-control)}
 .day-done{
@@ -114,7 +116,7 @@ button{cursor:pointer;border:none;background:none}
   animation:hud-pin-flicker-echo calc(4800ms * var(--flicker-pace)) linear infinite;
 }
 
-.dayhead{padding:14px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.dayhead{padding:19px 0 6px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 .dayhead-text{min-width:0;flex:1}
 .dayhead .place-wrap{flex:none;margin-bottom:3px;display:flex;flex-direction:column;align-items:center;gap:3px}
 .dayhead .place-wrap .eyebrow{margin:0;letter-spacing:.1em}
@@ -300,7 +302,7 @@ button{cursor:pointer;border:none;background:none}
 }
 .hist-swap .icon{font-size:15px}
 .hist-foot{
-  font-family:var(--font-ui);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--faint);letter-spacing:.03em;
+  padding-left:calc(var(--tag-w) - 3px);font-family:var(--font-ui);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--faint);letter-spacing:.03em;
 }
 .hist-line span{color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hist-line b{font-family:var(--font-ui);font-weight:500;font-variant-numeric:tabular-nums;font-size:12.5px}
@@ -471,14 +473,21 @@ button{cursor:pointer;border:none;background:none}
 
 .sheet{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;overflow-x:clip}
 .sheet-back{
-  position:absolute;inset:0;background:rgba(6,8,10,.72);
+  position:absolute;inset:0;background:rgba(6,8,10,.72);animation:sheet-fade 260ms ease-out both;
 }
+.sheet[data-closing]{pointer-events:none}
+.sheet[data-closing] .sheet-back{animation:sheet-fade-out var(--sheet-close) ease-in both}
+.sheet[data-closing] .sheet-panel{animation:sheet-sink var(--sheet-close) ease-in both}
+@keyframes sheet-fade{from{opacity:0}}
+@keyframes sheet-fade-out{to{opacity:0}}
+@keyframes sheet-rise{from{transform:translateY(28px);opacity:0}}
+@keyframes sheet-sink{to{transform:translateY(28px);opacity:0}}
 .sheet-panel{
   position:relative;width:100%;min-width:0;max-width:100%;
   max-height:88vh;max-height:88dvh;
   display:flex;flex-direction:column;
   padding-bottom:env(safe-area-inset-bottom);
-  animation:hud-press 320ms var(--ease-settle) both;
+  animation:sheet-rise 240ms var(--ease-settle) both;
   --veil-feather:linear-gradient(to right,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%),
     linear-gradient(to bottom,transparent 0,#000 20px,#000 100%);
 }
@@ -510,7 +519,7 @@ button{cursor:pointer;border:none;background:none}
 .sheet-pin[data-corner="br"]{bottom:8px;right:8px;animation-duration:7220ms}
 .sheet-pin[data-corner="br"]::after{animation-duration:6660ms}
 .sheet-head{
-  position:relative;display:flex;align-items:baseline;gap:14px;min-width:0;padding:14px 20px 11px;
+  position:relative;display:flex;align-items:center;gap:14px;min-width:0;padding:14px 20px 11px;
 }
 .sheet-head::after{
   content:"";position:absolute;left:20px;right:20px;bottom:0;height:1px;
@@ -525,19 +534,47 @@ button{cursor:pointer;border:none;background:none}
 }
 .sheet-body{position:relative;min-width:0;overflow-y:auto;overflow-x:clip;padding:12px 20px 18px;-webkit-overflow-scrolling:touch}
 .sheet-group{
-  font-family:var(--font-ui);font-size:10px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--ui-accent);padding:10px 2px 5px;
+  display:flex;align-items:center;gap:7px;margin:0;padding:18px 0 6px;
+  font-family:var(--font-ui);font-size:9.5px;line-height:1;letter-spacing:.2em;text-transform:uppercase;color:var(--secondary);
 }
+.sheet-group::before{content:"";flex:0 0 10px;height:1px;background:var(--ui-accent)}
+.sheet-group::after{content:"";flex:1;height:1px;background:var(--line-hairline)}
+.sheet-group:first-child{padding-top:2px}
 .sheet-item{
   display:flex;align-items:center;gap:9px;width:100%;text-align:left;
-  padding:9px 6px;font-size:14px;
+  padding:8px;font-size:13.5px;transition:background 120ms ease;
 }
+.sheet-item + .sheet-item,.sheet-mine + .sheet-mine{border-top:1px solid var(--line-hairline)}
+.sheet-item,.sheet-mine .pick{position:relative}
+.sheet-item.picked,.sheet-mine .pick.picked{
+  --lc:var(--accent-ink);--lgl:var(--accent-glow);
+  background:var(--ui-accent-soft);color:var(--ui-accent);box-shadow:inset 2px 0 0 var(--ui-accent);
+  animation:hud-press 322ms var(--ease-settle) both;
+}
+.sheet-item.picked::before,.sheet-mine .pick.picked::before{
+  content:"";position:absolute;inset:0;border:1px solid var(--ui-accent);pointer-events:none;
+  animation:hud-hairline 520ms steps(7,end) both;
+}
+.sheet-item.picked::after,.sheet-mine .pick.picked::after{
+  content:"";position:absolute;inset:0;background:var(--ui-accent);pointer-events:none;
+  animation:hud-face-flash 442ms steps(1,end) both;
+}
+.sheet-item.picked span{animation:hud-lit 540ms var(--ease-settle) both}
 .sheet-item:active{background:var(--surface-2)}
 .sheet-item em{
   font-style:normal;margin-left:auto;font-family:var(--font-ui);
   font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;
 }
-.sheet-item.current{color:var(--ui-accent)}
+.sheet-item.in-use,.sheet-mine .pick.in-use{box-shadow:inset 2px 0 0 var(--ui-accent);padding-left:10px}
+.sheet-tag{flex:none;margin-left:auto;font-weight:400}
+.sheet-tag + em{margin-left:0}
+.sheet-tag.in-use{background:transparent;color:var(--ui-accent);border-color:var(--ui-accent);box-shadow:0 0 6px var(--accent-glow-soft)}
+.sheet-mine .pick .sheet-tag{margin-left:8px;vertical-align:1px}
+.sheet-browse{
+  margin-top:14px;border:1px solid var(--line-hairline);justify-content:space-between;
+  font-family:var(--font-ui);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--secondary);
+}
+.sheet-browse .icon{font-size:18px;color:var(--ui-accent)}
 .sheet-mine{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:2px 6px;padding:3px 6px 9px}
 .sheet-mine .pick{grid-column:1 / -1;min-width:0;text-align:left;padding:8px 0 2px;font-size:14px;overflow-wrap:anywhere}
 .sheet-mine .btn{--pad:6px 9px 6px 11px}

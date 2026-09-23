@@ -2,18 +2,19 @@ import {findExercise, IDS_BY_PATTERN} from "../../rules/exercises.js";
 import {workoutOf} from "../../rules/workouts.js";
 import {state, changes} from "../../store/state.js";
 import {exerciseName, registerCustom, renameCustom, removeCustom, setsLoggedFor} from "../../store/customs.js";
-import {idsTakenElsewhere} from "../../store/slots.js";
+import {idsTakenElsewhere, resolveSlot} from "../../store/slots.js";
 import {swapSlot, lastTimeFor} from "../../store/session.js";
 import {shortDate} from "../../rules/format.js";
 import {el, escapeHtml} from "../dom.js";
 import {actionButton, confirmButton} from "../controls.js";
-import {openSheet, closeSheet, sheetGroup, sheetEntry} from "./sheet.js";
+import {openSheet, closeSheet, closeAfterPick, sheetGroup, sheetEntry} from "./sheet.js";
 
 let openSlot = null;
 
-function pick(slot, id){
+function pick(slot, id, item = null){
   if(!swapSlot(slot, id)) return false;
-  closeSheet();
+  if(item) closeAfterPick(item);
+  else closeSheet();
   return true;
 }
 
@@ -22,19 +23,27 @@ function lastDate(id){
   return last ? "last " + shortDate(last.date) : "";
 }
 
+function slotTag(slot, id){
+  if(id === resolveSlot(slot, state.current.swaps).id) return '<b class="tag sheet-tag in-use">in use</b>';
+  return id === slot.id ? '<b class="tag sheet-tag">program</b>' : "";
+}
+
+const inUseClass = (slot, id) => id === resolveSlot(slot, state.current.swaps).id ? " in-use" : "";
+
 function exerciseRow(slot, id){
-  const button = el("button", "sheet-item" + (id === slot.id ? " current" : ""));
+  const button = el("button", "sheet-item" + inUseClass(slot, id));
   const when = lastDate(id);
-  button.innerHTML = `<span>${escapeHtml(exerciseName(id))}</span>${when ? `<em>${when}</em>` : ""}`;
-  button.addEventListener("click", () => pick(slot, id));
+  button.innerHTML = `<span>${escapeHtml(exerciseName(id))}</span>${slotTag(slot, id)}${when ? `<em>${when}</em>` : ""}`;
+  button.addEventListener("click", () => pick(slot, id, button));
   return button;
 }
 
 function customRow(slot, id, taken){
-  const use = el("button", "pick" + (id === slot.id ? " current" : ""), state.customNames[id]);
+  const use = el("button", "pick" + inUseClass(slot, id));
+  use.innerHTML = `${escapeHtml(state.customNames[id])}${slotTag(slot, id)}`;
   use.disabled = taken.has(id);
   if(use.disabled) use.title = "Already in this session";
-  use.addEventListener("click", () => pick(slot, id));
+  use.addEventListener("click", () => pick(slot, id, use));
 
   const rename = actionButton("rename", {tone: "secondary", ghost: true, key: "rename:" + id}, () => {
     const next = prompt("Rename this exercise", state.customNames[id] || "");
@@ -82,9 +91,14 @@ export function openSwapSheet(slot){
     }
   }));
 
-  sheetGroup("Everything else");
-  Object.keys(IDS_BY_PATTERN).filter(p => p !== pattern).forEach(other => {
-    sheetGroup(other);
-    offer(IDS_BY_PATTERN[other]);
+  const browse = el("button", "sheet-item sheet-browse");
+  browse.innerHTML = '<span>Browse all exercises</span><i class="icon">expand_more</i>';
+  browse.addEventListener("click", () => {
+    browse.hidden = true;
+    Object.keys(IDS_BY_PATTERN).filter(p => p !== pattern).forEach(other => {
+      sheetGroup(other);
+      offer(IDS_BY_PATTERN[other]);
+    });
   });
+  body.appendChild(browse);
 }

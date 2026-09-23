@@ -24,9 +24,12 @@ const cell = (row, i) => row.children[i].find("field-input")[0] || row.children[
 const wt = row => cell(row, 1);
 const rp = row => cell(row, 3);
 
+const sheetClosed = () => els.sheet.hidden || "closing" in els.sheet.dataset;
+
 function fresh(){
   localStorage.clear();
   els.sheet.hidden = true;
+  delete els.sheet.dataset.closing;
   state.sessions = {};
   state.customNames = {};
   state.view = "log";
@@ -133,7 +136,10 @@ section("Sheets open and close");
   check("it names the exercise", els.sheettitle.textContent === "Flat DB Bench Press", els.sheettitle.textContent);
 
   els.sheetclose.fire("click");
-  check("close hides it again", els.sheet.hidden === true);
+  check("close sends it away", sheetClosed());
+  const {SHEET_CLOSE_MS} = await import("../src/data/constants.js");
+  await new Promise(resolve => setTimeout(resolve, SHEET_CLOSE_MS + 20));
+  check("and hides it once it has slid out", els.sheet.hidden === true && !("closing" in els.sheet.dataset));
 
   openSwapSheet(findExercise("leg_curl"));
   check("the swap sheet opens", els.sheet.hidden === false);
@@ -142,12 +148,18 @@ section("Sheets open and close");
   check("it offers same-pattern alternatives", els.sheetbody.find("sheet-item").length > 1);
   check("it offers a custom entry box", els.sheetbody.find("sheet-custom").length === 1);
   els.sheetback.fire("click");
-  check("tapping the backdrop closes it", els.sheet.hidden === true);
+  check("tapping the backdrop closes it", sheetClosed());
 
   openSwapSheet(findExercise("flat_db_press"));
   const offered = els.sheetbody.find("sheet-item").map(item => item.innerHTML);
   check("it never offers a move the session already has", !offered.some(html => html.includes(">Pull-ups<")));
   check("but still lists the slot's own move", offered.some(html => html.includes(">Flat DB Bench Press<")));
+  const own = els.sheetbody.find("sheet-item").find(item => item.innerHTML.includes(">Flat DB Bench Press<"));
+  check("the move in the workout is tagged in use", own.classList.contains("in-use") && own.innerHTML.includes("in use"), own.innerHTML);
+  const before = els.sheetbody.find("sheet-item").length;
+  els.sheetbody.find("sheet-browse")[0].fire("click");
+  check("other movements stay folded until browsed", els.sheetbody.find("sheet-item").length > before + 20,
+    els.sheetbody.find("sheet-item").length);
   els.sheetclose.fire("click");
 }
 
@@ -659,9 +671,14 @@ section("Each button is its own workout for the day");
   const card = openHistoryCard(0);
   card.find("hist-actions")[0].children[1].fire("click");
   check("relabel opens a chooser", els.sheet.hidden === false && els.sheetbody.find("sheet-item").length === 6);
-  els.sheetbody.find("sheet-item")[2].fire("click");
+  const choice = els.sheetbody.find("sheet-item")[2];
+  choice.fire("click");
   const relabelled = Object.keys(state.sessions).map(k => state.sessions[k].day);
   check("picking one refiles the session", relabelled.includes("arms"), relabelled.join());
+  check("and lights the row before the sheet closes", choice.classList.contains("picked") && els.sheet.hidden === false);
+  const {SHEET_PICK_MS} = await import("../src/data/constants.js");
+  await new Promise(resolve => setTimeout(resolve, SHEET_PICK_MS + 20));
+  check("then the sheet closes", sheetClosed());
 }
 
 section("Two sessions of the same lift on one day compare in order");
@@ -1080,7 +1097,7 @@ section("Long-pressing the clock opens a picker with presets and a stopwatch");
   equal("the presets read as clock faces", presets.map(b => b.dataset.label), TIMER_PRESETS.map(clockFace));
   presets[1].fire("click");
   check("tapping one starts that countdown", els.timer.dataset.label === clockFace(TIMER_PRESETS[1]), els.timer.dataset.label);
-  check("and closes the sheet", els.sheet.hidden === true);
+  check("and closes the sheet", sheetClosed());
   stop();
 
   const {parseClock} = await import("../src/rules/format.js");
@@ -1097,7 +1114,7 @@ section("Long-pressing the clock opens a picker with presets and a stopwatch");
   box.value = "7.30";
   box.fire("keydown", {key: "Enter"});
   check("a typed length starts on Enter", els.timer.dataset.label === "7:30", els.timer.dataset.label);
-  check("and closes the sheet", els.sheet.hidden === true);
+  check("and closes the sheet", sheetClosed());
   stop();
 
   await longPress();

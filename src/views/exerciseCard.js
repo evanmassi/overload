@@ -6,7 +6,7 @@ import {isLogged} from "../rules/sets.js";
 import {setRuns, setSummary, unitSuffix, unitName, weightUnit} from "../rules/format.js";
 import {state, changes} from "../store/state.js";
 import {isHeld, holdExercise, releaseExercise} from "../store/holds.js";
-import {setEffort, logSet, swapSlot, nextRest, openSetIndex, currentSets, lastTimeFor} from "../store/session.js";
+import {setEffort, logSet, nextRest, openSetIndex, currentSets, lastTimeFor} from "../store/session.js";
 import {makeIconButton} from "../ui/button.js";
 import {makeField} from "../ui/field.js";
 import {makePanel} from "../ui/panel.js";
@@ -115,16 +115,12 @@ function fillCard(card, exercise, slot, notch){
   head.appendChild(summary);
 
   const swap = el("button", "ex-swap");
-  swap.title = exercise.swappedFrom ? "Undo swap" : "Swap exercise";
+  swap.title = "Swap exercise";
   makeIconButton(swap, {
-    icon: exercise.swappedFrom ? "undo" : "swap_horiz",
-    label: swap.title, tone: "primary", ghost: true, size: 30, glyph: 18,
+    icon: "swap_horiz", label: swap.title, tone: "primary", ghost: true, size: 30, glyph: 18,
     key: "swap:" + exercise.id
   });
-  swap.addEventListener("click", () => {
-    if(exercise.swappedFrom) swapSlot(slot, slot.id);
-    else openSwapSheet(slot);
-  });
+  swap.addEventListener("click", () => openSwapSheet(slot));
   if(!exercise.stray) head.appendChild(swap);
   if(exercise.swappedFrom) card.classList.add("ex-swapped");
 

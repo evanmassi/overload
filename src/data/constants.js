@@ -49,6 +49,8 @@ export const BEEP_GO = {wave: "triangle", volume: 1, pulses: [{freq: 1320, secon
 
 export const AUTOSAVE_DELAY_MS = 1200;
 export const CONFIRM_WINDOW_MS = 4000;
+export const SHEET_PICK_MS = 420;
+export const SHEET_CLOSE_MS = 240;
 
 export const WEIGHT_STEP_LB = 5;
 export const BODYWEIGHT_LOAD_EQUIVALENT_LB = 40;
