@@ -375,6 +375,10 @@ button{cursor:pointer;border:none;background:none}
 }
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .legend em.ghost{color:var(--ink-3);font-variant-numeric:tabular-nums}
+.legend em:not(.ghost){animation:hud-pin-flicker calc(5600ms * var(--flicker-pace)) linear infinite}
+.legend em.up{text-shadow:0 0 8px var(--success-glow)}
+.legend em.same{text-shadow:0 0 8px var(--warning-glow)}
+.legend em.down{text-shadow:0 0 8px var(--secondary-glow-soft)}
 .section-label{
   font-family:var(--font-ui);font-size:11px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--ui-accent);margin:16px 0 8px;
