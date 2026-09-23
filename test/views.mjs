@@ -177,11 +177,7 @@ section("History and progress views render");
 
   const feet = els.main.find("hist-foot");
   check("every card gets a totals strip", feet.length === 2, feet.length);
-  check("the strip carries volume and set count",
-    feet.every(f => /lb/.test(f.innerHTML) && /sets/.test(f.innerHTML)), feet[0].innerHTML);
-  const timed = feet.filter(f => /1h 04m/.test(f.innerHTML));
-  check("only the session with timestamps reports how long it took",
-    timed.length === 1, feet.map(f => f.innerHTML).join(" | "));
+  equal("the strip reads sets and time, no pound total", feet.map(f => f.textContent), ["1 set · 1h 04m", "1 set"]);
   check("totals are no longer exercise rows",
     !els.main.find("hist-line").some(l => /volume|first set to last/.test(l.innerHTML)));
 
@@ -191,7 +187,7 @@ section("History and progress views render");
   check("the number is labelled an estimate, not a weight",
     els.main.find("prog")[0].innerHTML.includes("est. 1RM"),
     els.main.find("prog")[0].innerHTML);
-  check("two data points draw a sparkline", els.main.find("prog")[0].children.some(c => c.tag === "svg"));
+  check("two data points draw a sparkline", els.main.find("prog-chart").length === 1 && els.main.find("prog-dot").length === 2);
   check("cards sit under their workout", els.main.find("section-label").some(l => l.textContent === "Chest & Back"));
   check("the headline is the latest top set", els.main.find("prog")[0].innerHTML.includes("45<small class=\"unit-tag\">lbs</small> × 10"),
     els.main.find("prog")[0].innerHTML);
@@ -608,8 +604,8 @@ section("A history card groups, collapses and marks");
 
   const foot = card.find("hist-foot")[0];
   check("the totals strip counts every logged set",
-    foot.innerHTML.includes("20 sets"), foot.innerHTML);
-  check("and reports the duration", foot.innerHTML.includes("1h 04m"), foot.innerHTML);
+    foot.textContent.startsWith("20 sets"), foot.textContent);
+  check("and reports the duration", foot.textContent.endsWith(" · 1h 04m"), foot.textContent);
 
   state.view = "log";
   render();
@@ -695,8 +691,8 @@ section("History shows lifts the session plan does not contain");
   check("under its own label",
     card.find("hist-sub").some(l => l.textContent === "Not in this session"));
   check("and the totals still count it",
-    card.find("hist-foot")[0].innerHTML.includes("4 sets"),
-    card.find("hist-foot")[0].innerHTML);
+    card.find("hist-foot")[0].textContent === "4 sets",
+    card.find("hist-foot")[0].textContent);
 
   state.view = "log";
   render();

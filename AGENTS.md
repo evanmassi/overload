@@ -44,7 +44,7 @@ The folder is the layer. A file imports only from its own layer or the ones list
 | `main.js` | everything above | Mounts the views, nothing else |
 
 - Nothing imports `views/app.js` except `main.js`. It picks the screen for the current tab and refreshes the save bar.
-- A view that needs a number (score, volume, rotation, target) gets it from `rules/` or `store/`. A rule written
+- A view that needs a number (score, rotation, target) gets it from `rules/` or `store/`. A rule written
   inside a view is a second copy waiting to drift.
 - `store/slots.js` resolves which move fills a slot. It sits in `store/` because naming a custom move reads your saved
   names.
@@ -238,7 +238,7 @@ no storage key before something writes it.
 | Editing the open session | `session.js` functions | Writing `state.current` from a view |
 | Tunable numbers, storage keys, labels | `constants.js` | Inline literals |
 | Set summaries, durations, clock text | `format.js` | Per-view formatting |
-| Scoring, volume, targets, stalls, back-off | `progression.js` | Math inside a view |
+| Scoring, targets, stalls, back-off | `progression.js` | Math inside a view |
 | Beat, match or below | `trend` in `progression.js` | Comparing scores in a view |
 | Whether a set counts as logged | `isLogged` in `sets.js` | `set && set.r` |
 | Rest after a set | `restAfterSet` in `rules/exercises.js` | Rewriting the ternary |
@@ -286,7 +286,7 @@ Three suites, no dependencies, all must pass before a commit.
 - `guards.mjs` loads every module against the fake DOM and fails on a dead export, an import from a layer above,
   a rendered class with no CSS rule, or a precache list that disagrees with the files on disk.
 - `logic.mjs` covers the data (every movement patterned, tagged, written up) and the logic that can silently corrupt
-  history: rotation, targets, volume, name matching, swap identity, backup merging.
+  history: rotation, targets, name matching, swap identity, backup merging.
 - `views.mjs` boots the real views against the fake DOM in `dom.mjs` and asserts what renders.
 
 Shared pieces, never redefined inside a suite: browser fakes (`installDom`, `installStorage`) in `dom.mjs`,

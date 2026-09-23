@@ -1,5 +1,4 @@
-import {findExercise} from "./exercises.js";
-import {workoutSlots, workoutOf, repRange, isCrossTraining} from "./workouts.js";
+import {workoutSlots, repRange, isCrossTraining} from "./workouts.js";
 import {unitSuffix} from "./format.js";
 import {isLogged} from "./sets.js";
 import {WEIGHT_STEP_LB, BODYWEIGHT_LOAD_EQUIVALENT_LB, EPLEY_DIVISOR,
@@ -80,21 +79,6 @@ export function hasStalled(sessions, exercise, beforeKey, day){
   const best = recent.map(entry => score(topSet(entry.sets, exercise.bw), exercise.bw));
   const oldest = best[best.length - 1];
   return best.every(value => value <= oldest);
-}
-
-export function sessionVolume(session){
-  const workout = workoutOf(session);
-  const byId = {};
-  for(const e of workoutSlots(workout)) byId[e.id] = e;
-  let volume = 0;
-  for(const id in (session.entries || {})){
-    const exercise = byId[id] || findExercise(id);
-    if(exercise && exercise.bw) continue;
-    const reach = exercise ? (exercise.sides || 1) * (exercise.implements || 1) : 1;
-    for(const set of session.entries[id])
-      if(isLogged(set)) volume += num(set.w) * num(set.r) * reach;
-  }
-  return Math.round(volume);
 }
 
 export function suggestTarget(exercise, prior, held){

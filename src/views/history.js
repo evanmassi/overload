@@ -1,7 +1,7 @@
 import {DAY_KEYS, CROSS_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {workoutOf, corePairs} from "../rules/workouts.js";
-import {loggedCount, sessionVolume, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
+import {loggedCount, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
 import {isLogged} from "../rules/sets.js";
 import {setSummary, elapsedLabel, unitSuffix} from "../rules/format.js";
 import {state, changes} from "../store/state.js";
@@ -100,10 +100,9 @@ function sessionCard(key, session, workout){
   row.setAttribute("aria-expanded", String(open));
   const top = el("div", "hist-top");
   top.innerHTML = `<h3>${workout.focus}</h3><span class="chip live">${session.block}</span><span class="chip" title="${date}">${date.slice(5)}</span>`;
-  const foot = el("div", "hist-foot");
   const took = elapsedLabel(session.startedAt, session.lastLoggedAt);
-  foot.innerHTML = `<b>${sessionVolume(session).toLocaleString()} lb</b>`
-    + `<span>${loggedCount(session)} sets</span>${took ? `<span>${took}</span>` : ""}`;
+  const count = loggedCount(session);
+  const foot = el("div", "hist-foot", `${count} set${count === 1 ? "" : "s"}${took ? " · " + took : ""}`);
   row.append(top, foot);
   row.addEventListener("click", () => {
     open ? state.historyOpen.delete(key) : state.historyOpen.add(key);

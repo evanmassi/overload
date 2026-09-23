@@ -63,7 +63,6 @@ export const LOAD_LABEL = {
   level: "machine level"
 };
 
-export const IMPLEMENTS_PER_LOAD = {pair: 2, single: 1, bar: 1, stack: 1, bw: 1, level: 0};
 
 export const ICON_SWAP = '<i class="icon">swap_horiz</i>';
 export const TREND_ICON = {

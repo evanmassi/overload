@@ -132,20 +132,16 @@ function sparkline(values, bestIndex){
   line.setAttribute("stroke-width", "1.5");
   line.setAttribute("stroke-linejoin", "round");
   line.setAttribute("vector-effect", "non-scaling-stroke");
+  svg.append(area, line);
 
-  const dots = points.map(([x, y], i) => {
-    const dot = document.createElementNS(ns, "line");
-    dot.setAttribute("x1", x);
-    dot.setAttribute("y1", y);
-    dot.setAttribute("x2", x);
-    dot.setAttribute("y2", y);
-    dot.setAttribute("stroke", i === bestIndex ? "var(--success)" : "var(--ui-accent)");
-    dot.setAttribute("stroke-width", i === bestIndex ? "7" : "4");
-    dot.setAttribute("stroke-linecap", "round");
-    dot.setAttribute("vector-effect", "non-scaling-stroke");
-    return dot;
+  const chart = el("div", "prog-chart");
+  chart.appendChild(svg);
+  // PITFALL: Safari stretches round dots drawn inside a preserveAspectRatio="none" SVG, so the dots sit on top as HTML.
+  points.forEach(([x, y], i) => {
+    const dot = el("i", "prog-dot" + (i === bestIndex ? " best" : ""));
+    dot.style.left = x + "%";
+    dot.style.top = (y / 36) * 100 + "%";
+    chart.appendChild(dot);
   });
-
-  svg.append(area, line, ...dots);
-  return svg;
+  return chart;
 }

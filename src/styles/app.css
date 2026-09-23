@@ -300,11 +300,8 @@ button{cursor:pointer;border:none;background:none}
 }
 .hist-swap .icon{font-size:15px}
 .hist-foot{
-  display:flex;align-items:baseline;gap:12px;
-  font-family:var(--font-ui);font-variant-numeric:tabular-nums;
+  font-family:var(--font-ui);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--faint);letter-spacing:.03em;
 }
-.hist-foot b{font-size:13.5px;font-weight:600}
-.hist-foot span{font-size:11.5px;color:var(--faint);letter-spacing:.03em}
 .hist-line span{color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hist-line b{font-family:var(--font-ui);font-weight:500;font-variant-numeric:tabular-nums;font-size:12.5px}
 .hist-delta{flex:none;width:22px;min-height:20px}
@@ -361,7 +358,13 @@ button{cursor:pointer;border:none;background:none}
   text-transform:uppercase;color:var(--faint);white-space:nowrap;
 }
 .prog-est span{font-size:13px;letter-spacing:0;color:var(--ink-2);margin-left:4px}
-.prog svg{grid-column:1/-1;width:100%;height:36px;margin-top:6px;overflow:visible}
+.prog-chart{grid-column:1/-1;position:relative;height:36px;margin-top:6px}
+.prog-chart svg{display:block;width:100%;height:100%;overflow:visible}
+.prog-dot{
+  position:absolute;width:5px;height:5px;border-radius:50%;transform:translate(-50%,-50%);
+  background:var(--ui-accent);pointer-events:none;
+}
+.prog-dot.best{width:8px;height:8px;background:var(--success);box-shadow:0 0 6px var(--success-glow-soft)}
 .prog-foot{grid-column:1/-1;margin:4px 0 0;font-family:var(--font-ui);font-size:11px;color:var(--faint)}
 
 .empty{

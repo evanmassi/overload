@@ -1,5 +1,4 @@
 import {CATALOG, PATTERNS} from "../data/catalog.js";
-import {IMPLEMENTS_PER_LOAD} from "../data/constants.js";
 
 const BODYWEIGHT_LOADS = new Set(["bw", "level"]);
 
@@ -11,8 +10,6 @@ function derive(id, record){
     load: record.load,
     bw: BODYWEIGHT_LOADS.has(record.load),
     per: record.per || null,
-    sides: record.per ? 2 : 1,
-    implements: IMPLEMENTS_PER_LOAD[record.load],
     unit: record.unit || null,
     target: record.target
   };

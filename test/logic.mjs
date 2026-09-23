@@ -5,9 +5,9 @@ import {
   HOWTO, CATALOG, PATTERNS, PROGRAM
 } from "./fixtures.mjs";
 
-const {BLOCKS, DAY_KEYS, CROSS_KEYS, IMPLEMENTS_PER_LOAD} = constants;
+const {BLOCKS, DAY_KEYS, CROSS_KEYS, LOAD_LABEL} = constants;
 const {nextBlockIndex, nextLiftingDay, recentDays, previousOf, blockLetter, withLetter} = rotation;
-const {suggestTarget, sessionVolume, loggedCount, priorSets} = progression;
+const {suggestTarget, loggedCount, priorSets} = progression;
 const aimed = target => (target.w ? target.w + "×" : "") + target.r;
 
 const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01");
@@ -47,7 +47,7 @@ section("Program data");
   const longNames = [...known.values()].map(e => e.n).filter(n => n.length > 22);
   equal("every display name fits on one line", longNames, []);
 
-  const unknownLoad = Object.keys(CATALOG).filter(id => !(CATALOG[id].load in IMPLEMENTS_PER_LOAD));
+  const unknownLoad = Object.keys(CATALOG).filter(id => !(CATALOG[id].load in LOAD_LABEL));
   equal("every exercise has a known load", unknownLoad, []);
 
   const badSide = Object.keys(CATALOG).filter(id => CATALOG[id].per && !["leg", "arm", "side"].includes(CATALOG[id].per));
@@ -180,28 +180,6 @@ section("Progression targets");
     progressSince(press, set(45, 10), set(55, 8), false).direction, "up");
   equal("then reps at the same weight", progressSince(press, set(45, 8), set(45, 10), false), {text: "+2 reps", direction: "up"});
   equal("and a drop says so", progressSince({r: "45", unit: "sec", bw: 1}, set("", 45), set("", 40), true), {text: "−5s", direction: "down"});
-}
-
-section("Session volume counts implements and sides");
-{
-  const volume = (day, block, entries) => sessionVolume({day, block, entries});
-
-  equal("a pair of dumbbells doubles the load",
-    volume("chest", "A", {flat_db_press: setsOf([[50, 10]])}), 1000);
-  equal("one dumbbell counts once",
-    volume("legs", "A", {goblet_squat: setsOf([[50, 10]])}), 500);
-  equal("a per-leg move with a pair counts four times",
-    volume("legs", "A", {walking_lunge: setsOf([[40, 12]])}), 1920);
-  equal("a per-arm move with one dumbbell counts twice",
-    volume("legs", "A", {single_arm_row: setsOf([[60, 10]])}), 1200);
-  equal("a bar counts its total once",
-    volume("arms", "A", {ez_curl: setsOf([[60, 10]])}), 600);
-  equal("bodyweight contributes no tonnage",
-    volume("chest", "A", {pullup: setsOf([["", 10]])}), 0);
-
-  equal("implement factors", IMPLEMENTS_PER_LOAD, {pair: 2, single: 1, bar: 1, stack: 1, bw: 1, level: 0});
-  equal("a machine level is not tonnage",
-    volume("conditioning", "A", {stair_intervals: setsOf([[8, 8]])}), 0);
 }
 
 section("Custom exercises keep one identity");
@@ -510,7 +488,7 @@ section("Cross-training sits beside the program, not inside it");
   const hang = workouts.workoutFor("A", "functional").sections[2].ex[0];
   equal("a finisher keeps its own set count", [hang.s, hang.r, hang.unit, hang.rest], [2, "30", "sec", 60]);
   const stairs = workouts.workoutFor("A", "conditioning").sections[2].ex[0];
-  equal("a machine finisher logs level and minutes", [stairs.load, stairs.unit, stairs.implements, !!stairs.bw], ["level", "min", 0, true]);
+  equal("a machine finisher logs level and minutes", [stairs.load, stairs.unit, !!stairs.bw], ["level", "min", true]);
 
   const liftingGoblet = prescribedExercises().get("goblet_squat");
   equal("a lift reused in cross-training keeps its lifting definition", [liftingGoblet.r, liftingGoblet.win], ["10-12", undefined]);
