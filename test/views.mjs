@@ -34,6 +34,7 @@ function fresh(){
   state.customNames = {};
   state.view = "log";
   state.historyDays = new Set();
+  state.progressDays = new Set();
   state.historyOpen = new Set();
   loadDate("2026-09-01");
 }
@@ -1198,6 +1199,26 @@ section("Workouts done in the last week carry a check, and relabelling picks a v
   els.sheetbody.find("sheet-item")[0].fire("click");
   const refiled = state.sessions[daysAgo(3)];
   equal("picking C then Chest files it as Chest C", [refiled.day, refiled.block], ["chest", "C"]);
+  state.view = "log";
+}
+
+section("Progress filters by workout and the filters combine");
+{
+  fresh();
+  state.sessions["2026-08-25"] = {date: "2026-08-25", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "45", r: "10"}]}};
+  state.sessions["2026-08-26"] = {date: "2026-08-26", day: "legs", block: "A", blockIndex: 0, entries: {goblet_squat: [{w: "60", r: "10"}]}};
+  state.view = "progress";
+  render();
+  const groups = () => els.main.find("section-label").map(l => l.textContent).filter(t => t !== "Consistency");
+  equal("unfiltered shows every workout", groups(), ["Chest & Back", "Legs & Back"]);
+  els.main.find("lifting")[0].children[1].fire("click");
+  render();
+  equal("picking legs narrows to it", groups(), ["Legs & Back"]);
+  els.main.find("lifting")[0].children[0].fire("click");
+  render();
+  equal("adding chest brings it back beside legs", groups(), ["Chest & Back", "Legs & Back"]);
+  check("history keeps its own filters", state.historyDays.size === 0);
+  state.progressDays = new Set();
   state.view = "log";
 }
 

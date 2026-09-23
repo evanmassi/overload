@@ -1,4 +1,4 @@
-import {DAY_KEYS, CROSS_KEYS, DAYS, ICON_SWAP, TREND_ICON, LIFTING_LABEL, CROSS_LABEL} from "../data/constants.js";
+import {DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {workoutOf, corePairs} from "../rules/workouts.js";
 import {loggedCount, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
@@ -10,7 +10,7 @@ import {resolveSlot, strayIds} from "../store/slots.js";
 import {loadSession, deleteSession} from "../store/session.js";
 import {makePanel} from "../ui/panel.js";
 import {el, escapeHtml} from "./dom.js";
-import {actionButton, choiceRow, confirmButton, groupedRow} from "./controls.js";
+import {actionButton, confirmButton, workoutFilters} from "./controls.js";
 import {openRelabelSheet} from "./sheets/relabelSheet.js";
 import {settingsPanel} from "./settings.js";
 
@@ -114,18 +114,6 @@ function sessionCard(key, session, workout){
   return card;
 }
 
-function filterRow(className, keys){
-  return choiceRow(className, keys.map(day => ({
-    label: DAYS[day].short,
-    key: "filter:" + day,
-    chosen: state.historyDays.has(day),
-    onPick: () => {
-      state.historyDays.has(day) ? state.historyDays.delete(day) : state.historyDays.add(day);
-      changes.notify();
-    }
-  })), {ghost: true});
-}
-
 export function renderHistory(main){
   const keys = Object.keys(state.sessions).sort().reverse();
   if(!keys.length){
@@ -133,8 +121,7 @@ export function renderHistory(main){
     return;
   }
 
-  main.append(groupedRow(LIFTING_LABEL, filterRow("blockset lifting", DAY_KEYS)),
-    groupedRow(CROSS_LABEL, filterRow("blockset cross", CROSS_KEYS)));
+  main.append(...workoutFilters(state.historyDays, "filter:"));
 
   const picked = state.historyDays;
   const shown = keys.filter(key => !picked.size || picked.has(state.sessions[key].day));

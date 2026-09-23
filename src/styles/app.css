@@ -22,6 +22,7 @@ body{
   font-family:var(--font-ui);
   font-size:var(--size-body); line-height:var(--leading-body); -webkit-text-size-adjust:100%;
   padding-bottom:calc(96px + env(safe-area-inset-bottom));
+  -webkit-tap-highlight-color:transparent;
 }
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;border:none;background:none}
@@ -87,7 +88,7 @@ button{cursor:pointer;border:none;background:none}
 .blockset .btn-label,.blockset .btn-word{text-align:center}
 .day-group{position:relative;margin-top:22px;border-top:1px solid var(--line-hairline)}
 .day-group + .day-group{margin-top:30px}
-.day-group + .hist-day,.day-group + .empty{margin-top:24px}
+.day-group + .hist-day,.day-group + .empty,.day-group + .section-label{margin-top:24px}
 .day-group-label{
   position:absolute;top:0;left:10px;transform:translateY(-50%);padding:0 7px;background:var(--ground);
   font-family:var(--font-ui);font-size:9.5px;line-height:1;letter-spacing:.2em;text-transform:uppercase;
@@ -276,7 +277,6 @@ button{cursor:pointer;border:none;background:none}
 
 .hist-day{--tag-w:40px;padding:0 13px 0;margin-bottom:7px;scroll-margin-top:120px}
 .hist-row{cursor:pointer;padding-bottom:10px}
-.hist-row:active{background:var(--surface-2)}
 .hist-top{display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap;padding-left:calc(var(--tag-w) - 3px);min-height:var(--notch-h)}
 .hist-top h3{font-family:var(--font-ui);font-weight:var(--weight-control);font-size:12px;
   letter-spacing:var(--track-title);text-transform:uppercase;margin:0;flex:1;line-height:1.5}
@@ -421,7 +421,6 @@ button{cursor:pointer;border:none;background:none}
   font-family:var(--font-ui);font-size:var(--size-meta);font-weight:var(--weight-control);
   letter-spacing:var(--track-control);text-transform:uppercase;
 }
-.howto-link:active{background:var(--surface-2)}
 .tag{
   font-family:var(--font-ui);font-size:9.5px;letter-spacing:.1em;
   text-transform:uppercase;padding:3px 7px;
@@ -556,7 +555,6 @@ button{cursor:pointer;border:none;background:none}
   animation:hud-face-flash 442ms steps(1,end) both;
 }
 .sheet-item.picked span{animation:hud-lit 540ms var(--ease-settle) both}
-.sheet-item:active{background:var(--surface-2)}
 .sheet-item em{
   font-style:normal;margin-left:auto;font-family:var(--font-ui);
   font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;

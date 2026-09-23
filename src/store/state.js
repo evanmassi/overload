@@ -7,6 +7,7 @@ export const state = {
   view: "log",
   foldFlips: new Set(),
   historyDays: new Set(),
+  progressDays: new Set(),
   historyOpen: new Set(),
   backupResult: "",
   current: {key: null, date: null, day: null, block: null, blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}, startedAt: null, lastLoggedAt: null}

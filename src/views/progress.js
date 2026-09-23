@@ -8,6 +8,7 @@ import {addDays, mondayOf, trainingDays, weekTally, weekStreak} from "../rules/c
 import {isLogged} from "../rules/sets.js";
 import {makePanel} from "../ui/panel.js";
 import {byId, el, escapeHtml} from "./dom.js";
+import {workoutFilters} from "./controls.js";
 
 export function renderProgress(main){
   const byExercise = {};
@@ -28,9 +29,17 @@ export function renderProgress(main){
   const ids = Object.keys(byExercise).sort((a, b) => byExercise[b].points.length - byExercise[a].points.length);
   if(!ids.length) main.appendChild(el("p", "empty", "Log two sessions of the same lift and the trend line shows up here."));
   main.append(el("p", "section-label", "Consistency"), consistencyGrid());
+  if(!ids.length) return;
 
-  [...DAY_KEYS, ...CROSS_KEYS].forEach(day => {
-    const inDay = ids.filter(id => byExercise[id].day === day);
+  const picked = state.progressDays;
+  main.append(...workoutFilters(picked, "progress-filter:"));
+  const days = [...DAY_KEYS, ...CROSS_KEYS].filter(day => !picked.size || picked.has(day));
+  const shown = ids.filter(id => days.includes(byExercise[id].day));
+  if(!shown.length)
+    main.appendChild(el("p", "empty", `No lifts logged under ${[...picked].map(day => DAYS[day].label).join(" or ")} yet.`));
+
+  days.forEach(day => {
+    const inDay = shown.filter(id => byExercise[id].day === day);
     if(!inDay.length) return;
     main.appendChild(el("p", "section-label", DAYS[day].label));
     inDay.forEach(id => main.appendChild(progressCard(byExercise[id])));
