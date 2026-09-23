@@ -102,7 +102,7 @@ function dayCell(date, day, isFuture){
 
 function openDay(date){
   state.view = "history";
-  state.historyDay = null;
+  state.historyDays = new Set();
   state.historyOpen = new Set(Object.keys(state.sessions).filter(key => state.sessions[key].date === date));
   changes.notify();
   const open = byId("main").querySelector(".hist-expanded");

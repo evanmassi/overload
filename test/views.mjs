@@ -33,7 +33,7 @@ function fresh(){
   state.sessions = {};
   state.customNames = {};
   state.view = "log";
-  state.historyDay = null;
+  state.historyDays = new Set();
   state.historyOpen = new Set();
   loadDate("2026-09-01");
 }
@@ -56,7 +56,7 @@ section("The log view renders a full session");
   check("per-side moves are tagged", metas.some(m => m.innerHTML.includes("per leg")) || state.current.day !== "legs");
   check("every card names the muscles it works", metas.every(m => m.innerHTML.includes("tag muscle")));
   check("chips and prescription sit on separate lines", metas.every(m => m.innerHTML.includes("meta-chips") && m.innerHTML.includes("meta-line")));
-  check("the session tabs render", els.main.find("sessions").length === 1);
+  check("the session tabs render", els.main.find("lifting").length === 1);
   check("a notes box renders", els.main.find("notes").length === 1);
   check("the legend renders", els.main.find("legend").length === 1);
   check("no target band before any history exists", els.main.find("target").length === 0);
@@ -742,27 +742,37 @@ section("History filters by workout and marks deltas");
   state.view = "history";
   render();
 
-  const filter = els.main.find("hist-filter")[0];
-  check("a filter row offers all three workouts plus all",
-    filter.children.map(b => b.dataset.label).join() === "All,Chest,Legs,Arms",
-    filter.children.map(b => b.dataset.label).join());
-  check("all is pressed by default", filter.children[0].getAttribute("aria-pressed") === "true");
+  const lifting = () => els.main.find("lifting")[0];
+  equal("the filter rows match the log's workout rows",
+    [lifting().children.map(b => b.dataset.label), els.main.find("cross")[0].children.map(b => b.dataset.label)],
+    [["Chest", "Legs", "Arms"], ["Conditioning", "Functional", "Mobility"]]);
+  check("nothing is picked by default", lifting().children.every(b => b.getAttribute("aria-pressed") === "false"));
   check("every session shows unfiltered", els.main.find("hist-day").length === 4, els.main.find("hist-day").length);
 
-  filter.children[2].fire("click");
+  lifting().children[1].fire("click");
   render();
   check("filtering to legs leaves one card", els.main.find("hist-day").length === 1, els.main.find("hist-day").length);
-  check("and marks that chip pressed",
-    els.main.find("hist-filter")[0].children[2].getAttribute("aria-pressed") === "true");
+  check("and marks that button pressed", lifting().children[1].getAttribute("aria-pressed") === "true");
 
-  els.main.find("hist-filter")[0].children[3].fire("click");
+  lifting().children[2].fire("click");
+  render();
+  check("a second filter adds to the first", els.main.find("hist-day").length === 1 &&
+    lifting().children.filter(b => b.getAttribute("aria-pressed") === "true").length === 2);
+  equal("only the latest tap replays its flash after the redraw",
+    lifting().children.filter(b => "fired" in b.dataset).map(b => b.dataset.label), ["Arms"]);
+
+  lifting().children[1].fire("click");
   render();
   check("a workout with no sessions says so",
     els.main.find("empty").length === 1 && els.main.find("empty")[0].textContent.includes("Shoulders & Arms"),
     els.main.find("empty").map(e => e.textContent).join());
-  check("and keeps the filter row so you can leave", els.main.find("hist-filter").length === 1);
+  check("and keeps the filter rows so you can leave", els.main.find("lifting").length === 1);
 
-  els.main.find("hist-filter")[0].children[1].fire("click");
+  lifting().children[2].fire("click");
+  render();
+  check("clearing every filter shows everything", els.main.find("hist-day").length === 4, els.main.find("hist-day").length);
+
+  lifting().children[0].fire("click");
   render();
   check("chest shows three cards in date order",
     els.main.find("hist-day").length === 3, els.main.find("hist-day").length);
@@ -1168,13 +1178,13 @@ section("Workouts done in the last week carry a check, and relabelling picks a v
   state.sessions[daysAgo(3)] = {date: daysAgo(3), day: "mobility", block: "A", blockIndex: 0, entries: {pigeon: [{w: "", r: "45"}]}};
   state.sessions[daysAgo(10)] = {date: daysAgo(10), day: "arms", block: "A", blockIndex: 0, entries: {ez_curl: [{w: "60", r: "10"}]}};
   render();
-  const marked = [...els.main.find("sessions")[0].children, ...els.main.find("cross")[0].children]
+  const marked = [...els.main.find("lifting")[0].children, ...els.main.find("cross")[0].children]
     .filter(button => button.find("day-done").length).map(button => button.dataset.label);
   equal("legs and mobility this week, not arms from ten days ago", marked, ["Legs", "Mobility"]);
   loadDate(iso(new Date()));
   setDay("legs");
   render();
-  check("the open workout keeps its check", els.main.find("sessions")[0].children[1].find("day-done").length === 1);
+  check("the open workout keeps its check", els.main.find("lifting")[0].children[1].find("day-done").length === 1);
   equal("the next version is picked", state.current.block, "B");
   check("and the header says what came last", els.main.find("dayhead")[0].innerHTML.includes("last time A, 2 days ago"),
     els.main.find("dayhead")[0].innerHTML);

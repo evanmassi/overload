@@ -10,7 +10,7 @@ import {loadDate, chooseBlock, setDay, setNotes, isAway, setTravel} from "../sto
 import {makeField} from "../ui/field.js";
 import {makePanel} from "../ui/panel.js";
 import {el} from "./dom.js";
-import {choiceRow} from "./controls.js";
+import {choiceRow, groupedRow} from "./controls.js";
 import {exerciseCard, corePairCard} from "./exerciseCard.js";
 
 export function renderLog(main){
@@ -33,8 +33,8 @@ export function renderLog(main){
   main.appendChild(bar);
 
   const recent = recentDays(state.sessions, new Date());
-  main.append(dayGroup(LIFTING_LABEL, "blockset sessions", DAY_KEYS, recent),
-    dayGroup(CROSS_LABEL, "blockset cross", CROSS_KEYS, recent));
+  main.append(groupedRow(LIFTING_LABEL, dayRow("blockset lifting", DAY_KEYS, recent)),
+    groupedRow(CROSS_LABEL, dayRow("blockset cross", CROSS_KEYS, recent)));
 
   const head = el("div", "dayhead");
   head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>Version ${current.block}</b>${lastTimeNote()}</p><h2 data-text="${workout.focus}">${workout.focus}</h2></div>`;
@@ -64,12 +64,6 @@ export function renderLog(main){
   }
 
   main.appendChild(notesCard());
-}
-
-function dayGroup(label, className, keys, done){
-  const group = el("div", "day-group");
-  group.append(el("span", "day-group-label", label), dayRow(className, keys, done));
-  return group;
 }
 
 function dayRow(className, keys, done){

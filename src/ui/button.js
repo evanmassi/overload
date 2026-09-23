@@ -6,7 +6,7 @@ const HOLD_KEYS = new Set(["Enter", " "]);
 
 const PHASE_STEP_MS = 3646;
 
-const recentFires = new Map();
+const latestFire = {key: null, at: 0};
 
 let phase = 0;
 
@@ -48,7 +48,7 @@ function wire(el, key){
 
   const fire = () => {
     lastFire = Date.now();
-    if(key) recentFires.set(key, lastFire);
+    if(key) Object.assign(latestFire, {key, at: lastFire});
     if(fired){
       el.removeAttribute("data-fired");
       void el.offsetWidth;
@@ -75,7 +75,7 @@ function wire(el, key){
   });
   el.addEventListener("keyup", event => { if(HOLD_KEYS.has(event.key) && held) fire(); });
 
-  const replay = key ? FIRE_WINDOW_MS - (Date.now() - (recentFires.get(key) || 0)) : 0;
+  const replay = key && key === latestFire.key ? FIRE_WINDOW_MS - (Date.now() - latestFire.at) : 0;
   if(replay > 0 && replay <= FIRE_WINDOW_MS){ fired = true; expire(replay); }
   paint();
 }

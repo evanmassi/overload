@@ -1,4 +1,4 @@
-import {DAY_KEYS, CROSS_KEYS, DAYS, ICON_SWAP, TREND_ICON} from "../data/constants.js";
+import {DAY_KEYS, CROSS_KEYS, DAYS, ICON_SWAP, TREND_ICON, LIFTING_LABEL, CROSS_LABEL} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {workoutOf, corePairs} from "../rules/workouts.js";
 import {loggedCount, trend, topSet, priorSets, loggedAsBodyweight} from "../rules/progression.js";
@@ -10,7 +10,7 @@ import {resolveSlot, strayIds} from "../store/slots.js";
 import {loadSession, deleteSession} from "../store/session.js";
 import {makePanel} from "../ui/panel.js";
 import {el, escapeHtml} from "./dom.js";
-import {actionButton, choiceRow, confirmButton} from "./controls.js";
+import {actionButton, choiceRow, confirmButton, groupedRow} from "./controls.js";
 import {openRelabelSheet} from "./sheets/relabelSheet.js";
 import {settingsPanel} from "./settings.js";
 
@@ -114,12 +114,15 @@ function sessionCard(key, session, workout){
   return card;
 }
 
-function filterBar(className, keys){
+function filterRow(className, keys){
   return choiceRow(className, keys.map(day => ({
-    label: day ? DAYS[day].short : "All",
+    label: DAYS[day].short,
     key: "filter:" + day,
-    chosen: day === state.historyDay,
-    onPick: () => { state.historyDay = day; changes.notify(); }
+    chosen: state.historyDays.has(day),
+    onPick: () => {
+      state.historyDays.has(day) ? state.historyDays.delete(day) : state.historyDays.add(day);
+      changes.notify();
+    }
   })), {ghost: true});
 }
 
@@ -130,12 +133,14 @@ export function renderHistory(main){
     return;
   }
 
-  main.appendChild(filterBar("blockset hist-filter", [null, ...DAY_KEYS]));
-  main.appendChild(filterBar("blockset hist-filter-cross", CROSS_KEYS));
+  main.append(groupedRow(LIFTING_LABEL, filterRow("blockset lifting", DAY_KEYS)),
+    groupedRow(CROSS_LABEL, filterRow("blockset cross", CROSS_KEYS)));
 
-  const shown = keys.filter(key => !state.historyDay || state.sessions[key].day === state.historyDay);
+  const picked = state.historyDays;
+  const shown = keys.filter(key => !picked.size || picked.has(state.sessions[key].day));
   if(!shown.length){
-    main.append(el("p", "empty", `No ${DAYS[state.historyDay].label} sessions yet.`), ...settingsPanel());
+    const names = [...picked].map(day => DAYS[day].label).join(" or ");
+    main.append(el("p", "empty", `No ${names} sessions yet.`), ...settingsPanel());
     return;
   }
 

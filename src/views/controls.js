@@ -19,6 +19,12 @@ export function choiceRow(className, choices, style = {}){
   return row;
 }
 
+export function groupedRow(label, row){
+  const group = el("div", "day-group");
+  group.append(el("span", "day-group-label", label), row);
+  return group;
+}
+
 export function confirmButton(label, prompt, options, onConfirm){
   const button = actionButton(label, options, event => {
     event.stopPropagation();
