@@ -19,7 +19,13 @@ import {start as startTimer, startWork, startHold, endHold, waitForSide, holdRun
 import {updateSaveBar} from "./saveBar.js";
 
 function isFolded(exercise){
-  return isComplete(exercise) !== state.foldFlips.has(exercise.id);
+  return isFinished(exercise) !== state.foldFlips.has(exercise.id);
+}
+
+const asksDifficulty = exercise => !exercise.core && !exercise.stray;
+
+function isFinished(exercise){
+  return isComplete(exercise) && (!asksDifficulty(exercise) || !!state.current.effort[exercise.id]);
 }
 
 function flipFold(exercise){
@@ -51,9 +57,9 @@ function isComplete(exercise){ return openSetIndex(exercise) < 0; }
 const setTag = (exercise, index) => exercise.id + ":" + index;
 
 function recordSet(exercise, index, set){
-  const wasComplete = isComplete(exercise);
+  const wasFinished = isFinished(exercise);
   const newlyLogged = logSet(exercise, index, set);
-  if(isComplete(exercise) !== wasComplete) state.foldFlips.delete(exercise.id);
+  if(isFinished(exercise) !== wasFinished) state.foldFlips.delete(exercise.id);
   return newlyLogged;
 }
 
@@ -65,7 +71,7 @@ function startRestAfter(exercise, index){
 function exerciseItem(exercise, position, slot, notch){
   const move = el("div", "ex-item");
   move.id = "card-" + exercise.id;
-  fillCard(move, exercise, position, slot, notch || (position ? String(position).padStart(2, "0") : ""));
+  fillCard(move, exercise, slot, notch || (position ? String(position).padStart(2, "0") : ""));
   if(isFolded(exercise)) move.classList.add("done");
   return move;
 }
@@ -94,7 +100,7 @@ export function corePairCard(pair, index, slots){
   return card;
 }
 
-function fillCard(card, exercise, position, slot, notch){
+function fillCard(card, exercise, slot, notch){
   slot = slot || exercise;
   const prior = lastTimeFor(exercise.id);
   const unit = unitName(exercise);
@@ -169,7 +175,7 @@ function fillCard(card, exercise, position, slot, notch){
   for(let i = 0; i < exercise.s; i++)
     sets.appendChild(setRow(exercise, i, logged, prior, refreshers, refreshRepeats));
   card.appendChild(sets);
-  if(position) card.appendChild(effortRow(exercise));
+  if(asksDifficulty(exercise)) card.appendChild(difficultyRow(exercise));
 
   if(prior){
     card.appendChild(el("p", "ex-cue prior", `${prior.date} — ${setSummary(prior.sets, suffix)}`));
@@ -360,12 +366,12 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
   return row;
 }
 
-function effortRow(exercise){
+function difficultyRow(exercise){
   const chosen = state.current.effort[exercise.id];
   return choiceRow("effort", EFFORT_LEVELS.map(level => ({
     label: level,
     key: "effort:" + exercise.id + ":" + level,
     chosen: chosen === level,
     onPick: () => setEffort(exercise.id, level)
-  })), {label: "How did that feel?"});
+  })), {label: "Difficulty"});
 }

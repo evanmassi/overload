@@ -578,13 +578,18 @@ button{cursor:pointer;border:none;background:none}
 .stall-actions .btn .btn-label,.stall-actions .btn .btn-word{font-size:var(--size-micro);letter-spacing:var(--track-meta)}
 
 .effort{
-  display:flex;align-items:center;gap:6px;padding:0 13px 12px;
+  display:grid;grid-template-columns:20px repeat(3,1fr) 76px;gap:6px;padding:4px 13px 12px;--track-control:.2em;
 }
-.effort span{
-  flex:1;min-width:0;font-family:var(--font-ui);font-size:var(--size-micro);
-  letter-spacing:var(--track-meta);text-transform:uppercase;color:var(--ink-3);line-height:1.4;
+.effort > span{
+  grid-column:2 / 5;display:flex;align-items:center;gap:10px;font-family:var(--font-ui);font-size:var(--size-micro);
+  letter-spacing:var(--track-meta);text-transform:uppercase;color:var(--ink-4);white-space:nowrap;
 }
-.effort .btn{flex:none;--pad:10px 8px 10px 13px}
+.effort > span::before,.effort > span::after{content:"";flex:1;height:1px;background:var(--line-hairline)}
+.effort .btn{grid-row:2;--pad:9px 0}
+.effort .btn:nth-of-type(1){grid-column:2}
+.effort .btn:nth-of-type(2){grid-column:3}
+.effort .btn:nth-of-type(3){grid-column:4}
+.effort .btn-label{text-indent:var(--track-control)}
 .effort .btn .btn-label,.effort .btn .btn-word{font-size:var(--size-meta)}
 .repeat{flex:none}
 
@@ -606,6 +611,9 @@ button{cursor:pointer;border:none;background:none}
   animation:hud-text-flicker calc(5400ms * var(--flicker-pace)) linear infinite;
 }
 .ex-item.done .ex-num{opacity:.5;animation:none}
+.ex-item.done .ex-swap{opacity:.45}
+.ex-item.done .ex-swap .btn-glow{display:none}
+.ex-item.done .ex-swap:not([data-state="hover"]):not([data-state="held"]):not([data-fired]) :is(.btn-label,.btn-word,.btn-frame,.btn-fill){animation:none}
 .panel[data-dim="on"]{--p-frame:18%;--p-tint:2%;--p-wash:5%}
 .panel[data-dim="on"] .panel-plate{opacity:.22}
 .panel[data-dim="on"] .ex-num{opacity:.4}

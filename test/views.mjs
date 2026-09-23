@@ -82,7 +82,10 @@ section("Logging a set updates the view");
     rp(row).value = "10";
     rp(row).fire("change");
   });
-  check("logging its last set dims the card", panel.dataset.dim === "on", panel.dataset.dim);
+  check("finishing the sets leaves it open for a difficulty", panel.dataset.dim === "off", panel.dataset.dim);
+  panel.find("effort")[0].find("btn")[1].fire("click");
+  render();
+  check("picking one then folds and dims it", els.main.find("ex")[0].dataset.dim === "on", els.main.find("ex")[0].dataset.dim);
 }
 
 section("A backup result is shown from state and survives a redraw");
@@ -203,7 +206,10 @@ section("Collapsing and the set bar");
     els.setbar.children.length === 41, els.setbar.children.length);
   check("with none lit", els.setbar.children.every(t => t.dataset.state !== "on"));
 
+  els.main.find("ex-item")[0].find("effort")[0].find("btn")[1].fire("click");
+  render();
   const card = els.main.find("ex-item")[0];
+  check("a difficulty picked early keeps the card open", !card.classList.contains("done"));
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
   rows.forEach(row => {
     wt(row).value = "50";
@@ -212,7 +218,7 @@ section("Collapsing and the set bar");
   });
   render();
 
-  check("finishing every set collapses the card", els.main.find("ex-item")[0].classList.contains("done"));
+  check("then finishing every set collapses the card", els.main.find("ex-item")[0].classList.contains("done"));
   check("its summary is populated", els.main.find("ex-summary")[0].textContent.includes("50"));
   check("the tally counts the logged sets", els.tally.textContent === "4/41", els.tally.textContent);
   check("and four ticks light up",
@@ -373,6 +379,7 @@ section("Consistency grid");
 section("Logging updates the page without a re-render");
 {
   fresh();
+  state.current.effort.flat_db_press = "medium";
   render();
   const card = els.main.find("ex-item")[0];
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
@@ -451,6 +458,7 @@ section("Time in the gym is first log to last log");
 section("Expansion does not leak between sessions");
 {
   fresh();
+  state.current.effort.flat_db_press = "medium";
   render();
   const card = els.main.find("ex-item")[0];
   card.find("set").filter(r => !r.classList.contains("head")).forEach(row => {
