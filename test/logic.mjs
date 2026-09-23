@@ -10,7 +10,7 @@ const {nextBlockIndex, nextLiftingDay, recentDays, previousOf, blockLetter, with
 const {suggestTarget, loggedCount, priorSets} = progression;
 const aimed = target => (target.w ? target.w + "×" : "") + target.r;
 
-const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01");
+const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01", undefined, []);
 const prescribedCountFor = (block, day) => progression.prescribedCount(workouts.workoutFor(block, day));
 
 section("Program data");
@@ -428,13 +428,19 @@ section("Effort tunes the next target");
 section("Holding a lift");
 {
   reset();
-  const {isHeld, holdExercise, releaseExercise, beatsHold} = await import("../src/store/holds.js");
+  const {isHeld, holdExercise, releaseExercise, releaseIfBeaten} = await import("../src/store/holds.js");
   const {loadHolds} = await import("../src/store/storage.js");
+  const curl = {id: "ez_curl", bw: 0};
+  const last = {sets: setsOf([[60, 10], [60, 10]])};
   holdExercise("ez_curl");
   check("a hold is remembered", isHeld("ez_curl") && loadHolds().ez_curl === 1);
-  check("beating the held number by more than the margin releases it", beatsHold(60 * 12, 60 * 10));
-  check("matching it does not", !beatsHold(60 * 10, 60 * 10));
-  check("a small gain does not either", !beatsHold(60 * 10.5, 60 * 10));
+  releaseIfBeaten(curl, setsOf([[60, 10]]), last);
+  check("matching last time keeps it", isHeld("ez_curl"));
+  releaseIfBeaten(curl, setsOf([[55, 10]]), last);
+  check("dropping the weight keeps it", isHeld("ez_curl"));
+  releaseIfBeaten(curl, setsOf([[60, 10], [60, 11]]), last);
+  check("one more rep on any set releases it", !isHeld("ez_curl") && !loadHolds().ez_curl);
+  holdExercise("ez_curl");
   releaseExercise("ez_curl");
   check("released", !isHeld("ez_curl") && !loadHolds().ez_curl);
 
@@ -465,6 +471,19 @@ section("Stall detection");
 
   reset();
   check("no history is not a stall", !hasStalledFor(press));
+
+  state.sessions = {
+    "2026-08-04": {date: "2026-08-04", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: setsOf([[50, 10]])}},
+    "2026-08-11": {date: "2026-08-11", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: setsOf([[45, 10]])}},
+    "2026-08-18": {date: "2026-08-18", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: setsOf([[45, 10]])}}
+  };
+  check("dropping the weight starts the count over", !hasStalledFor(press));
+
+  state.sessions["2026-08-04"].entries.flat_db_press = setsOf([[45, 10]]);
+  const stalledToday = today => progression.hasStalled(state.sessions, press, "2026-09-01", undefined, today);
+  check("matching it today is still a stall", stalledToday(setsOf([[45, 10]])));
+  check("one more rep today clears it", !stalledToday(setsOf([[45, 10], [45, 11]])));
+  check("a new weight typed today clears it", !stalledToday([{w: "40", r: ""}]));
 }
 
 section("Cross-training sits beside the program, not inside it");
@@ -553,7 +572,7 @@ section("Last time is looked up within the same kind of session");
     state.sessions[date] = logged(date, "arms", 1, {push_press: setsOf([[40, 8]])});
   });
   state.sessions["2026-08-20"].entries.push_press = setsOf([[40, 8]]);
-  check("a stall counts only lifting sessions", progression.hasStalled(state.sessions, heavy, "2026-09-01", "arms"));
+  check("a stall counts only lifting sessions", progression.hasStalled(state.sessions, heavy, "2026-09-01", "arms", []));
 }
 
 section("Relabelling a session sets its workout and version");

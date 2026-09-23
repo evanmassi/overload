@@ -352,19 +352,34 @@ section("A stalled lift offers swap, drop and hold");
   rp(rows[0]).value = "10";
   rp(rows[0]).fire("change");
   check("matching the held number keeps the hold", isHeld("ez_curl"));
-  wt(rows[1]).value = "65";
-  rp(rows[1]).value = "12";
+  wt(rows[1]).value = "60";
+  rp(rows[1]).value = "11";
   rp(rows[1]).fire("change");
-  check("beating it by a clear margin releases the hold", !isHeld("ez_curl"));
+  check("one more rep releases the hold", !isHeld("ez_curl"));
+  check("and the notice leaves the card without a redraw", heldCurl.find("stall").length === 0);
 
   render();
-  const dropRow = els.main.find("ex-item").find(m => m.id === "card-ez_curl");
-  const dropButton = dropRow.find("stall-actions")[0] && dropRow.find("stall-actions")[0].children[1];
-  check("with the hold gone the stall prompt is back", !!dropButton && dropButton.dataset.label === "drop to 55");
-  dropButton.fire("click");
+  const beaten = els.main.find("ex-item").find(m => m.id === "card-ez_curl");
+  check("beating it keeps the stall prompt away for the session", beaten.find("stall").length === 0);
+}
+
+section("Dropping the weight answers a stall");
+{
+  fresh();
+  ["2026-08-04", "2026-08-11", "2026-08-18"].forEach(date => {
+    state.sessions[date] = {date, day: "arms", block: "A", blockIndex: 0, entries: {ez_curl: [{w: "60", r: "10"}, {w: "60", r: "10"}]}};
+  });
+  loadDate("2026-09-01");
+  setDay("arms");
+  chooseBlock("A");
   render();
-  const droppedRow = els.main.find("ex-item").find(m => m.id === "card-ez_curl").find("set").filter(r => !r.classList.contains("head"))[0];
-  check("drop fills set 1 with 10% less, rounded to the plate", wt(droppedRow).value === "55", wt(droppedRow).value);
+  const curl = els.main.find("ex-item").find(m => m.id === "card-ez_curl");
+  curl.find("stall-actions")[0].children[1].fire("click");
+  render();
+  const dropped = els.main.find("ex-item").find(m => m.id === "card-ez_curl");
+  const firstRow = dropped.find("set").filter(r => !r.classList.contains("head"))[0];
+  check("drop fills set 1 with 10% less, rounded to the plate", wt(firstRow).value === "55", wt(firstRow).value);
+  check("and the stall prompt goes", dropped.find("stall").length === 0);
 }
 
 section("Consistency grid");

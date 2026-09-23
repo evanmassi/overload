@@ -1,4 +1,4 @@
-import {LOAD_LABEL, TREND_ICON, EFFORT_LEVELS, STALL_EXPOSURES, HOLD_RELEASE_MARGIN} from "../data/constants.js";
+import {LOAD_LABEL, TREND_ICON, EFFORT_LEVELS, STALL_EXPOSURES} from "../data/constants.js";
 import {musclesOf} from "../rules/exercises.js";
 import {restAfterSet} from "../rules/workouts.js";
 import {suggestTarget, hasStalled, trend, backoffWeight} from "../rules/progression.js";
@@ -50,6 +50,14 @@ function syncCard(exercise){
   move.querySelector(".ex-summary").innerHTML = summaryFor(exercise);
   move.querySelector(".ex-fold").setLabel(folded ? "expand_more" : "expand_less");
   markDim(move.closest(".ex"));
+  const note = move.querySelector(".stall");
+  if(note && !noteFor(exercise)) note.remove();
+}
+
+function noteFor(exercise){
+  if(isHeld(exercise.id)) return "held";
+  const today = currentSets(exercise.id);
+  return !exercise.stray && hasStalled(state.sessions, exercise, state.current.key, state.current.day, today) ? "stalled" : null;
 }
 
 function isComplete(exercise){ return openSetIndex(exercise) < 0; }
@@ -147,13 +155,12 @@ function fillCard(card, exercise, slot, notch){
   meta.innerHTML = `<div class="meta-chips">${chips}</div><div class="meta-line">${line}</div>`;
   card.appendChild(meta);
 
-  const held = isHeld(exercise.id);
-  const target = suggestTarget(exercise, prior, held);
+  const note = noteFor(exercise);
+  const target = suggestTarget(exercise, prior, note === "held");
   if(target) card.appendChild(targetBand(exercise, target));
 
-  if(held) card.appendChild(holdNotice(exercise));
-  else if(!exercise.stray && hasStalled(state.sessions, exercise, state.current.key, state.current.day))
-    card.appendChild(stallPrompt(exercise, slot, prior));
+  if(note === "held") card.appendChild(holdNotice(exercise));
+  if(note === "stalled") card.appendChild(stallPrompt(exercise, slot, prior));
 
   const sets = el("div", "sets");
   const logged = currentSets(exercise.id);
@@ -272,7 +279,7 @@ function stallPrompt(exercise, slot, prior){
 
 function holdNotice(exercise){
   const release = calloutAction("push", "stall-release:" + exercise.id, () => { releaseExercise(exercise.id); changes.notify(); });
-  return callout("secondary", "anchor", "Holding", `Match it. Beat it by ${HOLD_RELEASE_MARGIN * 100}% and the push comes back.`, [release]);
+  return callout("secondary", "anchor", "Holding", "Match it. Beat it and the push comes back.", [release]);
 }
 
 function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){

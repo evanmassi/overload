@@ -45,7 +45,7 @@ class FakeNode {
     for(let node = this; node; node = node.parentNode) if(node._class.split(" ").includes(want)) return node;
     return null;
   }
-  remove(){}
+  remove(){ if(this.parentNode) this.parentNode.children = this.parentNode.children.filter(child => child !== this); }
   setAttribute(name, value){ this.attrs[name] = String(value); if(name === "id") this.id = String(value); }
   removeAttribute(name){
     delete this.attrs[name];

@@ -73,12 +73,18 @@ export function priorSets(sessions, exerciseId, beforeKey, day){
   return exposures(sessions, exerciseId, beforeKey, 1, day)[0] || null;
 }
 
-export function hasStalled(sessions, exercise, beforeKey, day){
+export function beatsLastTime(exercise, sets, prior){
+  return !!prior && trend(topSet(sets, exercise.bw), topSet(prior.sets, exercise.bw), exercise.bw) === "up";
+}
+
+export function hasStalled(sessions, exercise, beforeKey, day, today){
   const recent = exposures(sessions, exercise.id, beforeKey, STALL_EXPOSURES, day);
   if(recent.length < STALL_EXPOSURES) return false;
-  const best = recent.map(entry => score(topSet(entry.sets, exercise.bw), exercise.bw));
-  const oldest = best[best.length - 1];
-  return best.every(value => value <= oldest);
+  const tops = recent.map(entry => topSet(entry.sets, exercise.bw));
+  const weight = num(tops[0].w);
+  const oldest = score(tops[tops.length - 1], exercise.bw);
+  if(!tops.every(top => num(top.w) === weight && score(top, exercise.bw) <= oldest)) return false;
+  return !today.some(set => set.w && num(set.w) !== weight) && !beatsLastTime(exercise, today, recent[0]);
 }
 
 export function suggestTarget(exercise, prior, held){

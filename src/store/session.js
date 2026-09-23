@@ -147,8 +147,7 @@ export function logSet(exercise, index, set){
   const newlyLogged = !isLogged(sets[index]) && isLogged(set);
   sets[index] = set;
   if(newlyLogged) markLogged();
-  const prior = lastTimeFor(exercise.id);
-  releaseIfBeaten(exercise, set, prior && prior.sets[index]);
+  releaseIfBeaten(exercise, sets, lastTimeFor(exercise.id));
   queueSave();
   return newlyLogged;
 }

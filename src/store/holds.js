@@ -1,6 +1,5 @@
-import {HOLD_RELEASE_MARGIN} from "../data/constants.js";
 import {state, persistHolds} from "./state.js";
-import {score} from "../rules/progression.js";
+import {beatsLastTime} from "../rules/progression.js";
 
 export function isHeld(id){ return !!state.holds[id]; }
 
@@ -14,11 +13,6 @@ export function releaseExercise(id){
   persistHolds();
 }
 
-export function beatsHold(now, then){
-  return then > 0 && now > then * (1 + HOLD_RELEASE_MARGIN);
-}
-
-export function releaseIfBeaten(exercise, set, last){
-  if(isHeld(exercise.id) && last && beatsHold(score(set, exercise.bw), score(last, exercise.bw)))
-    releaseExercise(exercise.id);
+export function releaseIfBeaten(exercise, sets, prior){
+  if(isHeld(exercise.id) && beatsLastTime(exercise, sets, prior)) releaseExercise(exercise.id);
 }
