@@ -55,7 +55,7 @@ function customRow(slot, id, taken){
 
 export function openSwapSheet(slot){
   openSlot = slot;
-  const body = openSheet("Instead of " + slot.n);
+  const body = openSheet(slot.n, "Instead of");
   const taken = idsTakenElsewhere(slot, workoutOf(state.current), state.current.swaps);
   const offer = ids => ids.filter(id => !taken.has(id)).forEach(id => body.appendChild(exerciseRow(slot, id)));
 

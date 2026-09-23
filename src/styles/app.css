@@ -520,6 +520,9 @@ button{cursor:pointer;border:none;background:none}
   flex:1;min-width:0;overflow-wrap:anywhere;font-family:var(--font-ui);font-weight:var(--weight-control);font-size:12px;
   letter-spacing:var(--track-title);text-transform:uppercase;color:var(--ink-1);text-shadow:0 0 10px var(--accent-glow-soft);
 }
+.sheet-kicker{
+  display:block;margin-bottom:5px;font-size:10px;font-weight:400;letter-spacing:.14em;color:var(--ink-4);text-shadow:none;
+}
 .sheet-body{position:relative;min-width:0;overflow-y:auto;overflow-x:clip;padding:12px 20px 18px;-webkit-overflow-scrolling:touch}
 .sheet-group{
   font-family:var(--font-ui);font-size:10px;letter-spacing:.14em;

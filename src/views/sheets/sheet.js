@@ -17,8 +17,9 @@ export function mountSheet(sheetEl, titleEl, bodyEl, closeEl, backdropEl){
 
 export function closeSheet(){ sheet.hidden = true; }
 
-export function openSheet(heading){
-  title.textContent = heading;
+export function openSheet(heading, kicker = null){
+  title.textContent = kicker ? "" : heading;
+  if(kicker) title.append(el("small", "sheet-kicker", kicker), el("span", null, heading));
   body.innerHTML = "";
   sheet.hidden = false;
   body.scrollTop = 0;

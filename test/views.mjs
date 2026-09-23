@@ -137,6 +137,8 @@ section("Sheets open and close");
 
   openSwapSheet(findExercise("leg_curl"));
   check("the swap sheet opens", els.sheet.hidden === false);
+  equal("its title puts instead of above the exercise",
+    els.sheettitle.children.map(c => c.textContent), ["Instead of", findExercise("leg_curl").n]);
   check("it offers same-pattern alternatives", els.sheetbody.find("sheet-item").length > 1);
   check("it offers a custom entry box", els.sheetbody.find("sheet-custom").length === 1);
   els.sheetback.fire("click");
