@@ -81,7 +81,7 @@ export const PROGRAM = {
         {id: "db_front_squat", s: 4, r: "8-10"},
         {id: "single_leg_rdl", s: 3, r: "10"},
         {id: "back_extension", s: 3, r: "12"},
-        {id: "db_step_up", s: 3, r: "10"},
+        {id: "lateral_lunge", s: 3, r: "10"},
         {id: "seated_row", s: 4, r: "10-12"},
         {id: "reverse_lunge", s: 3, r: "12"},
         {id: "leg_curl", s: 3, r: "12"},

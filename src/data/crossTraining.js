@@ -13,7 +13,7 @@ export const CROSS_TRAINING = {
     conditioning: {focus: "Conditioning", sections: [
       interval("Dumbbells", 4, 40, 20, [
         counted("thruster"),
-        counted("bench_stepover"),
+        counted("lateral_lunge"),
         counted("renegade_row"),
         counted("burpee_over_bells")
       ]),
@@ -25,7 +25,7 @@ export const CROSS_TRAINING = {
       ]),
       finish([machine("stair_intervals", 8)])
     ], travel: {
-      thruster: "backpack_thruster", bench_stepover: "chair_stepup", renegade_row: "backpack_row",
+      thruster: "backpack_thruster", lateral_lunge: "cossack_squat", renegade_row: "backpack_row",
       burpee_over_bells: "burpee", stair_intervals: "stairwell_climb"
     }},
     functional: {focus: "Functional", sections: [
@@ -87,7 +87,7 @@ export const CROSS_TRAINING = {
         timed("suitcase_carry", 40),
         reps("single_leg_rdl", 8),
         reps("single_arm_floor_press", 10),
-        reps("db_step_up", 10)
+        reps("goblet_cossack", 6)
       ]),
       circuit("Cables", 4, 30, [
         reps("half_kneel_woodchop", 12),
@@ -96,7 +96,7 @@ export const CROSS_TRAINING = {
       ]),
       finish([hold("bear_crawl", 30, 3), hold("hollow_hold", 30, 3)])
     ], travel: {
-      suitcase_carry: "backpack_carry", single_arm_floor_press: "archer_pushup", half_kneel_woodchop: "bird_dog",
+      suitcase_carry: "backpack_carry", single_arm_floor_press: "archer_pushup", goblet_cossack: "cossack_squat", half_kneel_woodchop: "bird_dog",
       face_pull: "prone_ytw", cable_rotation: "russian_twist"
     }},
     mobility: {focus: "Mobility", sections: [

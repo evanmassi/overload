@@ -20,14 +20,14 @@ section("Program data");
   check("165 catalogued exercises", known.size === 165, known.size);
 
   const prescribed = prescribedExercises();
-  check("9 lifting sessions prescribe 93 of them", prescribed.size === 93, prescribed.size);
+  check("9 lifting sessions prescribe 92 of them", prescribed.size === 92, prescribed.size);
   const crossTraining = crossTrainingExercises();
-  check("9 cross-training sessions prescribe 74", crossTraining.size === 74, crossTraining.size);
+  check("9 cross-training sessions prescribe 73", crossTraining.size === 73, crossTraining.size);
 
   const uncatalogued = [...prescribed.keys(), ...crossTraining.keys()].filter(id => !CATALOG[id]);
   equal("every slot names a catalogued exercise", uncatalogued, []);
   const swapOnly = [...known.keys()].filter(id => !prescribed.has(id) && !crossTraining.has(id));
-  check("17 exercises are only offered as swaps", swapOnly.length === 17, swapOnly.length);
+  check("19 exercises are only offered as swaps", swapOnly.length === 19, swapOnly.length);
 
   const unpatterned = Object.keys(CATALOG).filter(id => !PATTERNS[CATALOG[id].pattern]);
   equal("every exercise belongs to a known pattern", unpatterned, []);
