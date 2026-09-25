@@ -3,7 +3,7 @@ import {state, changes, channel, persistSessions} from "./state.js";
 import {loggedCount, priorSets} from "../rules/progression.js";
 import {blockIndexOf, blockLetter, withLetter, nextBlockIndex, nextLiftingDay} from "../rules/rotation.js";
 import {workoutOf, restAfterSet} from "../rules/workouts.js";
-import {idsTakenElsewhere, resolvedExercises} from "./slots.js";
+import {idsTakenElsewhere, resolvedExercises, keptSwaps} from "./slots.js";
 import {releaseIfBeaten} from "./holds.js";
 import {isLogged} from "../rules/sets.js";
 import {iso} from "../rules/format.js";
@@ -37,11 +37,19 @@ function setBlockIndex(index){
   state.foldFlips.clear();
 }
 
+function carriedSwaps(){
+  const current = state.current;
+  const last = Object.keys(state.sessions).filter(key => key !== current.key).sort().map(key => state.sessions[key])
+    .filter(s => s && s.day === current.day && s.block === current.block).pop();
+  return last && last.swaps ? keptSwaps(workoutOf(current), last.swaps) : {};
+}
+
 function switchSession(existing, day, blockIndex){
   const current = state.current;
   if(!loggedCount(current) && !existing){
     current.day = day;
     setBlockIndex(blockIndex === null ? nextBlockIndex(state.sessions, day) : blockIndex);
+    current.swaps = carriedSwaps();
   } else {
     stash();
     openSession(existing || newSessionKey(current.date), current.date, day, blockIndex);
@@ -93,7 +101,7 @@ function openSession(key, dateStr, day, blockIndex){
 
   state.foldFlips.clear();
   current.entries = {};
-  current.swaps = saved && saved.swaps ? Object.assign({}, saved.swaps) : {};
+  current.swaps = saved ? Object.assign({}, saved.swaps) : carriedSwaps();
   current.notes = (saved && saved.notes) || "";
   current.effort = saved && saved.effort ? Object.assign({}, saved.effort) : {};
   current.startedAt = (saved && saved.startedAt) || null;
@@ -172,6 +180,12 @@ export function swapSlot(slot, id){
   queueSave();
   changes.notify();
   return true;
+}
+
+export function resetSwaps(){
+  state.current.swaps = {};
+  queueSave();
+  changes.notify();
 }
 
 export function isAway(workout){

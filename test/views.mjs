@@ -13,7 +13,7 @@ const {openTimerSheet} = await import("../src/views/sheets/timerSheet.js");
 const {mountTimer} = await import("../src/views/timer.js");
 const {mountSaveStatus} = await import("../src/views/saveStatus.js");
 const {findExercise} = await import("../src/rules/exercises.js");
-const {loadDate, setDay, chooseBlock, followToday} = await import("../src/store/session.js");
+const {loadDate, setDay, chooseBlock, followToday, swapSlot} = await import("../src/store/session.js");
 const {clockFace, iso} = await import("../src/rules/format.js");
 
 mountTimer(els.timer, {onHold: openTimerSheet});
@@ -1270,6 +1270,24 @@ section("Coming back on a new day opens today unless something is logged");
   equal("a date picked by hand stays put the same day", state.current.date, "2026-08-20");
   followToday("2026-09-04");
   equal("and the next day too", state.current.date, "2026-08-20");
+}
+
+section("Reset puts a swapped workout back to the program");
+{
+  fresh();
+  render();
+  check("no reset without a swap", els.main.find("swap-reset").length === 0);
+  swapSlot({id: "db_fly"}, "cable_crossover");
+  render();
+  const row = els.main.find("swap-reset")[0];
+  check("a swap brings up the reset row", !!row && row.innerHTML.includes("1 swapped"));
+  const button = row.find("btn")[0];
+  button.fire("click");
+  check("the first tap only arms it", Object.keys(state.current.swaps).length === 1);
+  button.fire("click");
+  render();
+  check("the second tap clears the swaps", Object.keys(state.current.swaps).length === 0);
+  check("and the row goes with them", els.main.find("swap-reset").length === 0);
 }
 
 process.exit(report() ? 0 : 1);

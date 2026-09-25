@@ -62,9 +62,9 @@ The folder is the layer. A file imports only from its own layer or the ones list
 - The rest timer knows which set it belongs to (`start(seconds, forSet)`, `restRunningFor`), so a conditioning window's rest
   is not restarted when you type that round's count.
 - `store/session.js` owns the session being edited. Views change it only through its functions (`logSet`,
-  `swapSlot`, `setTravel`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves. `logSet` does not
-  re-render, because the set row updates in place; the rest do. `flushNow()` runs on hide and pagehide. Views never
-  write `state.current` or `state.sessions` directly.
+  `swapSlot`, `resetSwaps`, `setTravel`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves.
+  `logSet` does not re-render, because the set row updates in place; the rest do. `flushNow()` runs on hide and
+  pagehide. Views never write `state.current` or `state.sessions` directly.
 - `persistSessions`, `persistCustomNames`, `persistHolds` in `state.js` are the only save calls. `storage.js` is the
   only reader and writer behind them.
 

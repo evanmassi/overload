@@ -545,6 +545,28 @@ section("Cross-training sits beside the program, not inside it");
   equal("picking the first version again returns to it", state.current.key, firstKey);
 }
 
+section("Swaps carry forward to the next time");
+{
+  reset();
+  const {setDay, chooseBlock, resetSwaps} = await import("../src/store/session.js");
+  state.sessions = {
+    "2026-09-01T09:00:00": Object.assign(logged("2026-09-01", "chest", 0), {swaps: {incline_db_press: "squeeze_press"}}),
+    "2026-09-08T09:00:00": Object.assign(logged("2026-09-08", "chest", 0),
+      {swaps: {db_fly: "cable_crossover", db_step_up: "lateral_lunge", cs_db_row: "flat_db_press"}}),
+    "2026-09-10T09:00:00": Object.assign(logged("2026-09-10", "chest", 1), {swaps: {db_fly: "db_pullover"}})
+  };
+  state.current = {key: "2026-09-20T09:00:00", date: "2026-09-20", day: "legs", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}};
+  setDay("chest");
+  chooseBlock("A");
+  equal("a new session keeps the last swaps of that workout, minus any that no longer fit",
+    state.current.swaps, {db_fly: "cable_crossover"});
+  chooseBlock("C");
+  equal("another version of the day keeps its own", state.current.swaps, {});
+  chooseBlock("A");
+  resetSwaps();
+  equal("reset returns to the program", state.current.swaps, {});
+}
+
 section("Prescribed set counts");
 {
   for(const block of BLOCKS) for(const day of DAY_KEYS){

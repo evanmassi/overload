@@ -124,6 +124,8 @@ button{cursor:pointer;border:none;background:none}
 .dayhead .place-wrap .eyebrow{margin:0;letter-spacing:.1em}
 .dayhead .place-wrap .eyebrow::before{content:none}
 .dayhead .place .btn{--pad:9px 10px 9px 11px}
+.swap-reset{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0 0}
+.swap-reset .eyebrow{margin:0}
 .eyebrow{
   font-family:var(--font-ui);font-size:11px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--faint);margin:0 0 3px;

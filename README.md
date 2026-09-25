@@ -11,7 +11,7 @@ Open it at **https://evanmassi.github.io/overload/**
 - Starts a rest timer after each set, with beeps when it's time to go.
 - Times holds like planks: tap the timer on the card to start and stop, tap the clock to pause. Moves done on each
   side run twice.
-- Lets you swap any exercise for the day, or add your own.
+- Lets you swap any exercise or add your own. A swap stays in that workout until you reset it.
 - Keeps your history by workout and charts your progress on each lift.
 
 ## What's in it

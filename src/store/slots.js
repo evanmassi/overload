@@ -19,6 +19,15 @@ export function resolvedExercises(workout, swaps){
   return workoutSlots(workout).map(slot => resolveSlot(slot, swaps));
 }
 
+export function keptSwaps(workout, swaps){
+  const slotIds = workoutSlots(workout).map(slot => slot.id);
+  const shown = slotIds.map(id => swaps[id] || id);
+  const isShared = id => shown.indexOf(id) !== shown.lastIndexOf(id);
+  const kept = {};
+  for(const id of slotIds) if(swaps[id] && !isShared(swaps[id])) kept[id] = swaps[id];
+  return kept;
+}
+
 export function idsTakenElsewhere(slot, workout, swaps){
   const taken = new Set(resolvedExercises(workout, swaps).map(exercise => exercise.id));
   taken.delete(resolveSlot(slot, swaps).id);

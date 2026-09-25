@@ -5,12 +5,12 @@ import {recentDays, previousOf} from "../rules/rotation.js";
 import {daysAgoLabel} from "../rules/format.js";
 import {state} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
-import {resolveSlot, strayIds} from "../store/slots.js";
-import {loadDate, chooseBlock, setDay, setNotes, isAway, setTravel} from "../store/session.js";
+import {resolveSlot, resolvedExercises, strayIds} from "../store/slots.js";
+import {loadDate, chooseBlock, setDay, setNotes, isAway, setTravel, resetSwaps} from "../store/session.js";
 import {makeField} from "../ui/field.js";
 import {makePanel} from "../ui/panel.js";
 import {el} from "./dom.js";
-import {choiceRow, groupedRow} from "./controls.js";
+import {choiceRow, groupedRow, confirmButton} from "./controls.js";
 import {exerciseCard, corePairCard} from "./exerciseCard.js";
 
 export function renderLog(main){
@@ -64,6 +64,8 @@ export function renderLog(main){
   }
 
   main.appendChild(notesCard());
+  const swapped = resolvedExercises(workout, current.swaps).filter(exercise => exercise.swappedFrom).length;
+  if(swapped) main.appendChild(resetRow(swapped));
 }
 
 function dayRow(className, keys, done){
@@ -107,6 +109,13 @@ function placeSwitch(workout){
      onPick: () => { if(!away) setTravel(workout, true); }}
   ], {ghost: true}));
   return wrap;
+}
+
+function resetRow(swapped){
+  const row = el("div", "swap-reset");
+  row.append(el("p", "eyebrow", `${swapped} swapped from the program`),
+    confirmButton("reset", "sure?", {tone: "secondary", ghost: true, key: "swap-reset"}, resetSwaps));
+  return row;
 }
 
 function strayExercises(workout){
