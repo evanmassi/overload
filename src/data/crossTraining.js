@@ -24,10 +24,21 @@ export const CROSS_TRAINING = {
         counted("pushup_burnout")
       ]),
       finish([machine("stair_intervals", 8)])
-    ], travel: {
-      thruster: "backpack_thruster", lateral_lunge: "cossack_squat", renegade_row: "backpack_row",
-      burpee_over_bells: "burpee", stair_intervals: "stairwell_climb"
-    }},
+    ], away: [
+      interval("Bodyweight", 4, 40, 20, [
+        counted("air_squat"),
+        counted("bw_reverse_lunge"),
+        counted("hand_release_pushup"),
+        counted("inchworm")
+      ]),
+      interval("Floor", 3, 45, 60, [
+        counted("shadowbox"),
+        counted("plank_up_down"),
+        counted("mountain_climber"),
+        counted("pushup_burnout")
+      ]),
+      finish([hold("bear_crawl", 40, 4)])
+    ]},
     functional: {focus: "Functional", sections: [
       circuit("Dumbbells", 4, 30, [
         timed("farmer_carry", 40),
@@ -41,10 +52,20 @@ export const CROSS_TRAINING = {
         reps("cable_pull_through", 15)
       ]),
       finish([hold("dead_hang", 30, 2), hold("deep_squat_hold", 60, 2)])
-    ], travel: {
-      farmer_carry: "backpack_carry", single_arm_press: "pike_pushup", pallof_press: "side_plank",
-      single_arm_cable_row: "backpack_row", cable_pull_through: "glute_bridge"
-    }},
+    ], away: [
+      circuit("Bodyweight", 4, 30, [
+        timed("bear_crawl", 40),
+        reps("inchworm", 6),
+        reps("pike_pushup", 8),
+        reps("bw_reverse_lunge", 10)
+      ]),
+      circuit("Door & floor", 4, 30, [
+        timed("side_plank", 30),
+        reps("door_frame_row", 12),
+        reps("sl_glute_bridge", 12)
+      ]),
+      finish([hold("deep_squat_hold", 60, 2), hold("hollow_hold", 30, 2)])
+    ]},
     mobility: {focus: "Mobility", sections: [
       circuit("Floor", 2, 15, [
         hold("hip_9090", 45),
@@ -59,9 +80,21 @@ export const CROSS_TRAINING = {
         reps("wall_slide", 10)
       ]),
       finish([machine("incline_walk", 15)])
-    ], travel: {
-      dead_hang: "childs_pose", band_pull_apart: "prone_ytw", incline_walk: "walk"
-    }}
+    ], away: [
+      circuit("Floor", 2, 15, [
+        hold("hip_9090", 45),
+        reps("cossack_squat", 8),
+        hold("deep_squat_pry", 45),
+        hold("couch_stretch", 45)
+      ]),
+      circuit("Wall & floor", 2, 15, [
+        hold("childs_pose", 30),
+        reps("quadruped_t_rotation", 8),
+        reps("prone_ytw", 10),
+        reps("wall_slide", 10)
+      ]),
+      finish([hold("deep_squat_hold", 60, 2)])
+    ]}
   },
   B: {
     conditioning: {focus: "Conditioning", sections: [
@@ -78,10 +111,21 @@ export const CROSS_TRAINING = {
         counted("squat_thrust")
       ]),
       finish([machine("incline_power_walk", 10)])
-    ], travel: {
-      alt_snatch: "backpack_thruster", goblet_squat: "backpack_squat", push_press: "pike_pushup",
-      man_maker: "burpee", incline_power_walk: "stairwell_climb"
-    }},
+    ], away: [
+      interval("Bodyweight", 4, 40, 20, [
+        counted("air_squat"),
+        counted("bw_lateral_lunge"),
+        counted("pike_pushup"),
+        counted("shoulder_taps")
+      ]),
+      interval("Floor", 3, 45, 60, [
+        counted("shadowbox"),
+        counted("plank_up_down"),
+        counted("mountain_climber"),
+        counted("inchworm")
+      ]),
+      finish([hold("wall_sit", 45, 3)])
+    ]},
     functional: {focus: "Functional", sections: [
       circuit("Dumbbells", 4, 30, [
         timed("suitcase_carry", 40),
@@ -95,10 +139,20 @@ export const CROSS_TRAINING = {
         reps("cable_rotation", 12)
       ]),
       finish([hold("bear_crawl", 30, 3), hold("hollow_hold", 30, 3)])
-    ], travel: {
-      suitcase_carry: "backpack_carry", single_arm_floor_press: "archer_pushup", goblet_cossack: "cossack_squat", half_kneel_woodchop: "bird_dog",
-      face_pull: "prone_ytw", cable_rotation: "russian_twist"
-    }},
+    ], away: [
+      circuit("Bodyweight", 4, 30, [
+        timed("crab_walk", 40),
+        reps("bw_sl_rdl", 8),
+        reps("archer_pushup", 8),
+        reps("cossack_squat", 6)
+      ]),
+      circuit("Door & floor", 4, 30, [
+        reps("door_frame_row", 12),
+        reps("bird_dog", 12),
+        reps("dead_bug", 12)
+      ]),
+      finish([hold("bear_crawl", 30, 3), hold("hollow_hold", 30, 3)])
+    ]},
     mobility: {focus: "Mobility", sections: [
       circuit("Floor", 2, 15, [
         hold("pigeon", 45),
@@ -112,9 +166,20 @@ export const CROSS_TRAINING = {
         reps("prone_ytw", 8)
       ]),
       finish([machine("stair_easy", 12)])
-    ], travel: {
-      scapular_pullup: "scapular_pushup", band_dislocate: "wall_slide", stair_easy: "walk"
-    }}
+    ], away: [
+      circuit("Floor", 2, 15, [
+        hold("pigeon", 45),
+        reps("worlds_greatest", 5),
+        reps("cat_cow", 10),
+        reps("adductor_rockback", 10)
+      ]),
+      circuit("Wall & floor", 2, 15, [
+        reps("scapular_pushup", 8),
+        reps("wall_slide", 10),
+        reps("prone_ytw", 8)
+      ]),
+      finish([hold("childs_pose", 60, 2)])
+    ]}
   },
   C: {
     conditioning: {focus: "Conditioning", sections: [
@@ -131,10 +196,21 @@ export const CROSS_TRAINING = {
         counted("hand_release_pushup")
       ]),
       finish([machine("stair_intervals_long", 10)])
-    ], travel: {
-      devil_press: "burpee", hang_clean: "backpack_thruster", db_bent_row: "backpack_row",
-      stair_intervals_long: "stairwell_climb"
-    }},
+    ], away: [
+      interval("Bodyweight", 4, 40, 20, [
+        counted("air_squat"),
+        counted("spiderman_pushup"),
+        counted("inchworm"),
+        counted("bw_lateral_lunge")
+      ]),
+      interval("Floor", 3, 45, 60, [
+        counted("shadowbox"),
+        counted("mountain_climber"),
+        counted("bicycle_crunch"),
+        counted("hand_release_pushup")
+      ]),
+      finish([hold("bear_crawl", 45, 4)])
+    ]},
     functional: {focus: "Functional", sections: [
       circuit("Dumbbells", 4, 30, [
         timed("overhead_carry", 30),
@@ -148,11 +224,20 @@ export const CROSS_TRAINING = {
         reps("cable_crunch", 15)
       ]),
       finish([hold("copenhagen", 20, 2), hold("wall_sit", 45, 2)])
-    ], travel: {
-      overhead_carry: "backpack_carry", goblet_cossack: "cossack_squat", clean_and_press: "backpack_thruster",
-      suitcase_deadlift: "single_leg_rdl", cable_antirotation_hold: "side_plank", half_kneel_pulldown: "backpack_row",
-      cable_crunch: "v_up"
-    }},
+    ], away: [
+      circuit("Bodyweight", 4, 30, [
+        reps("wall_walk", 4),
+        reps("cossack_squat", 6),
+        reps("spiderman_pushup", 8),
+        reps("bw_sl_rdl", 8)
+      ]),
+      circuit("Door & floor", 4, 30, [
+        timed("side_plank", 20),
+        reps("door_frame_row", 10),
+        reps("v_up", 12)
+      ]),
+      finish([hold("side_plank_reach", 20, 2), hold("wall_sit", 45, 2)])
+    ]},
     mobility: {focus: "Mobility", sections: [
       circuit("Floor", 2, 15, [
         hold("frog_stretch", 45),
@@ -166,9 +251,19 @@ export const CROSS_TRAINING = {
         reps("band_pull_apart", 15)
       ]),
       finish([machine("incline_walk", 15)])
-    ], travel: {
-      jefferson_curl: "standing_forward_fold", active_hang: "childs_pose", hanging_knee_raise: "dead_bug",
-      band_pull_apart: "prone_ytw", incline_walk: "walk"
-    }}
+    ], away: [
+      circuit("Floor", 2, 15, [
+        hold("frog_stretch", 45),
+        hold("standing_forward_fold", 45),
+        reps("quadruped_t_rotation", 8),
+        reps("ankle_rock", 10)
+      ]),
+      circuit("Wall & floor", 2, 15, [
+        hold("childs_pose", 20),
+        reps("dead_bug", 8),
+        reps("reverse_snow_angel", 15)
+      ]),
+      finish([hold("deep_squat_hold", 60, 2)])
+    ]}
   }
 };

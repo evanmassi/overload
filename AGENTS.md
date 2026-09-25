@@ -62,7 +62,7 @@ The folder is the layer. A file imports only from its own layer or the ones list
 - The rest timer knows which set it belongs to (`start(seconds, forSet)`, `restRunningFor`), so a conditioning window's rest
   is not restarted when you type that round's count.
 - `store/session.js` owns the session being edited. Views change it only through its functions (`logSet`,
-  `swapSlot`, `resetSwaps`, `setTravel`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves.
+  `swapSlot`, `resetSwaps`, `setAway`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves.
   `logSet` does not re-render, because the set row updates in place; the rest do. `flushNow()` runs on hide and
   pagehide. Views never write `state.current` or `state.sessions` directly.
 - `persistSessions`, `persistCustomNames`, `persistHolds` in `state.js` are the only save calls. `storage.js` is the
@@ -84,10 +84,14 @@ timed, a default `target` for when it is swapped into a slot measured differentl
 about the exercise itself comes from the catalog, and `rules/workouts.js` joins the two without editing either file.
 A swap changes the id and keeps the prescription.
 
+**Every workout has two programs**: `sections` for the gym and `away` for no equipment, in the same shape.
+`workoutOf(session)` picks one from the session's `isAway` flag. A new session takes its swaps from the last session of
+the same workout and place, and its place from the last session saved.
+
 **Stored session shape** comes from `snapshot()` in `session.js`: `date`, `day`, `block`, `blockIndex`, `entries`
-(`{id: [{w, r}]}`, strings as typed), and optional `notes`, `effort`, `startedAt`, `lastLoggedAt`, `swaps`. Keys are
-`YYYY-MM-DDTHH:MM:SS` with a `.n` suffix on a collision; older logs are keyed by date alone and must keep sorting
-and comparing correctly. Every session has a `date` once loaded, so code reads `session.date` and never the key.
+(`{id: [{w, r}]}`, strings as typed), and optional `notes`, `effort`, `startedAt`, `lastLoggedAt`, `swaps`, `isAway`.
+Keys are `YYYY-MM-DDTHH:MM:SS` with a `.n` suffix on a collision; older logs are keyed by date alone and must keep
+sorting and comparing correctly. Every session has a `date` once loaded, so code reads `session.date` and never the key.
 
 **Storage keys** are `overload.<name>.v1`, defined once in `constants.js`. Legacy shapes are converted at read time
 inside `storage.js` (see `migrateLegacySessions` and the legacy key fallback). No migration system until a second
@@ -153,7 +157,7 @@ localhost, `main.js` unregisters the worker and clears caches so development alw
 ### Pre-Implementation Checklist
 
 1. **Read the data** the change touches (`catalog.js`, `program.js`, `offdays.js`, the session shape above) before writing code.
-2. **Verify exact field names.** Sets are `{w, r}`. Every workout is `sections`, each with a `kind` (`straight`,
+2. **Verify exact field names.** Sets are `{w, r}`. Every workout is `sections` and `away`, each with a `kind` (`straight`,
    `core`, `interval`, `circuit`, `finish`) and its slots in `ex`. How a slot rests and counts follows its kind.
 3. **Find the owner.** Search for the module that already does the job before writing a new function.
 4. **Check `git log`** for the behavior you are changing. Commit messages record decisions and why they were made.

@@ -1290,4 +1290,16 @@ section("Reset puts a swapped workout back to the program");
   check("and the row goes with them", els.main.find("swap-reset").length === 0);
 }
 
+section("Away swaps in the no-equipment workout");
+{
+  fresh();
+  render();
+  const place = els.main.find("place");
+  check("a lifting day has the location switch", place.length === 1, place.length);
+  place[0].find("btn")[1].fire("click");
+  render();
+  check("away shows the bodyweight workout", els.main.find("ex-head")[0].innerHTML.includes("Archer Push-ups"));
+  check("with the away button lit", els.main.find("place")[0].find("btn")[1].dataset.chosen === "on");
+}
+
 process.exit(report() ? 0 : 1);

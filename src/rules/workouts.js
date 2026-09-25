@@ -46,17 +46,20 @@ const PLACEMENT = {
   finish: roundsWithRest
 };
 
-function build(workout){
-  return Object.assign({}, workout, {sections: workout.sections.map(section => Object.assign({}, section, {
+function build(focus, sections){
+  return {focus, sections: sections.map(section => Object.assign({}, section, {
     ex: section.ex.map((slot, i) => ready(slot, PLACEMENT[section.kind](slot, section, i)))
-  }))});
+  }))};
 }
 
 function buildBook(book, days){
   const built = {};
   for(const block of BLOCKS){
     built[block] = {};
-    for(const day of days) built[block][day] = build(book[block][day]);
+    for(const day of days){
+      const workout = book[block][day];
+      built[block][day] = {gym: build(workout.focus, workout.sections), away: build(workout.focus, workout.away)};
+    }
   }
   return built;
 }
@@ -64,12 +67,13 @@ function buildBook(book, days){
 const LIFTING = buildBook(PROGRAM, DAY_KEYS);
 const CROSS_BOOK = buildBook(CROSS_TRAINING, CROSS_KEYS);
 
-export function workoutFor(block, day){
+export function workoutFor(block, day, isAway){
   const book = isCrossTraining(day) ? CROSS_BOOK : LIFTING;
-  return (book[block] && book[block][day]) || null;
+  const places = book[block] && book[block][day];
+  return places ? places[isAway ? "away" : "gym"] : null;
 }
 
-export function workoutOf(session){ return workoutFor(session.block, session.day); }
+export function workoutOf(session){ return workoutFor(session.block, session.day, session.isAway); }
 
 export function workoutSlots(workout){
   return workout ? workout.sections.flatMap(section => section.ex) : [];

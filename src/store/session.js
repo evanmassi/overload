@@ -37,11 +37,21 @@ function setBlockIndex(index){
   state.foldFlips.clear();
 }
 
+function savedBefore(isMatch){
+  const current = state.current;
+  return Object.keys(state.sessions).filter(key => key !== current.key).sort().map(key => state.sessions[key])
+    .filter(s => s && isMatch(s)).pop() || null;
+}
+
 function carriedSwaps(){
   const current = state.current;
-  const last = Object.keys(state.sessions).filter(key => key !== current.key).sort().map(key => state.sessions[key])
-    .filter(s => s && s.day === current.day && s.block === current.block).pop();
+  const last = savedBefore(s => s.day === current.day && s.block === current.block && !!s.isAway === current.isAway);
   return last && last.swaps ? keptSwaps(workoutOf(current), last.swaps) : {};
+}
+
+function carriedAway(){
+  const last = savedBefore(() => true);
+  return !!(last && last.isAway);
 }
 
 function switchSession(existing, day, blockIndex){
@@ -101,6 +111,7 @@ function openSession(key, dateStr, day, blockIndex){
 
   state.foldFlips.clear();
   current.entries = {};
+  current.isAway = saved ? !!saved.isAway : carriedAway();
   current.swaps = saved ? Object.assign({}, saved.swaps) : carriedSwaps();
   current.notes = (saved && saved.notes) || "";
   current.effort = saved && saved.effort ? Object.assign({}, saved.effort) : {};
@@ -188,15 +199,10 @@ export function resetSwaps(){
   changes.notify();
 }
 
-export function isAway(workout){
-  return Object.keys(workout.travel).every(id => state.current.swaps[id] === workout.travel[id]);
-}
-
-export function setTravel(workout, away){
-  for(const id in workout.travel){
-    if(away) state.current.swaps[id] = workout.travel[id];
-    else delete state.current.swaps[id];
-  }
+export function setAway(isAway){
+  if(isAway === state.current.isAway) return;
+  state.current.isAway = isAway;
+  state.current.swaps = carriedSwaps();
   queueSave();
   changes.notify();
 }
@@ -224,6 +230,7 @@ function snapshot(){
   if(Object.keys(current.effort).length) snap.effort = Object.assign({}, current.effort);
   if(current.startedAt) snap.startedAt = current.startedAt;
   if(current.lastLoggedAt) snap.lastLoggedAt = current.lastLoggedAt;
+  if(current.isAway) snap.isAway = true;
   if(Object.keys(current.swaps).length) snap.swaps = Object.assign({}, current.swaps);
   return snap;
 }

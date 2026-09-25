@@ -6,7 +6,7 @@ import {daysAgoLabel} from "../rules/format.js";
 import {state} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
 import {resolveSlot, resolvedExercises, strayIds} from "../store/slots.js";
-import {loadDate, chooseBlock, setDay, setNotes, isAway, setTravel, resetSwaps} from "../store/session.js";
+import {loadDate, chooseBlock, setDay, setNotes, setAway, resetSwaps} from "../store/session.js";
 import {makeField} from "../ui/field.js";
 import {makePanel} from "../ui/panel.js";
 import {el} from "./dom.js";
@@ -38,7 +38,7 @@ export function renderLog(main){
 
   const head = el("div", "dayhead");
   head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>Version ${current.block}</b>${lastTimeNote()}</p><h2 data-text="${workout.focus}">${workout.focus}</h2></div>`;
-  if(workout.travel) head.appendChild(placeSwitch(workout));
+  head.appendChild(placeSwitch());
   main.appendChild(head);
 
   const legend = el("div", "legend");
@@ -99,14 +99,12 @@ const SECTION_LABEL = {
   finish: section => section.name
 };
 
-function placeSwitch(workout){
-  const away = isAway(workout);
+function placeSwitch(){
+  const away = state.current.isAway;
   const wrap = el("div", "place-wrap");
   wrap.append(el("p", "eyebrow", "Location"), choiceRow("blockset place", [
-    {label: "gym", key: "place:gym", title: "The gym versions", chosen: !away,
-     onPick: () => { if(away) setTravel(workout, false); }},
-    {label: "away", key: "place:away", title: "No-equipment versions for travel", chosen: away,
-     onPick: () => { if(!away) setTravel(workout, true); }}
+    {label: "gym", key: "place:gym", title: "The gym program", chosen: !away, onPick: () => setAway(false)},
+    {label: "away", key: "place:away", title: "The no-equipment program", chosen: away, onPick: () => setAway(true)}
   ], {ghost: true}));
   return wrap;
 }

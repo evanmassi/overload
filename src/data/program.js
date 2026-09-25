@@ -20,6 +20,22 @@ export const PROGRAM = {
         [{id: "bicycle_crunch", r: "20"}, {id: "side_plank", r: "30", unit: "sec"}],
         [{id: "russian_twist", r: "20"}, {id: "dead_bug", r: "12"}]
       )
+    ], away: [
+      lifts([
+        {id: "archer_pushup", s: 4, r: "6-8"},
+        {id: "door_frame_row", s: 4, r: "10-12"},
+        {id: "pseudo_planche", s: 3, r: "8-10"},
+        {id: "reverse_snow_angel", s: 3, r: "12"},
+        {id: "wide_pushup", s: 3, r: "AMRAP"},
+        {id: "superman", s: 3, r: "12"},
+        {id: "pike_shrug", s: 3, r: "12"},
+        {id: "pushup_burnout", s: 3, r: "AMRAP"}
+      ]),
+      core(
+        [{id: "bicycle_crunch", r: "20"}, {id: "plank", r: "45", unit: "sec"}],
+        [{id: "reverse_crunch", r: "15"}, {id: "side_plank", r: "30", unit: "sec"}],
+        [{id: "v_up", r: "12"}, {id: "dead_bug", r: "12"}]
+      )
     ]},
     legs: {focus: "Legs & Back", sections: [
       lifts([
@@ -38,6 +54,22 @@ export const PROGRAM = {
         [{id: "reverse_crunch", r: "15"}, {id: "shoulder_taps", r: "20"}],
         [{id: "decline_situp", r: "12"}, {id: "flutter_kicks", r: "40", unit: "sec"}]
       )
+    ], away: [
+      lifts([
+        {id: "split_squat", s: 4, r: "12"},
+        {id: "bw_sl_rdl", s: 4, r: "12"},
+        {id: "superman", s: 3, r: "15"},
+        {id: "bw_reverse_lunge", s: 3, r: "12"},
+        {id: "door_frame_row", s: 3, r: "12"},
+        {id: "sl_glute_bridge", s: 3, r: "15"},
+        {id: "floor_calf_raise", s: 4, r: "15-20"},
+        {id: "wall_sit", s: 3, r: "45", unit: "sec"}
+      ]),
+      core(
+        [{id: "reverse_crunch", r: "15"}, {id: "hollow_hold", r: "30", unit: "sec"}],
+        [{id: "shoulder_taps", r: "20"}, {id: "flutter_kicks", r: "40", unit: "sec"}],
+        [{id: "v_up", r: "12"}, {id: "bird_dog", r: "12"}]
+      )
     ]},
     arms: {focus: "Shoulders & Arms", sections: [
       lifts([
@@ -54,6 +86,22 @@ export const PROGRAM = {
         [{id: "hanging_leg_raise", r: "10"}, {id: "pallof_press", r: "12"}],
         [{id: "v_up", r: "12"}, {id: "suitcase_carry", r: "40", unit: "sec"}],
         [{id: "ab_wheel", r: "10"}, {id: "bird_dog", r: "12"}]
+      )
+    ], away: [
+      lifts([
+        {id: "pike_pushup", s: 4, r: "8-10"},
+        {id: "wall_lateral_press", s: 4, r: "30", unit: "sec"},
+        {id: "door_frame_curl", s: 3, r: "10-12"},
+        {id: "sphinx_pushup", s: 3, r: "10-12"},
+        {id: "self_resisted_curl", s: 3, r: "10"},
+        {id: "diamond_pushup", s: 3, r: "AMRAP"},
+        {id: "reverse_snow_angel", s: 3, r: "15"},
+        {id: "wall_handstand", s: 3, r: "30", unit: "sec"}
+      ]),
+      core(
+        [{id: "v_up", r: "12"}, {id: "side_plank", r: "30", unit: "sec"}],
+        [{id: "reverse_crunch", r: "15"}, {id: "shoulder_taps", r: "20"}],
+        [{id: "hollow_rock", r: "20"}, {id: "bird_dog", r: "12"}]
       )
     ]}
   },
@@ -75,6 +123,22 @@ export const PROGRAM = {
         [{id: "cable_crunch", r: "15"}, {id: "mountain_climber", r: "40", unit: "sec"}],
         [{id: "db_side_bend", r: "15"}, {id: "hollow_rock", r: "20"}]
       )
+    ], away: [
+      lifts([
+        {id: "pseudo_planche", s: 4, r: "8"},
+        {id: "door_frame_row", s: 4, r: "12"},
+        {id: "hand_release_pushup", s: 3, r: "AMRAP"},
+        {id: "prone_ytw", s: 3, r: "10"},
+        {id: "spiderman_pushup", s: 3, r: "10"},
+        {id: "reverse_snow_angel", s: 3, r: "12"},
+        {id: "pushup_burnout", s: 3, r: "AMRAP"},
+        {id: "pike_shrug", s: 3, r: "15"}
+      ]),
+      core(
+        [{id: "hollow_rock", r: "20"}, {id: "mountain_climber", r: "40", unit: "sec"}],
+        [{id: "bicycle_crunch", r: "24"}, {id: "side_plank_reach", r: "30", unit: "sec"}],
+        [{id: "reverse_crunch", r: "15"}, {id: "plank", r: "45", unit: "sec"}]
+      )
     ]},
     legs: {focus: "Legs & Back", sections: [
       lifts([
@@ -93,6 +157,22 @@ export const PROGRAM = {
         [{id: "oblique_knee_raise", r: "10"}, {id: "weighted_dead_bug", r: "12"}],
         [{id: "plank_up_down", r: "12"}, {id: "flutter_kicks", r: "40", unit: "sec"}]
       )
+    ], away: [
+      lifts([
+        {id: "pistol_squat", s: 4, r: "5"},
+        {id: "bridge_walkout", s: 3, r: "8"},
+        {id: "superman", s: 3, r: "12"},
+        {id: "bw_lateral_lunge", s: 3, r: "10"},
+        {id: "door_frame_row", s: 4, r: "10"},
+        {id: "bw_reverse_lunge", s: 3, r: "12"},
+        {id: "bw_sl_rdl", s: 3, r: "12"},
+        {id: "floor_calf_raise", s: 4, r: "20"}
+      ]),
+      core(
+        [{id: "bicycle_crunch", r: "20"}, {id: "side_plank_reach", r: "30", unit: "sec"}],
+        [{id: "reverse_crunch", r: "12"}, {id: "dead_bug", r: "12"}],
+        [{id: "plank_up_down", r: "12"}, {id: "flutter_kicks", r: "40", unit: "sec"}]
+      )
     ]},
     arms: {focus: "Shoulders & Arms", sections: [
       lifts([
@@ -109,6 +189,22 @@ export const PROGRAM = {
         [{id: "ab_wheel", r: "10"}, {id: "pallof_press", r: "12"}],
         [{id: "v_up", r: "15"}, {id: "farmer_carry", r: "45", unit: "sec"}],
         [{id: "reverse_crunch", r: "15"}, {id: "plank", r: "60", unit: "sec"}]
+      )
+    ], away: [
+      lifts([
+        {id: "wall_walk", s: 4, r: "5"},
+        {id: "pike_pushup", s: 3, r: "10"},
+        {id: "wall_lateral_press", s: 4, r: "30", unit: "sec"},
+        {id: "prone_ytw", s: 3, r: "10"},
+        {id: "door_frame_curl", s: 3, r: "12"},
+        {id: "sphinx_pushup", s: 3, r: "12"},
+        {id: "self_resisted_curl", s: 3, r: "10"},
+        {id: "diamond_pushup", s: 3, r: "AMRAP"}
+      ]),
+      core(
+        [{id: "v_up", r: "15"}, {id: "plank", r: "60", unit: "sec"}],
+        [{id: "bicycle_crunch", r: "24"}, {id: "bird_dog", r: "12"}],
+        [{id: "reverse_crunch", r: "15"}, {id: "side_plank", r: "40", unit: "sec"}]
       )
     ]}
   },
@@ -129,6 +225,22 @@ export const PROGRAM = {
         [{id: "woodchop", r: "12"}, {id: "bicycle_crunch", r: "24"}],
         [{id: "russian_twist", r: "24"}, {id: "side_plank", r: "40", unit: "sec"}]
       )
+    ], away: [
+      lifts([
+        {id: "archer_pushup", s: 5, r: "5"},
+        {id: "door_frame_row", s: 4, r: "8"},
+        {id: "pseudo_planche", s: 3, r: "10"},
+        {id: "superman", s: 3, r: "12"},
+        {id: "diamond_pushup", s: 3, r: "AMRAP"},
+        {id: "prone_ytw", s: 3, r: "8"},
+        {id: "reverse_snow_angel", s: 3, r: "15"},
+        {id: "pike_shrug", s: 3, r: "12"}
+      ]),
+      core(
+        [{id: "v_up", r: "15"}, {id: "hollow_hold", r: "40", unit: "sec"}],
+        [{id: "bicycle_crunch", r: "24"}, {id: "side_plank", r: "40", unit: "sec"}],
+        [{id: "dead_bug", r: "15"}, {id: "plank", r: "60", unit: "sec"}]
+      )
     ]},
     legs: {focus: "Legs & Back", sections: [
       lifts([
@@ -147,6 +259,22 @@ export const PROGRAM = {
         [{id: "decline_situp", r: "10"}, {id: "bird_dog", r: "12"}],
         [{id: "suitcase_carry", r: "45", unit: "sec"}, {id: "dead_bug", r: "15"}]
       )
+    ], away: [
+      lifts([
+        {id: "shrimp_squat", s: 4, r: "6-8"},
+        {id: "bw_sl_rdl", s: 4, r: "12"},
+        {id: "superman", s: 3, r: "15"},
+        {id: "split_squat", s: 3, r: "15"},
+        {id: "sl_glute_bridge", s: 4, r: "15"},
+        {id: "door_frame_row", s: 3, r: "AMRAP"},
+        {id: "cossack_squat", s: 3, r: "10"},
+        {id: "floor_calf_raise", s: 3, r: "25"}
+      ]),
+      core(
+        [{id: "v_up", r: "12"}, {id: "bird_dog", r: "12"}],
+        [{id: "reverse_crunch", r: "15"}, {id: "side_plank", r: "40", unit: "sec"}],
+        [{id: "dead_bug", r: "15"}, {id: "mountain_climber", r: "45", unit: "sec"}]
+      )
     ]},
     arms: {focus: "Shoulders & Arms", sections: [
       lifts([
@@ -163,6 +291,22 @@ export const PROGRAM = {
         [{id: "ab_wheel", r: "12"}, {id: "copenhagen", r: "25", unit: "sec"}],
         [{id: "cable_crunch", r: "15"}, {id: "mountain_climber", r: "45", unit: "sec"}],
         [{id: "v_up", r: "15"}, {id: "plank", r: "60", unit: "sec"}]
+      )
+    ], away: [
+      lifts([
+        {id: "pike_pushup", s: 4, r: "6-8"},
+        {id: "wall_handstand", s: 3, r: "40", unit: "sec"},
+        {id: "wall_lateral_press", s: 4, r: "40", unit: "sec"},
+        {id: "reverse_snow_angel", s: 3, r: "15"},
+        {id: "door_frame_curl", s: 3, r: "10"},
+        {id: "sphinx_pushup", s: 3, r: "12"},
+        {id: "self_resisted_curl", s: 3, r: "12"},
+        {id: "pushup_burnout", s: 3, r: "AMRAP"}
+      ]),
+      core(
+        [{id: "v_up", r: "15"}, {id: "hollow_hold", r: "40", unit: "sec"}],
+        [{id: "mountain_climber", r: "45", unit: "sec"}, {id: "bird_dog", r: "12"}],
+        [{id: "dead_bug", r: "15"}, {id: "plank", r: "60", unit: "sec"}]
       )
     ]}
   }

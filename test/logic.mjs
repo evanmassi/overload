@@ -1,6 +1,6 @@
 import {section, check, equal, report} from "./checks.mjs";
 import {
-  reset, logged, setsOf, everyExercise, prescribedExercises, crossTrainingExercises,
+  reset, logged, setsOf, everyExercise, prescribedExercises, crossTrainingExercises, awayExercises,
   state, hydrate, constants, exercises, workouts, progression, rotation, customs, slots, backup,
   HOWTO, CATALOG, PATTERNS, PROGRAM
 } from "./fixtures.mjs";
@@ -11,23 +11,30 @@ const {suggestTarget, loggedCount, priorSets} = progression;
 const aimed = target => (target.w ? target.w + "×" : "") + target.r;
 
 const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01", undefined, []);
-const prescribedCountFor = (block, day) => progression.prescribedCount(workouts.workoutFor(block, day));
+const prescribedCountFor = (block, day, isAway) => progression.prescribedCount(workouts.workoutFor(block, day, isAway));
 
 section("Program data");
 {
   const known = everyExercise();
   equal("three week blocks", Object.keys(PROGRAM), BLOCKS);
-  check("165 catalogued exercises", known.size === 165, known.size);
+  check("192 catalogued exercises", known.size === 192, known.size);
 
   const prescribed = prescribedExercises();
   check("9 lifting sessions prescribe 92 of them", prescribed.size === 92, prescribed.size);
   const crossTraining = crossTrainingExercises();
   check("9 cross-training sessions prescribe 73", crossTraining.size === 73, crossTraining.size);
 
-  const uncatalogued = [...prescribed.keys(), ...crossTraining.keys()].filter(id => !CATALOG[id]);
+  const away = awayExercises();
+  check("18 away sessions prescribe 64", away.size === 64, away.size);
+
+  const uncatalogued = [...prescribed.keys(), ...crossTraining.keys(), ...away.keys()].filter(id => !CATALOG[id]);
   equal("every slot names a catalogued exercise", uncatalogued, []);
-  const swapOnly = [...known.keys()].filter(id => !prescribed.has(id) && !crossTraining.has(id));
-  check("19 exercises are only offered as swaps", swapOnly.length === 19, swapOnly.length);
+  const swapOnly = [...known.keys()].filter(id => !prescribed.has(id) && !crossTraining.has(id) && !away.has(id));
+  check("15 exercises are only offered as swaps", swapOnly.length === 15, swapOnly.length);
+  const equipped = [...away.values()].filter(e => e.load !== "bw").map(e => e.id);
+  equal("every away move is bodyweight", equipped, []);
+  const jumping = [...away.values()].filter(e => e.pattern === "Plyometrics").map(e => e.id);
+  equal("no away move is a jump", jumping, []);
 
   const unpatterned = Object.keys(CATALOG).filter(id => !PATTERNS[CATALOG[id].pattern]);
   equal("every exercise belongs to a known pattern", unpatterned, []);
@@ -56,13 +63,16 @@ section("Program data");
   const untargeted = Object.keys(CATALOG).filter(id => !CATALOG[id].target);
   equal("every exercise has a default target for swaps", untargeted, []);
 
-  for(const block of BLOCKS) for(const day of DAY_KEYS){
-    const workout = workouts.workoutFor(block, day);
-    equal(`${block}/${day} is lifts then a core superset`, workout.sections.map(section => section.kind), ["straight", "core"]);
+  for(const block of BLOCKS) for(const day of DAY_KEYS) for(const isAway of [false, true]){
+    const workout = workouts.workoutFor(block, day, isAway);
+    const name = `${block}/${day}${isAway ? " away" : ""}`;
+    equal(`${name} is lifts then a core superset`, workout.sections.map(section => section.kind), ["straight", "core"]);
     const main = workout.sections[0].ex;
-    check(`${block}/${day} has 8 or 9 main exercises`, main.length === 8 || main.length === 9, main.length);
+    check(`${name} has 8 or 9 main exercises`, main.length === 8 || main.length === 9, main.length);
     const pairs = workouts.corePairs(workout.sections[1]);
-    check(`${block}/${day} has 3 core supersets of 2`, pairs.length === 3 && pairs.every(pair => pair.length === 2));
+    check(`${name} has 3 core supersets of 2`, pairs.length === 3 && pairs.every(pair => pair.length === 2));
+    const ids = workouts.workoutSlots(workout).map(e => e.id);
+    equal(`${name} lists no move twice`, ids.filter((id, i) => ids.indexOf(id) !== i), []);
   }
 }
 
@@ -488,17 +498,14 @@ section("Stall detection");
 
 section("Cross-training sits beside the program, not inside it");
 {
-  for(const block of BLOCKS) for(const day of CROSS_KEYS){
-    const workout = workouts.workoutFor(block, day);
-    check(`${block}/${day} has three sections`, workout.sections.length === 3, workout.sections.length);
-    check(`${block}/${day} prescribes 15-36 sets`,
-      prescribedCountFor(block, day) >= 15 && prescribedCountFor(block, day) <= 36,
-      prescribedCountFor(block, day));
+  for(const block of BLOCKS) for(const day of CROSS_KEYS) for(const isAway of [false, true]){
+    const workout = workouts.workoutFor(block, day, isAway);
+    const name = `${block}/${day}${isAway ? " away" : ""}`;
+    const total = prescribedCountFor(block, day, isAway);
+    check(`${name} has three sections`, workout.sections.length === 3, workout.sections.length);
+    check(`${name} prescribes 15-36 sets`, total >= 15 && total <= 36, total);
     const ids = workouts.workoutSlots(workout).map(e => e.id);
-    equal(`${block}/${day} lists no move twice`, ids.filter((id, i) => ids.indexOf(id) !== i), []);
-    const badTravel = Object.keys(workout.travel).filter(id =>
-      !ids.includes(id) || !exercises.findExercise(workout.travel[id]) || ids.includes(workout.travel[id]));
-    equal(`${block}/${day} travel swaps point at real moves not already in the session`, badTravel, []);
+    equal(`${name} lists no move twice`, ids.filter((id, i) => ids.indexOf(id) !== i), []);
   }
 
   const thruster = workouts.workoutFor("A", "conditioning").sections[0].ex[0];
@@ -529,7 +536,7 @@ section("Cross-training sits beside the program, not inside it");
   ], [1, 1, 0]);
 
   const {setDay, chooseBlock} = await import("../src/store/session.js");
-  state.current = {key: "2026-09-20T09:00:00", date: "2026-09-20", day: "legs", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}};
+  state.current = {key: "2026-09-20T09:00:00", date: "2026-09-20", day: "legs", block: "A", blockIndex: 0, isAway: false, entries: {}, swaps: {}, notes: "", effort: {}};
   setDay("conditioning");
   equal("switching an empty session picks up that type's next version", state.current.block, "B");
   setDay("chest");
@@ -555,7 +562,7 @@ section("Swaps carry forward to the next time");
       {swaps: {db_fly: "cable_crossover", db_step_up: "lateral_lunge", cs_db_row: "flat_db_press"}}),
     "2026-09-10T09:00:00": Object.assign(logged("2026-09-10", "chest", 1), {swaps: {db_fly: "db_pullover"}})
   };
-  state.current = {key: "2026-09-20T09:00:00", date: "2026-09-20", day: "legs", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}};
+  state.current = {key: "2026-09-20T09:00:00", date: "2026-09-20", day: "legs", block: "A", blockIndex: 0, isAway: false, entries: {}, swaps: {}, notes: "", effort: {}};
   setDay("chest");
   chooseBlock("A");
   equal("a new session keeps the last swaps of that workout, minus any that no longer fit",
@@ -567,11 +574,30 @@ section("Swaps carry forward to the next time");
   equal("reset returns to the program", state.current.swaps, {});
 }
 
+section("Away carries forward and keeps its own swaps");
+{
+  reset();
+  const {loadDate, setDay, chooseBlock, setAway} = await import("../src/store/session.js");
+  state.sessions = {
+    "2026-09-01T09:00:00": Object.assign(logged("2026-09-01", "chest", 0), {swaps: {db_fly: "cable_crossover"}}),
+    "2026-09-03T09:00:00": Object.assign(logged("2026-09-03", "chest", 0), {isAway: true, swaps: {wide_pushup: "diamond_pushup"}})
+  };
+  loadDate("2026-09-10");
+  check("after an away session the next one opens away", state.current.isAway);
+  setDay("chest");
+  chooseBlock("A");
+  equal("the away workout replaces the gym one", workouts.workoutOf(state.current).sections[0].ex[0].id, "archer_pushup");
+  equal("away keeps its own swaps", state.current.swaps, {wide_pushup: "diamond_pushup"});
+  setAway(false);
+  equal("back at the gym, the gym swaps return", state.current.swaps, {db_fly: "cable_crossover"});
+  equal("and the gym workout", workouts.workoutOf(state.current).sections[0].ex[0].id, "flat_db_press");
+}
+
 section("Prescribed set counts");
 {
-  for(const block of BLOCKS) for(const day of DAY_KEYS){
-    const total = prescribedCountFor(block, day);
-    check(`${block}/${day} prescribes 35-42 sets`, total >= 35 && total <= 42, total);
+  for(const block of BLOCKS) for(const day of DAY_KEYS) for(const isAway of [false, true]){
+    const total = prescribedCountFor(block, day, isAway);
+    check(`${block}/${day}${isAway ? " away" : ""} prescribes 35-42 sets`, total >= 35 && total <= 42, total);
   }
   equal("main work plus core makes up the total",
     prescribedCountFor("A", "chest"),

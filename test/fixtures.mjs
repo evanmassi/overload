@@ -20,7 +20,7 @@ export function reset(){
   state.sessions = {};
   state.customNames = {};
   state.view = "log";
-  state.current = {key: "2026-12-31T00:00:00", date: "2026-12-31", day: "chest", block: "A", blockIndex: 0, entries: {}, swaps: {}, notes: "", effort: {}};
+  state.current = {key: "2026-12-31T00:00:00", date: "2026-12-31", day: "chest", block: "A", blockIndex: 0, isAway: false, entries: {}, swaps: {}, notes: "", effort: {}};
 }
 
 export function logged(date, day, blockIndex, entries){
@@ -46,6 +46,13 @@ export function crossTrainingExercises(){
   const seen = new Map();
   for(const block of constants.BLOCKS) for(const day of constants.CROSS_KEYS)
     workouts.workoutSlots(workouts.workoutFor(block, day)).forEach(e => seen.set(e.id, e));
+  return seen;
+}
+
+export function awayExercises(){
+  const seen = new Map();
+  for(const block of constants.BLOCKS) for(const day of [...constants.DAY_KEYS, ...constants.CROSS_KEYS])
+    workouts.workoutSlots(workouts.workoutFor(block, day, true)).forEach(e => seen.set(e.id, e));
   return seen;
 }
 
