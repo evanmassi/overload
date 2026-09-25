@@ -95,19 +95,19 @@ button{cursor:pointer;border:none;background:none}
   color:var(--secondary);
 }
 .day-group::before{content:"";position:absolute;top:-1px;left:0;width:10px;height:1px;background:var(--ui-accent)}
-.blockset.lifting,.blockset.cross{gap:8px;--track-control:.16em}
-.blockset.lifting .btn,.blockset.cross .btn{border-bottom:1px solid var(--line-hairline)}
-.blockset.lifting .btn > :is(.btn-plate,.btn-glow,.btn-frame,.btn-fill,.btn-stripe,.btn-bracket),
+.blockset.strength,.blockset.cross{gap:8px;--track-control:.16em}
+.blockset.strength .btn,.blockset.cross .btn{border-bottom:1px solid var(--line-hairline)}
+.blockset.strength .btn > :is(.btn-plate,.btn-glow,.btn-frame,.btn-fill,.btn-stripe,.btn-bracket),
 .blockset.cross .btn > :is(.btn-plate,.btn-glow,.btn-frame,.btn-fill,.btn-stripe,.btn-bracket){display:none}
-.blockset.lifting .btn[data-chosen="on"]::after,.blockset.cross .btn[data-chosen="on"]::after{
+.blockset.strength .btn[data-chosen="on"]::after,.blockset.cross .btn[data-chosen="on"]::after{
   content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;pointer-events:none;
   background:var(--ui-accent);box-shadow:0 0 6px 1px var(--accent-glow);
 }
-.blockset.lifting .btn,.blockset.cross .btn{flex:1 1 0;min-width:0;--pad:14px 4px 10px}
-.blockset.lifting .day-done,.blockset.cross .day-done{top:auto;bottom:-7px;right:0;font-size:13px}
-.blockset.lifting .btn[data-chosen="on"]:has(.day-done)::after,.blockset.cross .btn[data-chosen="on"]:has(.day-done)::after{right:19px}
-.blockset.lifting :is(.btn-label,.btn-word),.blockset.cross :is(.btn-label,.btn-word){font-size:12px}
-.blockset.lifting .btn-label,.blockset.cross .btn-label{text-indent:var(--track-control)}
+.blockset.strength .btn,.blockset.cross .btn{flex:1 1 0;min-width:0;--pad:14px 4px 10px}
+.blockset.strength .day-done,.blockset.cross .day-done{top:auto;bottom:-7px;right:0;font-size:13px}
+.blockset.strength .btn[data-chosen="on"]:has(.day-done)::after,.blockset.cross .btn[data-chosen="on"]:has(.day-done)::after{right:19px}
+.blockset.strength :is(.btn-label,.btn-word),.blockset.cross :is(.btn-label,.btn-word){font-size:12px}
+.blockset.strength .btn-label,.blockset.cross .btn-label{text-indent:var(--track-control)}
 .day-done{
   position:absolute;top:2px;right:3px;font-size:13px;line-height:1;pointer-events:none;
   color:var(--success);text-shadow:0 0 8px var(--success-glow);

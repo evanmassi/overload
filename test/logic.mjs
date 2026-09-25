@@ -6,7 +6,7 @@ import {
 } from "./fixtures.mjs";
 
 const {BLOCKS, DAY_KEYS, CROSS_KEYS, LOAD_LABEL} = constants;
-const {nextBlockIndex, nextLiftingDay, recentDays, previousOf, blockLetter, withLetter} = rotation;
+const {nextBlockIndex, nextStrengthDay, recentDays, previousOf, blockLetter, withLetter} = rotation;
 const {suggestTarget, loggedCount, priorSets} = progression;
 const aimed = target => (target.w ? target.w + "×" : "") + target.r;
 
@@ -20,7 +20,7 @@ section("Program data");
   check("192 catalogued exercises", known.size === 192, known.size);
 
   const prescribed = prescribedExercises();
-  check("9 lifting sessions prescribe 92 of them", prescribed.size === 92, prescribed.size);
+  check("9 strength sessions prescribe 92 of them", prescribed.size === 92, prescribed.size);
   const crossTraining = crossTrainingExercises();
   check("9 cross-training sessions prescribe 73", crossTraining.size === 73, crossTraining.size);
 
@@ -79,17 +79,17 @@ section("Program data");
 section("Each workout rotates through its own versions");
 {
   reset();
-  equal("a fresh app opens Chest, version A", [nextLiftingDay(state.sessions), nextBlockIndex(state.sessions, "chest")], ["chest", 0]);
+  equal("a fresh app opens Chest, version A", [nextStrengthDay(state.sessions), nextBlockIndex(state.sessions, "chest")], ["chest", 0]);
 
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
-  equal("after Chest it offers Legs", nextLiftingDay(state.sessions), "legs");
+  equal("after Chest it offers Legs", nextStrengthDay(state.sessions), "legs");
   equal("and Chest moves on to B while Legs stays on A",
     [blockLetter(nextBlockIndex(state.sessions, "chest")), blockLetter(nextBlockIndex(state.sessions, "legs"))], ["B", "A"]);
 
   state.sessions["2026-09-04"] = logged("2026-09-04", "arms", 0);
-  equal("skipping Legs for Arms still leaves Legs next", nextLiftingDay(state.sessions), "legs");
+  equal("skipping Legs for Arms still leaves Legs next", nextStrengthDay(state.sessions), "legs");
   state.sessions["2026-09-06"] = logged("2026-09-06", "legs", 0);
-  equal("with all three done the oldest comes round again", nextLiftingDay(state.sessions), "chest");
+  equal("with all three done the oldest comes round again", nextStrengthDay(state.sessions), "chest");
 
   state.sessions["2026-09-08"] = logged("2026-09-08", "chest", 1);
   state.sessions["2026-09-10"] = logged("2026-09-10", "chest", 2);
@@ -132,9 +132,9 @@ section("The calendar counts weeks from Monday");
   week(14, ["chest", "mobility", "legs"]);
   week(21, ["chest"]);
   const wednesday = new Date(2026, 8, 23);
-  equal("this week so far", weekTally(state.sessions, wednesday), {lifting: 1, cross: 0});
+  equal("this week so far", weekTally(state.sessions, wednesday), {strength: 1, cross: 0});
   equal("an unfinished week does not break the streak", weekStreak(state.sessions, wednesday), 2);
-  equal("cross-training is marked apart from lifting", trainingDays(state.sessions)["2026-09-15"], {count: 1, isLifting: false});
+  equal("cross-training is marked apart from strength", trainingDays(state.sessions)["2026-09-15"], {count: 1, isStrength: false});
 }
 
 section("A workout done in the last seven days is marked");
@@ -516,8 +516,8 @@ section("Cross-training sits beside the program, not inside it");
   const stairs = workouts.workoutFor("A", "conditioning").sections[2].ex[0];
   equal("a machine finisher logs level and minutes", [stairs.load, stairs.unit, !!stairs.bw], ["level", "min", true]);
 
-  const liftingGoblet = prescribedExercises().get("goblet_squat");
-  equal("a lift reused in cross-training keeps its lifting definition", [liftingGoblet.r, liftingGoblet.win], ["10-12", undefined]);
+  const strengthGoblet = prescribedExercises().get("goblet_squat");
+  equal("a lift reused in cross-training keeps its strength definition", [strengthGoblet.r, strengthGoblet.win], ["10-12", undefined]);
 
   equal("a machine finisher that hit its minutes goes up a level",
     suggestTarget(stairs, {sets: setsOf([[8, 8]])}), {w: "9", r: "8", change: "+1 level", isPush: true});
@@ -528,7 +528,7 @@ section("Cross-training sits beside the program, not inside it");
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
   state.sessions["2026-09-05"] = logged("2026-09-05", "conditioning", 0);
   state.sessions["2026-09-06"] = logged("2026-09-06", "mobility", 0);
-  equal("cross-training does not move the lifting rotation", nextLiftingDay(state.sessions), "legs");
+  equal("cross-training does not move the strength rotation", nextStrengthDay(state.sessions), "legs");
   equal("each cross-training type rotates on its own", [
     nextBlockIndex(state.sessions, "conditioning"),
     nextBlockIndex(state.sessions, "mobility"),
@@ -540,7 +540,7 @@ section("Cross-training sits beside the program, not inside it");
   setDay("conditioning");
   equal("switching an empty session picks up that type's next version", state.current.block, "B");
   setDay("chest");
-  equal("and back to lifting picks up that workout's next", state.current.block, "B");
+  equal("and back to strength picks up that workout's next", state.current.block, "B");
 
   state.current.entries = {flat_db_press: [{w: "50", r: "10"}]};
   const firstKey = state.current.key;
@@ -620,7 +620,7 @@ section("Last time is looked up within the same kind of session");
     state.sessions[date] = logged(date, "arms", 1, {push_press: setsOf([[40, 8]])});
   });
   state.sessions["2026-08-20"].entries.push_press = setsOf([[40, 8]]);
-  check("a stall counts only lifting sessions", progression.hasStalled(state.sessions, heavy, "2026-09-01", "arms", []));
+  check("a stall counts only strength sessions", progression.hasStalled(state.sessions, heavy, "2026-09-01", "arms", []));
 }
 
 section("Relabelling a session sets its workout and version");

@@ -1,7 +1,7 @@
 import {AUTOSAVE_DELAY_MS} from "../data/constants.js";
 import {state, changes, channel, persistSessions} from "./state.js";
 import {loggedCount, priorSets} from "../rules/progression.js";
-import {blockIndexOf, blockLetter, withLetter, nextBlockIndex, nextLiftingDay} from "../rules/rotation.js";
+import {blockIndexOf, blockLetter, withLetter, nextBlockIndex, nextStrengthDay} from "../rules/rotation.js";
 import {workoutOf, restAfterSet} from "../rules/workouts.js";
 import {idsTakenElsewhere, resolvedExercises, keptSwaps} from "./slots.js";
 import {releaseIfBeaten} from "./holds.js";
@@ -105,7 +105,7 @@ function openSession(key, dateStr, day, blockIndex){
     setBlockIndex(blockIndexOf(saved));
     current.day = saved.day;
   } else {
-    current.day = day || nextLiftingDay(state.sessions);
+    current.day = day || nextStrengthDay(state.sessions);
     setBlockIndex(blockIndex === null ? nextBlockIndex(state.sessions, current.day) : blockIndex);
   }
 

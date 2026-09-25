@@ -1,4 +1,4 @@
-import {BLOCKS, DAY_KEYS, CROSS_KEYS, DAYS, TREND_ICON, DEFAULT_REST, RECENT_DAYS, LIFTING_LABEL, CROSS_LABEL} from "../data/constants.js";
+import {BLOCKS, DAY_KEYS, CROSS_KEYS, DAYS, TREND_ICON, DEFAULT_REST, RECENT_DAYS, STRENGTH_LABEL, CROSS_LABEL} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {workoutOf, corePairs} from "../rules/workouts.js";
 import {recentDays, previousOf} from "../rules/rotation.js";
@@ -33,7 +33,7 @@ export function renderLog(main){
   main.appendChild(bar);
 
   const recent = recentDays(state.sessions, new Date());
-  main.append(groupedRow(LIFTING_LABEL, dayRow("blockset lifting", DAY_KEYS, recent)),
+  main.append(groupedRow(STRENGTH_LABEL, dayRow("blockset strength", DAY_KEYS, recent)),
     groupedRow(CROSS_LABEL, dayRow("blockset cross", CROSS_KEYS, recent)));
 
   const head = el("div", "dayhead");

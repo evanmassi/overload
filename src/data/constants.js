@@ -2,7 +2,7 @@ export const BLOCKS = ["A", "B", "C"];
 export const DAY_KEYS = ["chest", "legs", "arms"];
 
 export const CROSS_KEYS = ["conditioning", "functional", "mobility"];
-export const LIFTING_LABEL = "Weightlifting";
+export const STRENGTH_LABEL = "Strength training";
 export const CROSS_LABEL = "Cross-training";
 
 export const DAYS = {

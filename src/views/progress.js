@@ -90,10 +90,10 @@ function consistencyGrid(){
 
   const tally = weekTally(state.sessions, today);
   const streak = weekStreak(state.sessions, today);
-  const note = `This week: ${tally.lifting} lifting · ${tally.cross} cross-training`
+  const note = `This week: ${tally.strength} strength · ${tally.cross} cross-training`
     + (streak ? ` · ${streak} week${streak === 1 ? "" : "s"} in a row with ${STREAK_WORKOUTS}+` : "");
   const legend = el("p", "grid-legend");
-  legend.innerHTML = '<span><i class="cell lift"></i>lifting</span><span><i class="cell cross"></i>cross-training</span>'
+  legend.innerHTML = '<span><i class="cell lift"></i>strength</span><span><i class="cell cross"></i>cross-training</span>'
     + '<span><i class="cell lift double"></i>two in a day</span>';
 
   const wrap = el("div", "grid-wrap");
@@ -102,7 +102,7 @@ function consistencyGrid(){
 }
 
 function dayCell(date, day, isFuture){
-  const kind = isFuture ? " future" : day ? (day.isLifting ? " lift" : " cross") + (day.count > 1 ? " double" : "") : "";
+  const kind = isFuture ? " future" : day ? (day.isStrength ? " lift" : " cross") + (day.count > 1 ? " double" : "") : "";
   const cell = el("i", "cell" + kind);
   cell.title = date + (day ? ` · ${day.count} workout${day.count === 1 ? "" : "s"}` : "");
   if(day) cell.addEventListener("click", () => openDay(date));

@@ -20,17 +20,17 @@ function sessionsInWeek(sessions, monday){
 export function trainingDays(sessions){
   const days = {};
   loggedSessions(sessions).forEach(s => {
-    const day = days[s.date] = days[s.date] || {count: 0, isLifting: false};
+    const day = days[s.date] = days[s.date] || {count: 0, isStrength: false};
     day.count++;
-    if(!isCrossTraining(s.day)) day.isLifting = true;
+    if(!isCrossTraining(s.day)) day.isStrength = true;
   });
   return days;
 }
 
 export function weekTally(sessions, today){
   const week = sessionsInWeek(sessions, mondayOf(today));
-  const lifting = week.filter(s => !isCrossTraining(s.day)).length;
-  return {lifting, cross: week.length - lifting};
+  const strength = week.filter(s => !isCrossTraining(s.day)).length;
+  return {strength, cross: week.length - strength};
 }
 
 export function weekStreak(sessions, today){

@@ -64,11 +64,11 @@ function buildBook(book, days){
   return built;
 }
 
-const LIFTING = buildBook(PROGRAM, DAY_KEYS);
+const STRENGTH_BOOK = buildBook(PROGRAM, DAY_KEYS);
 const CROSS_BOOK = buildBook(CROSS_TRAINING, CROSS_KEYS);
 
 export function workoutFor(block, day, isAway){
-  const book = isCrossTraining(day) ? CROSS_BOOK : LIFTING;
+  const book = isCrossTraining(day) ? CROSS_BOOK : STRENGTH_BOOK;
   const places = book[block] && book[block][day];
   return places ? places[isAway ? "away" : "gym"] : null;
 }

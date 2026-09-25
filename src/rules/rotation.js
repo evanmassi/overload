@@ -33,7 +33,7 @@ export function nextBlockIndex(sessions, day){
   return latest ? blockIndexOf(latest) + 1 : 0;
 }
 
-export function nextLiftingDay(sessions){
+export function nextStrengthDay(sessions){
   const lastDate = day => { const latest = latestOf(sessions, day); return latest ? latest.date : ""; };
   return DAY_KEYS.reduce((pick, day) => lastDate(day) < lastDate(pick) ? day : pick);
 }

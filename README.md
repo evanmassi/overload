@@ -16,7 +16,7 @@ Open it at **https://evanmassi.github.io/overload/**
 
 ## What's in it
 
-- Three lifting workouts (Chest & Back, Legs & Back, Shoulders & Arms), each with three versions (A, B, C) that
+- Three strength workouts (Chest & Back, Legs & Back, Shoulders & Arms), each with three versions (A, B, C) that
   take turns so the same muscles get a different routine each time, and each ending with a short core finisher.
 - Cross-training for the days in between: Conditioning, Functional and Mobility sessions.
 - 192 exercises, each with a short how-to and the muscles it works.
