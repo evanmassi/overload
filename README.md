@@ -21,7 +21,7 @@ Open it at **https://evanmassi.github.io/overload/**
 - Cross-training for the days in between: Conditioning, Functional and Mobility sessions.
 - 192 exercises, each with a short how-to and the muscles it works.
 - Built for dumbbells, an EZ bar, a pull-up bar, a bench and a cable stack. Away switches every workout to a
-  no-equipment version for a hotel room: just the floor, a wall and a door frame. It stays on until you switch back.
+  no-equipment version: just the floor, a wall and a door frame. It stays on until you switch back.
 
 ## Put it on your phone
 
