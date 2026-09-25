@@ -1,11 +1,12 @@
-import {BEEP_COUNTDOWN, BEEP_GO, BEEP_PULSE_GAP_SECONDS, BEEP_RELEASE_SECONDS, FINAL_COUNTDOWN_SECONDS,
-        BEEP_LATE_TOLERANCE_SECONDS} from "../data/constants.js";
+import {BEEP_COUNTDOWN, BEEP_GO, BEEP_START, BEEP_PULSE_GAP_SECONDS, BEEP_RELEASE_SECONDS, FINAL_COUNTDOWN_SECONDS,
+        BEEP_LATE_TOLERANCE_SECONDS, START_BEEP_GRACE_MS} from "../data/constants.js";
 import {loadSoundOn, saveSoundOn} from "../store/storage.js";
 
 let ctx = null;
 let on = true;
 let restEndsAt = 0;
 let placed = [];
+let startAskedAt = 0;
 
 const AudioCtor = () =>
   typeof window === "undefined" ? null : (window.AudioContext || window.webkitAudioContext || null);
@@ -34,8 +35,10 @@ const running = () => !!ctx && ctx.state === "running";
 const needsResume = () => ctx.state !== "running" && ctx.state !== "closed";
 
 function onStateChange(){
-  if(running()){ if(restEndsAt) place(); }
-  else dropPlaced();
+  if(!running()){ dropPlaced(); return; }
+  if(on && Date.now() - startAskedAt < START_BEEP_GRACE_MS) schedule(BEEP_START, ctx.currentTime);
+  startAskedAt = 0;
+  if(restEndsAt) place();
 }
 
 export function unlockAudio(){
@@ -108,6 +111,12 @@ export function scheduleRest(endsAt){
 export function cancelRest(){
   restEndsAt = 0;
   dropPlaced();
+}
+
+export function startTone(){
+  if(!on) return;
+  if(unlockAudio()) schedule(BEEP_START, ctx.currentTime);
+  else startAskedAt = Date.now();
 }
 
 export function testTone(){

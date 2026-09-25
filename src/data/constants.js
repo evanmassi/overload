@@ -46,6 +46,8 @@ export const BEEP_PULSE_GAP_SECONDS = 0.06;
 export const BEEP_LATE_TOLERANCE_SECONDS = 0.25;
 export const BEEP_COUNTDOWN = {wave: "triangle", volume: 1, pulses: [{freq: 880, seconds: 0.12}]};
 export const BEEP_GO = {wave: "triangle", volume: 1, pulses: [{freq: 1320, seconds: 1}]};
+export const BEEP_START = {wave: "triangle", volume: 0.6, pulses: [{freq: 1760, seconds: 0.1}]};
+export const START_BEEP_GRACE_MS = 1500;
 
 export const AUTOSAVE_DELAY_MS = 1200;
 export const CONFIRM_WINDOW_MS = 4000;

@@ -1,12 +1,12 @@
 import {DEFAULT_REST, TIMER_TICK_MS, TIMER_RESET_DELAY_MS, LIVE_FINISH_MS, VIBRATE_PATTERN,
         WARN_COUNTDOWN_SECONDS, FINAL_COUNTDOWN_SECONDS, LONG_PRESS_MS} from "../data/constants.js";
-import {scheduleRest, cancelRest} from "./sound.js";
+import {scheduleRest, cancelRest, startTone} from "./sound.js";
 import {makeButton} from "../ui/button.js";
 import {clockFace} from "../rules/format.js";
 
 const RUNNING_TONE = {rest: "primary", work: "secondary", stopwatch: "secondary", hold: "secondary"};
 
-const timer = {mode: null, endsAt: 0, startedAt: 0, banked: 0, target: 0, tick: null, settle: null, idle: DEFAULT_REST, onDone: null, forSet: null};
+const timer = {mode: null, endsAt: 0, startedAt: 0, banked: 0, target: 0, tick: null, settle: null, idle: DEFAULT_REST, onDone: null, forSet: null, isHandingOff: false};
 const awake = {lock: null, requesting: false};
 const press = {timer: null, expire: null, fired: false};
 
@@ -94,6 +94,8 @@ function run(kind, seconds, onDone, forSet){
   timer.startedAt = Date.now();
   timer.banked = 0;
   timer.endsAt = seconds ? timer.startedAt + seconds * 1000 : 0;
+  if(!timer.isHandingOff) startTone();
+  if(button) button.flash();
   if(timer.endsAt) scheduleRest(timer.endsAt);
   else cancelRest();
   holdScreen();
@@ -199,5 +201,8 @@ function tick(){
   if(overdueMs > LIVE_FINISH_MS) cancelRest();
   else if(typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(VIBRATE_PATTERN);
   settle("go", "success");
-  if(onDone) onDone();
+  if(!onDone) return;
+  timer.isHandingOff = true;
+  onDone();
+  timer.isHandingOff = false;
 }

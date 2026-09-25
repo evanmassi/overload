@@ -58,6 +58,7 @@ function wire(el, key){
     paint();
     expire(FIRE_WINDOW_MS);
   };
+  el.flash = fire;
 
   el.addEventListener("pointerenter", () => { hover = true; paint(); });
   el.addEventListener("pointerleave", () => { hover = false; held = false; paint(); });

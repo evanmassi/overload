@@ -889,11 +889,13 @@ section("Beeps are scheduled on the audio clock when a rest starts");
   };
 
   const sound = await import("../src/views/sound.js");
-  const {start, stop} = await import("../src/views/timer.js");
-  const {BEEP_COUNTDOWN, BEEP_GO} = await import("../src/data/constants.js");
+  const {start, stop, startWork} = await import("../src/views/timer.js");
+  const {BEEP_COUNTDOWN, BEEP_GO, BEEP_START} = await import("../src/data/constants.js");
   const goPitches = BEEP_GO.pulses.map(p => p.freq);
   const blip = BEEP_COUNTDOWN.pulses[0].freq;
-  const live = () => scheduled.filter(o => !o.stopped);
+  const startPitch = BEEP_START.pulses[0].freq;
+  const starts = () => scheduled.filter(o => o.hz === startPitch);
+  const live = () => scheduled.filter(o => !o.stopped && o.hz !== startPitch);
   const pitches = () => live().map(o => o.hz);
   const startsAt = () => live().map(o => Math.round(o.at * 10) / 10);
   const reset = () => { scheduled.length = 0; };
@@ -908,6 +910,8 @@ section("Beeps are scheduled on the audio clock when a rest starts");
 
   reset();
   start(90);
+  equal("starting a rest plays the start beep at once", starts().map(o => o.at), [0]);
+  check("and flashes the timer", "fired" in els.timer.dataset);
   equal("a ninety-second rest places three blips and a go", pitches(), [blip, blip, blip, ...goPitches]);
   equal("at 87, 88, 89 and 90 on the audio clock", startsAt().slice(0, 4), [87, 88, 89, 90]);
   stop();
@@ -962,10 +966,26 @@ section("Beeps are scheduled on the audio clock when a rest starts");
   equal("and resuming places it again from the wall clock", pitches(), [blip, blip, blip, ...goPitches]);
   stop();
 
+  context.state = "interrupted";
+  reset();
+  start(30);
+  equal("a start while the audio sleeps waits for it", starts(), []);
+  context.state = "running";
+  context.onstatechange();
+  equal("and plays the start beep the moment it wakes", starts().length, 1);
+  stop();
+
+  startWork(5, () => start(60));
+  reset();
+  comeBackAfter(5000 + 500);
+  equal("a rest that follows a work window starts under its go, with no start beep", starts(), []);
+  stop();
+
   reset();
   sound.setSoundOn(false);
   start(30);
   equal("muted, a rest schedules nothing", live(), []);
+  equal("not even the start beep", starts(), []);
   sound.setSoundOn(true);
   equal("unmuting mid-rest schedules what is left", pitches(), [blip, blip, blip, ...goPitches]);
   stop();
