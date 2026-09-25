@@ -3,7 +3,8 @@
   font-family:var(--font-ui);cursor:pointer;user-select:none;-webkit-user-select:none;
   touch-action:manipulation;
   --pad:var(--pad-control);--hx:3px;--hy:3px;--lsh:0 0 0;
-  --s-steps:7;--s-steps-echo:5;--s-echo-gap:60ms;--s-echo-lag:55ms;
+  --s-steps:7;--s-steps-echo:5;--s-echo-gap:60ms;--s-echo-lag:55ms;--s-glow-gap:100ms;--s-flicker-offset:35ms;
+  --s-echo-clock:calc(var(--clock) + var(--s-echo-gap));--s-glow-clock:calc(var(--clock) + var(--s-glow-gap));
   --flicker-text:hud-text-flicker;--flicker-frame:hud-flicker;--flicker-glow:hud-glow-drift;
 }
 .btn[data-ghost]{--pad:var(--pad-control-quiet);--hx:2.5px;--hy:2.5px;--flicker-glow:hud-glow-drift-soft}
@@ -45,7 +46,7 @@
   --lc:var(--secondary-ink);--lgl:var(--secondary-glow);
   --hg1:rgba(159,201,208,.45);--hg2:rgba(159,201,208,.22);--hgl:rgba(214,236,240,.85);
   --clock:640ms;--idle:calc(8600ms * var(--flicker-pace));--s-press:397ms;--s-flash:544ms;--s-word-idle:calc(11610ms * var(--flicker-pace));
-  --s-steps:11;--s-steps-echo:7;--s-echo-gap:80ms;--s-echo-lag:100ms;
+  --s-steps:11;--s-steps-echo:7;--s-echo-gap:80ms;--s-echo-lag:100ms;--s-glow-gap:180ms;
   --s-flash-name:hud-face-flash;
 }
 .btn.btn-icon{
@@ -141,20 +142,19 @@
 .btn[data-state="hover"] .btn-stripe{animation:hud-stripe-in 460ms var(--ease-settle) both}
 .btn[data-state="hover"] .btn-stripe::before{animation:hud-stripe-slide var(--stripe-clock) linear infinite}
 
-.btn-halo{
-  position:absolute;inset:0;border:2px solid var(--s-line);box-shadow:0 0 22px var(--s-line);
-  filter:blur(7px);opacity:0;pointer-events:none;
+.btn-halo,.btn-hair,.btn-hair-echo{position:absolute;inset:0;opacity:0;pointer-events:none}
+.btn-halo::before,.btn-hair::before,.btn-hair-echo::before{
+  content:"";position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1;border-radius:50%;
+  border:1px solid var(--s-line);translate:-50% -50%;scale:.1;
 }
-.btn[data-fired] .btn-halo{animation:hud-halo calc(var(--clock) + 100ms) linear 0ms 1 both}
-
-.btn-hair{position:absolute;inset:0;border:1px solid var(--s-line);opacity:0;pointer-events:none}
-.btn[data-fired] .btn-hair{animation:hud-hairline var(--clock) steps(var(--s-steps),end) 0ms 1 both}
-
-.btn-hair-echo{
-  position:absolute;inset:0;border:1px solid var(--s-line);border-bottom-width:0;
-  opacity:0;pointer-events:none;
-}
-.btn[data-fired] .btn-hair-echo{animation:hud-hairline-echo calc(var(--clock) + var(--s-echo-gap)) steps(var(--s-steps-echo),end) var(--s-echo-lag) 1 both}
+.btn-icon .btn-halo::before,.btn-icon .btn-hair::before,.btn-icon .btn-hair-echo::before{width:165%}
+.btn-halo::before{border-width:2px;box-shadow:0 0 22px var(--s-line);filter:blur(7px)}
+.btn[data-fired] .btn-halo{animation:hud-ring-spread var(--s-glow-clock) linear 0ms 1 both}
+.btn[data-fired] .btn-halo::before{animation:hud-ring-grow var(--s-glow-clock) var(--ease-emit) 0ms 1 both,hud-ring-flicker var(--s-glow-clock) steps(1,end) var(--s-flicker-offset) 1 both}
+.btn[data-fired] .btn-hair{animation:hud-ring-spread var(--clock) steps(var(--s-steps),end) 0ms 1 both}
+.btn[data-fired] .btn-hair::before{animation:hud-ring-grow var(--clock) var(--ease-emit) 0ms 1 both,hud-ring-flicker var(--clock) steps(1,end) 0ms 1 both}
+.btn[data-fired] .btn-hair-echo{animation:hud-ring-spread var(--s-echo-clock) steps(var(--s-steps-echo),end) var(--s-echo-lag) 1 both}
+.btn[data-fired] .btn-hair-echo::before{animation:hud-ring-grow var(--s-echo-clock) var(--ease-emit) var(--s-echo-lag) 1 both,hud-ring-flicker var(--s-echo-clock) steps(1,end) calc(var(--s-echo-lag) + var(--s-flicker-offset)) 1 both}
 
 .btn-bracket{
   position:absolute;width:var(--bracket-arm);height:var(--bracket-arm);

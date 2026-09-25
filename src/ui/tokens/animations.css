@@ -35,9 +35,10 @@
 @keyframes hud-plate-kick{0%{transform:translate(var(--hx),var(--hy));opacity:.72}14%{transform:translate(calc(var(--hx) * 2.1),calc(var(--hy) * 2.1));opacity:.95}100%{transform:translate(var(--hx),var(--hy));opacity:.72}}
 @keyframes hud-word-kick{0%{transform:translate(var(--hx),var(--hy))}14%{transform:translate(calc(var(--hx) * 2.1),calc(var(--hy) * 2.1))}100%{transform:translate(var(--hx),var(--hy))}}
 @keyframes hud-bloom{0%{opacity:0}10%{opacity:.9}100%{opacity:0}}
-@keyframes hud-halo{0%{inset:0;opacity:0}14%{inset:-4px;opacity:.8}45%{inset:-11px;opacity:.45}100%{inset:-18px;opacity:0}}
+@keyframes hud-ring-spread{0%{inset:0;opacity:.5}100%{inset:-18px;opacity:0}}
+@keyframes hud-ring-grow{0%{scale:.1}100%{scale:1}}
+@keyframes hud-ring-flicker{0%{opacity:1}16%{opacity:.35}19%{opacity:1}38%{opacity:.55}42%{opacity:1}64%{opacity:.15}67%{opacity:1}80%{opacity:.45}84%{opacity:1}100%{opacity:1}}
 @keyframes hud-hairline{0%{top:0;right:0;bottom:0;left:0;opacity:.52}22%{top:-10px;right:-13px;bottom:-11px;left:-15px;opacity:.44}50%{top:-15px;right:-18px;bottom:-15px;left:-20px;opacity:.3}86%{top:-17px;right:-20px;bottom:-17px;left:-23px;opacity:.14}100%{top:-18px;right:-21px;bottom:-18px;left:-24px;opacity:0}}
-@keyframes hud-hairline-echo{0%{top:-2px;right:-1px;bottom:-2px;left:-3px;opacity:.26}24%{top:-18px;right:-16px;bottom:-17px;left:-21px;opacity:.2}55%{top:-26px;right:-25px;bottom:-24px;left:-29px;opacity:.13}100%{top:-31px;right:-31px;bottom:-29px;left:-34px;opacity:0}}
 @keyframes hud-side-left{0%{opacity:0;transform:translateX(26px) scaleX(.42)}18%{opacity:.6}100%{opacity:0;transform:translateX(-10px) scaleX(1.25)}}
 @keyframes hud-side-right{0%{opacity:0;transform:translateX(-26px) scaleX(.42)}18%{opacity:.6}100%{opacity:0;transform:translateX(10px) scaleX(1.25)}}
 @keyframes hud-face-flash{0%{opacity:0}7%{opacity:.17}15%{opacity:0}26%{opacity:.11}36%{opacity:0}100%{opacity:0}}

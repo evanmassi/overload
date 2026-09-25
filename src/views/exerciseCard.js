@@ -25,7 +25,8 @@ function isFolded(exercise){
 const asksDifficulty = exercise => !exercise.core && !exercise.stray;
 
 function isFinished(exercise){
-  return isComplete(exercise) && (!asksDifficulty(exercise) || !!state.current.effort[exercise.id]);
+  return isComplete(exercise) && timedSetIndex(exercise, sideWaitingFor) < 0
+    && (!asksDifficulty(exercise) || !!state.current.effort[exercise.id]);
 }
 
 function flipFold(exercise){
@@ -190,7 +191,7 @@ function targetBand(exercise, target){
   const weight = target.w
     ? `${target.w}<small class="unit-tag">${weightUnit(exercise)}</small>`
     : exercise.bw ? "BW" : "—";
-  band.innerHTML = `<span class="target-tag">goal</span><div></div><b>${weight}</b><div class="x">×</div>`
+  band.innerHTML = `<span class="target-tag"><i class="ex-echo">goal</i>goal</span><div></div><b>${weight}</b><div class="x">×</div>`
     + `<b>${target.r}<small class="unit-tag">${unitName(exercise)}</small></b>`
     + `<i class="target-change">${TREND_ICON[target.isPush ? "up" : "same"]}${target.change}</i>`;
   return band;

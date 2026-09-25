@@ -37,12 +37,12 @@ export function renderLog(main){
     groupedRow(CROSS_LABEL, dayRow("blockset cross", CROSS_KEYS, recent)));
 
   const head = el("div", "dayhead");
-  head.innerHTML = `<div class="dayhead-text"><p class="eyebrow"><b>Version ${current.block}</b>${lastTimeNote()}</p><h2 data-text="${workout.focus}">${workout.focus}</h2></div>`;
+  head.innerHTML = `<p class="eyebrow"><b>Version ${current.block}</b>${lastTimeNote()}</p><h2 data-text="${workout.focus}">${workout.focus}</h2>`;
   head.appendChild(placeSwitch());
   main.appendChild(head);
 
   const legend = el("div", "legend");
-  legend.innerHTML = `<span><em class="ghost">45</em> last time</span><span><em class="up">${TREND_ICON.up}</em> beat it</span><span><em class="same">${TREND_ICON.same}</em> matched</span><span><em class="down">${TREND_ICON.down}</em> below</span>`;
+  legend.innerHTML = `<span><em class="up">${TREND_ICON.up}</em> beat it</span><span><em class="same">${TREND_ICON.same}</em> matched</span><span><em class="down">${TREND_ICON.down}</em> below</span>`;
   main.appendChild(legend);
 
   let position = 0;
@@ -101,12 +101,10 @@ const SECTION_LABEL = {
 
 function placeSwitch(){
   const away = state.current.isAway;
-  const wrap = el("div", "place-wrap");
-  wrap.append(el("p", "eyebrow", "Location"), choiceRow("blockset place", [
+  return choiceRow("blockset place", [
     {label: "gym", key: "place:gym", title: "The gym program", chosen: !away, onPick: () => setAway(false)},
     {label: "away", key: "place:away", title: "The no-equipment program", chosen: away, onPick: () => setAway(true)}
-  ], {ghost: true}));
-  return wrap;
+  ], {ghost: true, label: "Location"});
 }
 
 function resetRow(swapped){

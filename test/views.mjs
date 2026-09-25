@@ -1087,6 +1087,14 @@ section("A timed hold counts up, pauses, and waits for the second side");
   equal("in the same set", rp(rowsOf("side_plank")[1]).value, "");
   equal("then the rest starts", els.timer.dataset.tone, "primary");
   stop();
+
+  tapHold("side_plank", 100000);
+  tapHold("side_plank", 130000);
+  check("the last set's first side leaves the card open for side two", !cardFor("side_plank").classList.contains("done"));
+  tapHold("side_plank", 140000);
+  tapHold("side_plank", 170000);
+  check("and it folds once side two is in", cardFor("side_plank").classList.contains("done"));
+  stop();
 }
 
 section("A conditioning round runs the window then the rest without a restart");
@@ -1320,6 +1328,17 @@ section("Away swaps in the no-equipment workout");
   render();
   check("away shows the bodyweight workout", els.main.find("ex-head")[0].innerHTML.includes("Archer Push-ups"));
   check("with the away button lit", els.main.find("place")[0].find("btn")[1].dataset.chosen === "on");
+}
+
+section("A press that turns into a scroll lets go of the button");
+{
+  fresh();
+  render();
+  const swap = els.main.find("ex-swap")[0];
+  swap.fire("pointerdown");
+  check("pressing holds the button", swap.dataset.state === "held");
+  swap.fire("pointercancel");
+  check("a cancelled press lets it go", swap.dataset.state === "idle", swap.dataset.state);
 }
 
 process.exit(report() ? 0 : 1);

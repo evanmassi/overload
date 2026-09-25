@@ -61,7 +61,9 @@ function wire(el, key){
   el.flash = fire;
 
   el.addEventListener("pointerenter", () => { hover = true; paint(); });
-  el.addEventListener("pointerleave", () => { hover = false; held = false; paint(); });
+  const release = () => { hover = false; held = false; paint(); };
+  el.addEventListener("pointerleave", release);
+  el.addEventListener("pointercancel", release);
   el.addEventListener("pointerdown", () => { held = true; paint(); });
   el.addEventListener("pointerup", event => {
     if(event.pointerType === "touch") hover = false;
