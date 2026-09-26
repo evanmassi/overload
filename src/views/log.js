@@ -110,7 +110,7 @@ function placeSwitch(){
 function resetRow(swapped){
   const row = el("div", "swap-reset");
   row.append(el("p", "eyebrow", `${swapped} swapped from the program`),
-    confirmButton("reset", "sure?", {tone: "secondary", ghost: true, key: "swap-reset"}, resetSwaps));
+    confirmButton("reset", "reset?", {tone: "secondary", ghost: true, key: "swap-reset"}, resetSwaps));
   return row;
 }
 

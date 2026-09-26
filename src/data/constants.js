@@ -1,14 +1,15 @@
 export const BLOCKS = ["A", "B", "C"];
-export const DAY_KEYS = ["chest", "legs", "arms"];
+export const DAY_KEYS = ["chest", "arms", "legs"];
+export const STRENGTH_ROTATION = ["chest", "legs", "arms"];
 
-export const CROSS_KEYS = ["conditioning", "functional", "mobility"];
+export const CROSS_KEYS = ["functional", "conditioning", "mobility"];
 export const STRENGTH_LABEL = "Strength training";
 export const CROSS_LABEL = "Cross-training";
 
 export const DAYS = {
-  chest: {short: "Chest", label: "Chest & Back"},
-  legs: {short: "Legs", label: "Legs & Back"},
-  arms: {short: "Arms", label: "Shoulders & Arms"},
+  chest: {short: "Chest &\nBack", label: "Chest & Back"},
+  legs: {short: "Legs &\nBack", label: "Legs & Back"},
+  arms: {short: "Shoulders &\nArms", label: "Shoulders & Arms"},
   conditioning: {short: "Conditioning", label: "Conditioning"},
   functional: {short: "Functional", label: "Functional"},
   mobility: {short: "Mobility", label: "Mobility"}
@@ -50,7 +51,7 @@ export const BEEP_START = {wave: "triangle", volume: 0.6, pulses: [{freq: 1760, 
 export const START_BEEP_GRACE_MS = 1500;
 
 export const AUTOSAVE_DELAY_MS = 1200;
-export const CONFIRM_WINDOW_MS = 4000;
+export const CONFIRM_WINDOW_MS = 8000;
 export const SHEET_PICK_MS = 420;
 export const SHEET_CLOSE_MS = 240;
 

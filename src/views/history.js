@@ -56,7 +56,7 @@ function sessionActions(key){
     openRelabelSheet(key, state.sessions[key].block);
   });
   relabel.title = "File this session under a different workout";
-  const remove = confirmButton("delete", "sure?", {tone: "danger", ghost: true, key: "hist-delete:" + key},
+  const remove = confirmButton("delete", "delete?", {tone: "danger", ghost: true, key: "hist-delete:" + key},
     () => deleteSession(key));
   actions.append(edit, relabel, remove);
   return actions;

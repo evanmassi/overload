@@ -40,15 +40,27 @@ export function workoutFilters(picked, keyPrefix){
 }
 
 export function confirmButton(label, prompt, options, onConfirm){
-  const button = actionButton(label, options, event => {
+  const holder = el("span", "confirm");
+  const choice = el("span", "confirm-choice");
+  let expiry = null;
+  const arm = on => {
+    clearTimeout(expiry);
+    if(!on){ delete holder.dataset.armed; return; }
+    holder.dataset.armed = "1";
+    expiry = setTimeout(() => arm(false), CONFIRM_WINDOW_MS);
+  };
+  const answer = (text, style, onAnswer) => actionButton(text, style, event => {
     event.stopPropagation();
-    if(button.dataset.armed){ onConfirm(); return; }
-    button.dataset.armed = "1";
-    button.setLabel(prompt);
-    setTimeout(() => {
-      delete button.dataset.armed;
-      button.setLabel(label);
-    }, CONFIRM_WINDOW_MS);
+    arm(false);
+    onAnswer();
   });
-  return button;
+  const open = actionButton(label, options, event => {
+    event.stopPropagation();
+    arm(true);
+  });
+  choice.append(el("span", "confirm-ask", prompt),
+    answer("yes", {tone: options.tone, ghost: options.ghost}, onConfirm),
+    answer("no", {tone: "secondary", ghost: true}, () => {}));
+  holder.append(open, choice);
+  return holder;
 }

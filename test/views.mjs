@@ -186,9 +186,16 @@ section("History and progress views render");
   openHistoryCard(0);
   check("tapping a row opens it", els.main.find("hist-body").length === 1, els.main.find("hist-body").length);
   check("notes show on the open card", els.main.find("hist-notes").length === 1);
-  check("the open card offers edit and delete",
-    els.main.find("hist-actions")[0].children.map(b => b.dataset.label).join() === "edit,relabel,delete",
-    els.main.find("hist-actions")[0].children.map(b => b.dataset.label).join());
+  const isShown = b => {
+    const holder = b.closest("confirm");
+    return !holder || (holder.dataset.armed === undefined) === (b.parentNode === holder);
+  };
+  const actionLabels = () => els.main.find("hist-actions")[0].find("btn").filter(isShown).map(b => b.dataset.label).join();
+  equal("the open card offers edit, relabel and delete", actionLabels(), "edit,relabel,delete");
+  els.main.find("hist-actions")[0].find("btn")[2].fire("click");
+  equal("delete asks yes or no", actionLabels(), "edit,relabel,yes,no");
+  els.main.find("hist-actions")[0].find("btn")[4].fire("click");
+  equal("no puts delete back", actionLabels(), "edit,relabel,delete");
   openHistoryCard(0);
   check("tapping again closes it", els.main.find("hist-body").length === 0);
   check("backup controls render", els.main.find("backup").length === 1);
@@ -687,7 +694,7 @@ section("Each button is its own workout for the day");
   const card = openHistoryCard(0);
   card.find("hist-actions")[0].children[1].fire("click");
   check("relabel opens a chooser", els.sheet.hidden === false && els.sheetbody.find("sheet-item").length === 6);
-  const choice = els.sheetbody.find("sheet-item")[2];
+  const choice = els.sheetbody.find("sheet-item")[1];
   choice.fire("click");
   const relabelled = Object.keys(state.sessions).map(k => state.sessions[k].day);
   check("picking one refiles the session", relabelled.includes("arms"), relabelled.join());
@@ -761,30 +768,30 @@ section("History filters by workout and marks deltas");
   const strength = () => els.main.find("strength")[0];
   equal("the filter rows match the log's workout rows",
     [strength().children.map(b => b.dataset.label), els.main.find("cross")[0].children.map(b => b.dataset.label)],
-    [["Chest", "Legs", "Arms"], ["Conditioning", "Functional", "Mobility"]]);
+    [["Chest &\nBack", "Shoulders &\nArms", "Legs &\nBack"], ["Functional", "Conditioning", "Mobility"]]);
   check("nothing is picked by default", strength().children.every(b => b.getAttribute("aria-pressed") === "false"));
   check("every session shows unfiltered", els.main.find("hist-day").length === 4, els.main.find("hist-day").length);
 
-  strength().children[1].fire("click");
+  strength().children[2].fire("click");
   render();
   check("filtering to legs leaves one card", els.main.find("hist-day").length === 1, els.main.find("hist-day").length);
-  check("and marks that button pressed", strength().children[1].getAttribute("aria-pressed") === "true");
+  check("and marks that button pressed", strength().children[2].getAttribute("aria-pressed") === "true");
 
-  strength().children[2].fire("click");
+  strength().children[1].fire("click");
   render();
   check("a second filter adds to the first", els.main.find("hist-day").length === 1 &&
     strength().children.filter(b => b.getAttribute("aria-pressed") === "true").length === 2);
   equal("only the latest tap replays its flash after the redraw",
-    strength().children.filter(b => "fired" in b.dataset).map(b => b.dataset.label), ["Arms"]);
+    strength().children.filter(b => "fired" in b.dataset).map(b => b.dataset.label), ["Shoulders &\nArms"]);
 
-  strength().children[1].fire("click");
+  strength().children[2].fire("click");
   render();
   check("a workout with no sessions says so",
     els.main.find("empty").length === 1 && els.main.find("empty")[0].textContent.includes("Shoulders & Arms"),
     els.main.find("empty").map(e => e.textContent).join());
   check("and keeps the filter rows so you can leave", els.main.find("strength").length === 1);
 
-  strength().children[2].fire("click");
+  strength().children[1].fire("click");
   render();
   check("clearing every filter shows everything", els.main.find("hist-day").length === 4, els.main.find("hist-day").length);
 
@@ -1224,11 +1231,11 @@ section("Workouts done in the last week carry a check, and relabelling picks a v
   render();
   const marked = [...els.main.find("strength")[0].children, ...els.main.find("cross")[0].children]
     .filter(button => button.find("day-done").length).map(button => button.dataset.label);
-  equal("legs and mobility this week, not arms from ten days ago", marked, ["Legs", "Mobility"]);
+  equal("legs and mobility this week, not arms from ten days ago", marked, ["Legs &\nBack", "Mobility"]);
   loadDate(iso(new Date()));
   setDay("legs");
   render();
-  check("the open workout keeps its check", els.main.find("strength")[0].children[1].find("day-done").length === 1);
+  check("the open workout keeps its check", els.main.find("strength")[0].children[2].find("day-done").length === 1);
   equal("the next version is picked", state.current.block, "B");
   check("and the header says what came last", els.main.find("dayhead")[0].innerHTML.includes("last time A, 2 days ago"),
     els.main.find("dayhead")[0].innerHTML);
@@ -1254,7 +1261,7 @@ section("Progress filters by workout and the filters combine");
   render();
   const groups = () => els.main.find("section-label").map(l => l.textContent).filter(t => t !== "Consistency");
   equal("unfiltered shows every workout", groups(), ["Chest & Back", "Legs & Back"]);
-  els.main.find("strength")[0].children[1].fire("click");
+  els.main.find("strength")[0].children[2].fire("click");
   render();
   equal("picking legs narrows to it", groups(), ["Legs & Back"]);
   els.main.find("strength")[0].children[0].fire("click");
@@ -1309,12 +1316,16 @@ section("Reset puts a swapped workout back to the program");
   render();
   const row = els.main.find("swap-reset")[0];
   check("a swap brings up the reset row", !!row && row.innerHTML.includes("1 swapped"));
-  const button = row.find("btn")[0];
-  button.fire("click");
-  check("the first tap only arms it", Object.keys(state.current.swaps).length === 1);
-  button.fire("click");
+  const [reset, yes, no] = row.find("btn");
+  const isAsking = () => row.find("confirm")[0].dataset.armed !== undefined;
+  reset.fire("click");
+  check("the first tap only asks", Object.keys(state.current.swaps).length === 1 && isAsking());
+  no.fire("click");
+  check("no keeps the swaps", Object.keys(state.current.swaps).length === 1 && !isAsking());
+  reset.fire("click");
+  yes.fire("click");
   render();
-  check("the second tap clears the swaps", Object.keys(state.current.swaps).length === 0);
+  check("yes clears the swaps", Object.keys(state.current.swaps).length === 0);
   check("and the row goes with them", els.main.find("swap-reset").length === 0);
 }
 

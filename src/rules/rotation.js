@@ -1,4 +1,4 @@
-import {BLOCKS, DAY_KEYS, RECENT_DAYS} from "../data/constants.js";
+import {BLOCKS, STRENGTH_ROTATION, RECENT_DAYS} from "../data/constants.js";
 import {loggedCount} from "./progression.js";
 import {iso} from "./format.js";
 
@@ -35,7 +35,7 @@ export function nextBlockIndex(sessions, day){
 
 export function nextStrengthDay(sessions){
   const lastDate = day => { const latest = latestOf(sessions, day); return latest ? latest.date : ""; };
-  return DAY_KEYS.reduce((pick, day) => lastDate(day) < lastDate(pick) ? day : pick);
+  return STRENGTH_ROTATION.reduce((pick, day) => lastDate(day) < lastDate(pick) ? day : pick);
 }
 
 export function recentDays(sessions, today){

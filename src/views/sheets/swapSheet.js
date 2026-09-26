@@ -51,7 +51,7 @@ function customRow(slot, id, taken){
   });
 
   const count = setsLoggedFor(id);
-  const remove = confirmButton("remove", count ? `drop ${count} sets?` : "sure?",
+  const remove = confirmButton("remove", count ? `drop ${count} sets?` : "remove?",
     {tone: "danger", ghost: true, key: "remove:" + id}, () => {
       removeCustom(id);
       changes.notify();
