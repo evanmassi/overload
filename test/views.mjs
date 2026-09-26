@@ -405,8 +405,6 @@ section("Consistency grid");
   render();
   const lit = els.main.find("cell").filter(c => /lift|off/.test(c._class));
   equal("today lights as strength, twice over", lit.map(c => c._class), ["cell lift double"]);
-  check("the note counts this week by kind", els.main.find("grid-note")[0].textContent.startsWith("This week: 1 strength · 1 cross-training"),
-    els.main.find("grid-note")[0].textContent);
 
   lit[0].fire("click");
   equal("tapping a day opens it in history", [state.view, [...state.historyOpen].length], ["history", 2]);
@@ -912,8 +910,8 @@ section("Beeps are scheduled on the audio clock when a rest starts");
 
   reset();
   check("the test tone plays at once", sound.testTone() === true);
-  equal("at the go pitches", pitches(), goPitches);
-  equal("with no delay", startsAt().slice(0, 1), [0]);
+  equal("as the rest countdown: three blips and a go", pitches(), [blip, blip, blip, ...goPitches]);
+  equal("a second apart, starting now", startsAt(), [0, 1, 2, 3]);
 
   reset();
   start(90);
@@ -1282,6 +1280,7 @@ section("The date, clock, backup and test sound controls hold still");
   render();
   const steady = els.main.find("btn").filter(b => "steady" in b.dataset).map(b => b.dataset.label);
   equal("the backup and test sound buttons, nothing else", steady, ["Test sound", "Export backup", "Import backup"]);
+  equal("the version sits at the bottom", els.main.find("app-version")[0].textContent, "v1.1.0");
   state.view = "log";
 }
 

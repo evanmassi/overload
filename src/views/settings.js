@@ -1,3 +1,4 @@
+import {APP_VERSION} from "../data/constants.js";
 import {state} from "../store/state.js";
 import {exportSessions, importSessions} from "../store/backup.js";
 import {el} from "./dom.js";
@@ -46,8 +47,9 @@ function soundControls(){
 export function settingsPanel(){
   return [
     soundControls(),
-    el("p", "sound-note", "Three short beeps in the last seconds, one long high one when the rest is up. The screen stays awake while a rest runs. Switching apps pauses the clock; come back and it shows GO."),
+    el("p", "sound-note", "Three short beeps, then a long one when the rest is up. They may not play while you're in another app."),
     backupControls(),
-    el("p", "backup-note", "Your log lives on this device. Export before clearing browser data.")
+    el("p", "backup-note", "Your log lives on this device. Export before clearing browser data."),
+    el("p", "app-version", "v" + APP_VERSION)
   ];
 }

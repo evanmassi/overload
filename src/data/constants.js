@@ -1,3 +1,4 @@
+export const APP_VERSION = "1.1.0";
 export const BLOCKS = ["A", "B", "C"];
 export const DAY_KEYS = ["chest", "arms", "legs"];
 export const STRENGTH_ROTATION = ["chest", "legs", "arms"];
@@ -81,7 +82,6 @@ export const EFFORT_STEPS = {easy: 2, medium: 1, hard: 0};
 export const STALL_EXPOSURES = 3;
 export const STALL_BACKOFF_PERCENT = 10;
 export const CONSISTENCY_WEEKS = 12;
-export const STREAK_WORKOUTS = 3;
 export const WEEKDAY_LABELS = ["M", "", "W", "", "F", "", ""];
 export const RECENT_DAYS = 7;
 

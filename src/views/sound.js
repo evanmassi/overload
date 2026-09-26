@@ -89,6 +89,8 @@ function dropPending(){
   placed = placed.filter(group => group.at <= now);
 }
 
+const countdownBeep = left => left ? BEEP_COUNTDOWN : BEEP_GO;
+
 function place(){
   dropPending();
   const untilEnd = (restEndsAt - Date.now()) / 1000;
@@ -96,7 +98,7 @@ function place(){
     const offset = untilEnd - left;
     if(offset < -BEEP_LATE_TOLERANCE_SECONDS) continue;
     const at = ctx.currentTime + Math.max(0, offset);
-    placed.push({at, nodes: schedule(left ? BEEP_COUNTDOWN : BEEP_GO, at)});
+    placed.push({at, nodes: schedule(countdownBeep(left), at)});
   }
 }
 
@@ -121,6 +123,8 @@ export function startTone(){
 
 export function testTone(){
   if(!unlockAudio()) return false;
-  schedule(BEEP_GO, ctx.currentTime);
+  const start = ctx.currentTime;
+  for(let left = FINAL_COUNTDOWN_SECONDS; left >= 0; left--)
+    schedule(countdownBeep(left), start + FINAL_COUNTDOWN_SECONDS - left);
   return true;
 }

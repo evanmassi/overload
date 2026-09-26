@@ -1,10 +1,10 @@
-import {CONSISTENCY_WEEKS, STREAK_WORKOUTS, WEEKDAY_LABELS, DAY_KEYS, CROSS_KEYS, DAYS, TREND_ICON} from "../data/constants.js";
+import {CONSISTENCY_WEEKS, WEEKDAY_LABELS, DAY_KEYS, CROSS_KEYS, DAYS, TREND_ICON} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {state, changes} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
 import {topSet, score, loggedAsBodyweight, progressSince} from "../rules/progression.js";
 import {iso, shortDate, monthLabel, unitSuffix, unitName, weightUnit} from "../rules/format.js";
-import {addDays, mondayOf, trainingDays, weekTally, weekStreak} from "../rules/calendar.js";
+import {addDays, mondayOf, trainingDays} from "../rules/calendar.js";
 import {isLogged} from "../rules/sets.js";
 import {makePanel} from "../ui/panel.js";
 import {byId, el, escapeHtml} from "./dom.js";
@@ -88,16 +88,12 @@ function consistencyGrid(){
     }
   }
 
-  const tally = weekTally(state.sessions, today);
-  const streak = weekStreak(state.sessions, today);
-  const note = `This week: ${tally.strength} strength · ${tally.cross} cross-training`
-    + (streak ? ` · ${streak} week${streak === 1 ? "" : "s"} in a row with ${STREAK_WORKOUTS}+` : "");
   const legend = el("p", "grid-legend");
   legend.innerHTML = '<span><i class="cell lift"></i>strength</span><span><i class="cell cross"></i>cross-training</span>'
     + '<span><i class="cell lift double"></i>two in a day</span>';
 
   const wrap = el("div", "grid-wrap");
-  wrap.append(grid, el("p", "grid-note", note), legend);
+  wrap.append(grid, legend);
   return wrap;
 }
 

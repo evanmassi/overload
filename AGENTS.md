@@ -309,6 +309,9 @@ Commit only when asked. The subject is one plain sentence about what changed, as
 session button is its own workout for the day`. No prefix, no co-author footer. A body only when the change spans
 more than one idea.
 
+A GitHub release tags `vX.Y.Z` and bumps `APP_VERSION` in `constants.js` in the same push, so the History tab shows
+the version that is live. Pushing without a release is fine; the site updates either way.
+
 ---
 
 ## Windows Environment

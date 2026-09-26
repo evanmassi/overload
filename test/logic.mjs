@@ -119,7 +119,7 @@ section("Each workout rotates through its own versions");
 
 section("The calendar counts weeks from Monday");
 {
-  const {mondayOf, weekTally, weekStreak, trainingDays} = await import("../src/rules/calendar.js");
+  const {mondayOf, trainingDays} = await import("../src/rules/calendar.js");
   const {iso} = await import("../src/rules/format.js");
   reset();
   equal("a Wednesday's week starts on Monday", iso(mondayOf(new Date(2026, 8, 23))), "2026-09-21");
@@ -131,9 +131,6 @@ section("The calendar counts weeks from Monday");
   week(7, ["chest", "legs", "arms"]);
   week(14, ["chest", "mobility", "legs"]);
   week(21, ["chest"]);
-  const wednesday = new Date(2026, 8, 23);
-  equal("this week so far", weekTally(state.sessions, wednesday), {strength: 1, cross: 0});
-  equal("an unfinished week does not break the streak", weekStreak(state.sessions, wednesday), 2);
   equal("cross-training is marked apart from strength", trainingDays(state.sessions)["2026-09-15"], {count: 1, isStrength: false});
 }
 
