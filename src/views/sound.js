@@ -5,6 +5,7 @@ import {loadSoundOn, saveSoundOn} from "../store/storage.js";
 let ctx = null;
 let on = true;
 let restEndsAt = 0;
+let restLastBeep = BEEP_GO;
 let placed = [];
 let startAskedAt = 0;
 
@@ -22,7 +23,7 @@ export function setSoundOn(value){
   on = !!value;
   saveSoundOn(on);
   if(on){ if(unlockAudio() && restEndsAt) place(); }
-  else dropPlaced();
+  else drop(() => true);
   return on;
 }
 
@@ -35,8 +36,8 @@ const running = () => !!ctx && ctx.state === "running";
 const needsResume = () => ctx.state !== "running" && ctx.state !== "closed";
 
 function onStateChange(){
-  if(!running()){ dropPlaced(); return; }
-  if(on && Date.now() - startAskedAt < START_BEEP_GRACE_MS) schedule(BEEP_START, ctx.currentTime);
+  if(!running()){ drop(() => true); return; }
+  if(on && Date.now() - startAskedAt < START_BEEP_GRACE_MS) schedule(BEEP_START, ctx.currentTime, false);
   startAskedAt = 0;
   if(restEndsAt) place();
 }
@@ -54,7 +55,7 @@ export function unlockAudio(){
   return running();
 }
 
-function schedule({wave, volume, pulses}, startAt){
+function schedule({wave, volume, pulses}, startAt, isRest){
   let at = startAt;
   const nodes = [];
   for(const {freq, seconds} of pulses){
@@ -73,37 +74,30 @@ function schedule({wave, volume, pulses}, startAt){
     nodes.push(osc);
     at += seconds + BEEP_PULSE_GAP_SECONDS;
   }
-  return nodes;
-}
-
-const silence = groups => groups.forEach(group => group.nodes.forEach(osc => { try{ osc.stop(); }catch(e){} }));
-
-function dropPlaced(){
-  silence(placed);
-  placed = [];
-}
-
-function dropPending(){
   const now = ctx.currentTime;
-  silence(placed.filter(group => group.at > now));
-  placed = placed.filter(group => group.at <= now);
+  placed = placed.filter(group => group.endsAt > now);
+  placed.push({at: startAt, endsAt: at, nodes, isRest});
 }
 
-const countdownBeep = left => left ? BEEP_COUNTDOWN : BEEP_GO;
+function drop(isDropped){
+  placed.filter(isDropped).forEach(group => group.nodes.forEach(osc => { try{ osc.stop(); }catch(e){} }));
+  placed = placed.filter(group => !isDropped(group));
+}
 
 function place(){
-  dropPending();
+  const now = ctx.currentTime;
+  drop(group => group.isRest && group.at > now);
   const untilEnd = (restEndsAt - Date.now()) / 1000;
   for(let left = FINAL_COUNTDOWN_SECONDS; left >= 0; left--){
     const offset = untilEnd - left;
     if(offset < -BEEP_LATE_TOLERANCE_SECONDS) continue;
-    const at = ctx.currentTime + Math.max(0, offset);
-    placed.push({at, nodes: schedule(countdownBeep(left), at)});
+    schedule(left ? BEEP_COUNTDOWN : restLastBeep, now + Math.max(0, offset), true);
   }
 }
 
-export function scheduleRest(endsAt){
+export function scheduleRest(endsAt, isLeadIn){
   restEndsAt = endsAt;
+  restLastBeep = isLeadIn ? BEEP_START : BEEP_GO;
   if(!on) return false;
   if(!unlockAudio()) return false;
   place();
@@ -112,12 +106,12 @@ export function scheduleRest(endsAt){
 
 export function cancelRest(){
   restEndsAt = 0;
-  dropPlaced();
+  drop(group => group.isRest);
 }
 
 export function startTone(){
   if(!on) return;
-  if(unlockAudio()) schedule(BEEP_START, ctx.currentTime);
+  if(unlockAudio()) schedule(BEEP_START, ctx.currentTime, false);
   else startAskedAt = Date.now();
 }
 
@@ -125,6 +119,6 @@ export function testTone(){
   if(!unlockAudio()) return false;
   const start = ctx.currentTime;
   for(let left = FINAL_COUNTDOWN_SECONDS; left >= 0; left--)
-    schedule(countdownBeep(left), start + FINAL_COUNTDOWN_SECONDS - left);
+    schedule(left ? BEEP_COUNTDOWN : BEEP_GO, start + FINAL_COUNTDOWN_SECONDS - left, false);
   return true;
 }

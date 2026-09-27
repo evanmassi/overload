@@ -14,8 +14,8 @@ import {byId, el, escapeHtml} from "./dom.js";
 import {actionButton, choiceRow} from "./controls.js";
 import {openSwapSheet} from "./sheets/swapSheet.js";
 import {openHowTo} from "./sheets/howtoSheet.js";
-import {start as startTimer, startWork, startHold, endHold, waitForSide, holdRunningFor, sideWaitingFor,
-        setIdleRest, restRunningFor} from "./timer.js";
+import {start as startTimer, stop as stopTimer, startWork, startHold, endHold, waitForSide, holdRunningFor, sideWaitingFor,
+        leadInFor, setIdleRest, restRunningFor} from "./timer.js";
 import {updateSaveBar} from "./saveBar.js";
 
 function isFolded(exercise){
@@ -222,10 +222,12 @@ function timedSetIndex(exercise, isFor){
 }
 
 function holdButton(exercise, prior){
-  const running = timedSetIndex(exercise, holdRunningFor) >= 0;
+  const running = timedSetIndex(exercise, tag => holdRunningFor(tag) || leadInFor(tag)) >= 0;
   return timeButton(exercise, running ? "stop" : "timer", running ? "Stop the hold" : "Time the hold", () => {
     const holding = timedSetIndex(exercise, holdRunningFor);
     if(holding >= 0){ finishHold(exercise, holding); return; }
+    const leading = timedSetIndex(exercise, leadInFor);
+    if(leading >= 0){ cancelLeadIn(exercise, leading); return; }
     const waiting = timedSetIndex(exercise, sideWaitingFor);
     const index = waiting >= 0 ? waiting : openSetIndex(exercise);
     if(index < 0) return;
@@ -233,6 +235,12 @@ function holdButton(exercise, prior){
     startHold(Number(aim && aim.r) || Number(exercise.r) || 0, setTag(exercise, index));
     changes.notify();
   });
+}
+
+function cancelLeadIn(exercise, index){
+  if(exercise.per && isLogged(currentSets(exercise.id)[index])) waitForSide(setTag(exercise, index));
+  else stopTimer();
+  changes.notify();
 }
 
 function finishHold(exercise, index){

@@ -971,6 +971,25 @@ section("Beeps are scheduled on the audio clock when a rest starts");
   equal("and resuming places it again from the wall clock", pitches(), [blip, blip, blip, ...goPitches]);
   stop();
 
+  reset();
+  start(30);
+  sound.testTone();
+  context.state = "interrupted";
+  context.onstatechange();
+  equal("an interrupted context drops the start beep and the test tone too", scheduled.filter(o => !o.stopped), []);
+  context.state = "running";
+  context.onstatechange();
+  equal("and resuming brings back only the rest countdown", scheduled.filter(o => !o.stopped).map(o => o.hz),
+    [blip, blip, blip, ...goPitches]);
+  stop();
+
+  reset();
+  start(30);
+  sound.testTone();
+  stop();
+  equal("stopping a rest cancels only its own countdown, not the start beep or the test tone",
+    scheduled.filter(o => o.stopped).map(o => o.at), [27, 28, 29, 30]);
+
   context.state = "interrupted";
   reset();
   start(30);
@@ -980,9 +999,15 @@ section("Beeps are scheduled on the audio clock when a rest starts");
   equal("and plays the start beep the moment it wakes", starts().length, 1);
   stop();
 
-  startWork(5, () => start(60));
   reset();
-  comeBackAfter(5000 + 500);
+  startWork(5, () => start(60));
+  equal("a work window counts in with three blips", pitches(), [blip, blip, blip]);
+  equal("a second apart from the tap", startsAt(), [0, 1, 2]);
+  equal("then the short start beep, not the long go", starts().map(o => o.at), [3]);
+  comeBackAfter(3000);
+  equal("the window starts on that beep without adding another", starts().length, 1);
+  reset();
+  comeBackAfter(3000 + 5000 + 500);
   equal("a rest that follows a work window starts under its go, with no start beep", starts(), []);
   stop();
 
@@ -1065,39 +1090,54 @@ section("A timed hold counts up, pauses, and waits for the second side");
     timedCards().every(card => /\d+s<\/span>/.test(card.find("meta")[0].innerHTML)), timedCards().length);
 
   tapHold("plank");
-  equal("the clock counts up from zero", els.timer.dataset.label, "0:00");
-  equal("on the secondary tone", els.timer.dataset.tone, "secondary");
+  equal("tapping counts down three seconds first", els.timer.dataset.label, "0:03");
   equal("the card button turns into a stop", cardFor("plank").find("ex-time")[0].dataset.label, "stop");
-  tapHold("plank", 50000);
+  tapHold("plank", 1000);
+  check("stopping during the countdown cancels it and logs nothing",
+    els.timer.dataset.tone === "primary" && rp(rowsOf("plank")[0]).value === "", rp(rowsOf("plank")[0]).value);
+
+  tapHold("plank");
+  comeBackAfter(3000);
+  equal("then the clock counts up from zero", els.timer.dataset.label, "0:00");
+  equal("on the secondary tone", els.timer.dataset.tone, "secondary");
+  tapHold("plank", 53000);
   equal("stopping logs the time held, past the target", rp(rowsOf("plank")[0]).value, "50");
   equal("and starts the rest", els.timer.dataset.tone, "primary");
   stop();
 
   tapHold("plank");
-  tapClock(10000);
+  comeBackAfter(3000);
+  tapClock(13000);
   equal("tapping the clock pauses the hold", els.timer.dataset.paused, "on");
-  tapClock(40000);
+  tapClock(43000);
   equal("and again resumes it", els.timer.dataset.paused, "off");
-  tapHold("plank", 70000);
+  tapHold("plank", 73000);
   equal("the pause does not count", rp(rowsOf("plank")[1]).value, "40");
   stop();
 
   tapHold("side_plank");
-  tapHold("side_plank", 35000);
+  comeBackAfter(3000);
+  tapHold("side_plank", 38000);
   equal("the first side fills the box", rp(rowsOf("side_plank")[0]).value, "35");
   equal("and the clock waits for side two", els.timer.dataset.label, "side 2");
   tapHold("side_plank", 60000);
-  tapHold("side_plank", 90000);
+  tapHold("side_plank", 61000);
+  equal("stopping side two's countdown goes back to waiting for it", els.timer.dataset.label, "side 2");
+  tapHold("side_plank", 63000);
+  comeBackAfter(66000);
+  tapHold("side_plank", 96000);
   equal("the second side keeps the lower time", rp(rowsOf("side_plank")[0]).value, "30");
   equal("in the same set", rp(rowsOf("side_plank")[1]).value, "");
   equal("then the rest starts", els.timer.dataset.tone, "primary");
   stop();
 
   tapHold("side_plank", 100000);
-  tapHold("side_plank", 130000);
+  comeBackAfter(103000);
+  tapHold("side_plank", 133000);
   check("the last set's first side leaves the card open for side two", !cardFor("side_plank").classList.contains("done"));
   tapHold("side_plank", 140000);
-  tapHold("side_plank", 170000);
+  comeBackAfter(143000);
+  tapHold("side_plank", 173000);
   check("and it folds once side two is in", cardFor("side_plank").classList.contains("done"));
   stop();
 }
@@ -1112,11 +1152,13 @@ section("A conditioning round runs the window then the rest without a restart");
   const card = timedCards()[0];
   const rows = card.find("set").filter(r => !r.classList.contains("head"));
   card.find("ex-time")[0].fire("click");
+  check("the window counts in for three seconds", els.timer.dataset.label === "0:03", els.timer.dataset.label);
+  comeBackAfter(3000);
   check("go runs the 40s window", els.timer.dataset.label === "0:40", els.timer.dataset.label);
-  comeBackAfter(41000);
+  comeBackAfter(44000);
   check("the window rolls into the 20s off", els.timer.dataset.label === "0:20", els.timer.dataset.label);
   check("and leaves the reps box for you", rp(rows[0]).value === "", rp(rows[0]).value);
-  comeBackAfter(46000);
+  comeBackAfter(49000);
   check("five seconds into the rest", els.timer.dataset.label === "0:15", els.timer.dataset.label);
   rp(rows[0]).value = "14";
   rp(rows[0]).fire("change");
@@ -1280,7 +1322,8 @@ section("The date, clock, backup and test sound controls hold still");
   render();
   const steady = els.main.find("btn").filter(b => "steady" in b.dataset).map(b => b.dataset.label);
   equal("the backup and test sound buttons, nothing else", steady, ["Test sound", "Export backup", "Import backup"]);
-  equal("the version sits at the bottom", els.main.find("app-version")[0].textContent, "v1.1.0");
+  const {APP_VERSION} = await import("../src/data/constants.js");
+  equal("the version sits at the bottom", els.main.find("app-version")[0].textContent, "v" + APP_VERSION);
   state.view = "log";
 }
 

@@ -33,7 +33,7 @@ export function mountTimer(buttonEl, options = {}){
     holdScreen();
     tick();
     if(timer.mode === "hold") scheduleTarget();
-    else if(timer.endsAt) scheduleRest(timer.endsAt);
+    else if(timer.endsAt) placeCountdown();
   });
   showIdle();
 }
@@ -85,6 +85,8 @@ function releaseScreen(){
   awake.lock = null;
 }
 
+const placeCountdown = () => scheduleRest(timer.endsAt, timer.mode === "lead");
+
 function run(kind, seconds, onDone, forSet){
   clearTimeout(timer.settle);
   clearInterval(timer.tick);
@@ -94,9 +96,9 @@ function run(kind, seconds, onDone, forSet){
   timer.startedAt = Date.now();
   timer.banked = 0;
   timer.endsAt = seconds ? timer.startedAt + seconds * 1000 : 0;
-  if(!timer.isHandingOff) startTone();
+  if(!timer.isHandingOff && kind !== "lead") startTone();
   if(button) button.flash();
-  if(timer.endsAt) scheduleRest(timer.endsAt);
+  if(timer.endsAt) placeCountdown();
   else cancelRest();
   holdScreen();
   timer.tick = setInterval(tick, TIMER_TICK_MS);
@@ -107,15 +109,21 @@ export function start(seconds, forSet){ run("rest", seconds || DEFAULT_REST, nul
 
 export function restRunningFor(forSet){ return timer.mode === "rest" && timer.forSet === forSet; }
 
-export function startWork(seconds, onDone){ run("work", seconds, onDone); }
+const leadIn = (forSet, then) => run("lead", FINAL_COUNTDOWN_SECONDS, then, forSet);
+
+export function startWork(seconds, onDone){ leadIn(null, () => run("work", seconds, onDone)); }
 
 export function startStopwatch(){ run("stopwatch", 0); }
 
 export function startHold(targetSeconds, forSet){
-  run("hold", 0, null, forSet);
-  timer.target = targetSeconds;
-  scheduleTarget();
+  leadIn(forSet, () => {
+    run("hold", 0, null, forSet);
+    timer.target = targetSeconds;
+    scheduleTarget();
+  });
 }
+
+export function leadInFor(forSet){ return timer.mode === "lead" && timer.forSet === forSet; }
 
 export function holdRunningFor(forSet){ return timer.mode === "hold" && timer.forSet === forSet; }
 
@@ -190,7 +198,7 @@ function tick(){
     return;
   }
   const now = Date.now();
-  const left = Math.max(0, Math.round((timer.endsAt - now) / 1000));
+  const left = Math.max(0, Math.ceil((timer.endsAt - now) / 1000));
   face(clockFace(left), left > 0 && left <= WARN_COUNTDOWN_SECONDS ? "warning" : RUNNING_TONE[timer.mode],
     left > 0 && left <= FINAL_COUNTDOWN_SECONDS);
   if(left > 0) return;
