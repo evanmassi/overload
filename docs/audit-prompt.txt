@@ -1,0 +1,157 @@
+You are auditing the Overload codebase file by file toward an immaculate result. I will give you one or more files to
+examine. Report findings first; after I approve them, apply the fixes, verify, and commit when I say. This is an
+audit-and-fix pass, not read-only.
+
+AGENTS.md is the rulebook. Read it before the first file. Every finding cites the AGENTS.md rule it breaks, or says
+plainly that it is a judgment call no rule covers.
+
+## Workflow
+
+- **Findings first, then fix.** Report findings before touching anything; make NO edits until I approve specific
+  findings. After approval: apply, verify, and commit when I say.
+- **Verify, don't guess.** Search the codebase to confirm every cross-file claim (callers, dead code, duplication,
+  layer) BEFORE finalizing a finding. Resolve "needs verification" by checking; only ask when the code can't answer it.
+- **Fix as found; don't defer.** When a fix reaches into other files, audited or not, make it now. No TODOs, no memos.
+  A later file should already be clean when we reach it.
+- **Verify before deleting.** Search every usage first; zero callers means dead. The guard's dead-export check matches
+  a name anywhere in src/ or test/, so it misses: an export only a test calls, a catalog or constants entry nothing
+  reads, a CSS rule no code renders, a parameter no caller passes. Check those by hand. Never delete a file without my
+  explicit confirmation.
+- **A DRY swap can change behavior.** Replacing inline logic with the shared owner (format.js, progression.js,
+  isLogged, restAfterSet, resolveSlot) may differ on edge cases: empty strings, legacy date-only keys, timed units,
+  unilateral moves, away sessions. Diff the two and flag the difference; don't call it behavior-neutral unless it is.
+- **Untested code: the diff is the gate.** When a change touches behavior that logic.mjs or views.mjs does not cover,
+  "tests pass" proves nothing. Trace the diff item by item, note the missing coverage, and add the test AGENTS.md
+  requires (new logic in logic.mjs, new rendering in views.mjs).
+- **Decide by convention, with data.** When standardizing a pattern, count the dominant form with a search instead of
+  assuming.
+- **Be decisive.** Clean, behavior-neutral wins (a proven dead export, a second copy of a rule that has an owner, an
+  inline literal that belongs in constants.js, a comment that isn't a PITFALL) are not optional; apply them once
+  approved, don't hand them back as "your call." Reserve real consultation for: a visible change (layout, copy,
+  sound, timing), a change to stored data or its shape, a multi-file restructure, or a risk of over-abstraction.
+- **Be specific.** Exact line numbers and code, with confidence (high / medium / needs verification).
+- **Gate on green.** After changes run `node test/all.mjs` and report the result; don't claim done without it.
+
+## What to look for
+
+### 1. Comments
+
+Zero comments in JS, CSS, HTML and tests. The only survivor is one line containing `PITFALL:` for something a reader
+cannot infer from the code (a Safari quirk, a silent failure, an intentional overwrite). Token files keep their
+original group labels and gain none.
+
+Flag for removal:
+- Any comment that is not a PITFALL: file headers, JSDoc, section banners, line narration, TODOs, commented-out code.
+- A PITFALL that restates the code, or one that has gone stale because the quirk it guards is gone.
+- A PITFALL that covers two things; it is one line about one gotcha.
+
+Flag the naming, not the comment: if a comment exists to explain a poor name, the finding is the rename.
+
+Flag as missing: an `Object.assign` or spread that silently discards a saved value with no `PITFALL:` saying why
+(Write-Time Discipline rule 2), and a Safari or audio workaround with no PITFALL explaining what breaks without it.
+
+### 2. Layers and file organization
+
+- **Wrong layer.** A rule (math, comparison, formatting, counting) inside views/ or store/ belongs in rules/. A
+  storage touch outside storage.js. A DOM touch outside views/ and ui/. App knowledge inside ui/. The guard catches
+  upward imports; it does not catch logic sitting one layer too high.
+- **Wrong owner.** Walk the No Parallel Systems table in AGENTS.md for every file: persistence, re-rendering, signals,
+  session edits, constants, formatting, scoring, trend, isLogged, restAfterSet, resolveSlot, rotation, findExercise,
+  workoutFor, ui primitives, openSheet, el(), choiceRow/actionButton/confirmButton, escapeHtml, tokens.
+- **Naming.** Files named for their concern, lowercase for one word, camelCase for more. Pop-ups in views/sheets/
+  end in `Sheet`. Design system primitives start with `make`. Functions verb first, booleans is/has, constants
+  UPPER_CASE, CSS classes lowercase-hyphen with the primitive's prefix on its parts. No utils/helpers/misc.
+- **One file, one concern.** Flag a file doing two jobs, and a file whose name no longer matches what it contains.
+- **Inconsistency with siblings** in the same folder.
+
+### 3. Duplication
+
+- The same logic in two views: move it down to rules/ or store/.
+- Near-duplicate card or row builders with a small variant: one builder with a parameter.
+- Repeated literals (storage keys, labels, rest times, class strings, tunable numbers): one named home, usually
+  constants.js.
+- Test setup copied between suites: it belongs in dom.mjs, checks.mjs or fixtures.mjs.
+- A helper with one caller: inline it. A helper that only forwards to another: delete it.
+
+### 4. Data and state contracts
+
+- Exercise ids never change. Display names stay at 22 characters or fewer.
+- Every catalog entry has its how-to in howto.js; every slot holds only the prescription (id, s, r, unit).
+- Sets are `{w, r}` as typed strings. Code reads `session.date`, never the storage key. Legacy date-only keys still
+  sort and compare correctly.
+- A session field traces end to end: state.current default, openSession, snapshot(), backup merge if it matters, and
+  a view that reads it. A field nothing reads at the end is dead.
+- One shape per concept: flag any object carrying a session, set or exercise under different names.
+- Views never write state.current or state.sessions; screen state that must survive a redraw lives in state, never
+  on an element.
+- A new signal is a channel(), never a one-off callback setter.
+- Backup import merges; the copy with more logged sets wins.
+
+### 5. UI and safety
+
+- Every button, field and panel goes through ui/. Every element through el().
+- Typed text (custom names, set values, notes) goes in through textContent or escapeHtml. Raw interpolation of user
+  text is a bug; rate it high.
+- Colors come from tokens only; flag any hex or rgba literal outside src/ui/tokens/.
+- Lato for language, IBM Plex Mono for data.
+- The in-place set-row path (syncCard, updateSaveBar) stays narrow and reads card structure from the page, never from
+  properties stored on elements.
+- Dead CSS: a rule whose class nothing renders. Search src/ and index.html before calling it dead; class names can be
+  built from strings.
+
+### 6. Technical debt
+
+- Overly complex logic that could be simpler.
+- Unused parameters, variables assigned but never read, unused imports.
+- Unreachable branches: a check already covered by an earlier, broader one; a condition an enclosing guard makes
+  always true or false.
+- Inconsistent patterns: `undefined` where the code uses `null`, floating promises, `.catch(() => {})` where the
+  failure does matter, classes outside the test fakes, default exports, bare specifiers.
+- Style drift: two spaces, double quotes, `if(x){`, `}catch(e){`. Don't reformat lines the fix doesn't touch.
+- Poor naming that hides intent, or a name that restates its parent.
+- Speculative code: exports, constants, keys, settings or CSS with no real caller today.
+
+### 7. Phone behavior to keep
+
+Don't "simplify" any of these away; flag a change that would weaken one:
+- Beeps scheduled on the audio clock when a rest starts, never from the display tick.
+- Audio resumed on every tap, timer start and return to the foreground, with the beep schedule rebuilt from the
+  wall clock.
+- The wake lock during a rest; the rest clock computed from its end time; a rest that ended while away shows GO with
+  no sound.
+- The rest timer knows which set it belongs to.
+- Session time runs from the first logged set to the last.
+- followToday: coming back on a new day opens today unless the open session has something saved or a hand-picked date.
+- flushNow() on hide and pagehide.
+- Every file the app loads is in ASSETS in sw.js; CACHE is not bumped per deploy.
+
+### 8. Docs
+
+- README claims with no code behind them: delete.
+- AGENTS.md statements the code no longer matches: fix whichever one is wrong, and say which.
+
+## Output format
+
+For each file:
+
+File: <path>
+
+Then findings grouped by the categories above. For each finding:
+- Line(s): exact line number(s)
+- Finding: what you observed, and the AGENTS.md rule it breaks
+- Confidence: high / medium / needs verification
+- Context needed (if any): what you'd need to see to confirm
+
+If a file is clean, say so. Don't manufacture findings.
+
+## After changes
+
+Commit only when I say. One commit per folder audited, and cross-file fixes from that folder's audit go in the same
+commit. The subject is one plain sentence about what changed, per AGENTS.md: no prefix, no co-author footer, a body
+only when the change spans more than one idea. Before committing, run `node test/all.mjs` and stage only this audit's
+files, leaving out unrelated work in progress.
+
+Examples:
+- Store files drop dead exports and read tunable numbers from constants
+- Swap and history sheets share one row builder
+- Set rows escape custom names and drop the stray comments

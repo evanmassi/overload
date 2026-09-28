@@ -24,6 +24,7 @@ overload/
 │   └── ui/           # Design system: each primitive's JS and CSS side by side, tokens/ for colors,
 │                     # type, motion and space. Imports nothing from the app
 ├── test/             # Node suites, no dependencies
+├── docs/             # audit-prompt.txt: the file-by-file audit, run against this guide
 └── refs/             # Untracked design references. Read them, never ship from them
 ```
 
