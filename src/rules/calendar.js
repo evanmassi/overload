@@ -7,7 +7,7 @@ export const mondayOf = date => addDays(date, -((date.getDay() + 6) % 7));
 
 export function trainingDays(sessions){
   const days = {};
-  Object.keys(sessions).map(key => sessions[key]).filter(s => s && loggedCount(s)).forEach(s => {
+  Object.values(sessions).filter(loggedCount).forEach(s => {
     const day = days[s.date] = days[s.date] || {count: 0, isStrength: false};
     day.count++;
     if(!isCrossTraining(s.day)) day.isStrength = true;

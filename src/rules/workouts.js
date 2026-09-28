@@ -10,7 +10,7 @@ export function repRange(reps){
   return single ? {min: +single[1], max: +single[1]} : null;
 }
 
-export function restFor(slot){
+function restFor(slot){
   if(!isCompound(slot.id)) return REST.isolation;
   const range = repRange(slot.r);
   if(range && range.max <= HEAVY_REP_CEILING) return REST.heavy;
@@ -36,7 +36,7 @@ const roundsWithRest = (slot, section) => ({
 const PLACEMENT = {
   straight: slot => ({rest: restFor(slot), restAfter: REST.betweenExercises}),
   core: (slot, section, i) => ({
-    core: 1,
+    isCore: true,
     s: section.rounds,
     rest: i % 2 ? REST.coreRound : REST.coreSwitch,
     restAfter: i % 2 ? REST.betweenCorePairs : REST.coreSwitch

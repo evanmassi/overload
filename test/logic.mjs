@@ -10,7 +10,7 @@ const {nextBlockIndex, nextStrengthDay, recentDays, previousOf, blockLetter, wit
 const {suggestTarget, loggedCount, priorSets} = progression;
 const aimed = target => (target.w ? target.w + "×" : "") + target.r;
 
-const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01", undefined, []);
+const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01", "chest", []);
 const prescribedCountFor = (block, day, isAway) => progression.prescribedCount(workouts.workoutFor(block, day, isAway));
 
 section("Program data");
@@ -225,9 +225,9 @@ section("Swapping keeps history with the movement");
   equal("the slot's prescription is kept", [resolved.s, resolved.r], [slot.s, slot.r]);
 
   state.sessions = {"2026-09-01": {date: "2026-09-01", day: "legs", block: "A", entries: {db_rdl: setsOf([[95, 10]])}}};
-  const history = priorSets(state.sessions, resolved.id, "2026-09-08");
+  const history = priorSets(state.sessions, resolved.id, "2026-09-08", "legs");
   check("the substitute is compared against its own history", history && history.sets[0].w === "95");
-  equal("and not against the slot it replaced", priorSets(state.sessions, "leg_curl", "2026-09-08"), null);
+  equal("and not against the slot it replaced", priorSets(state.sessions, "leg_curl", "2026-09-08", "legs"), null);
 }
 
 section("Removing a custom exercise takes its sets with it");
@@ -255,7 +255,6 @@ section("Removing a custom exercise takes its sets with it");
 
 section("Rest comes from the movement, not its place in the list");
 {
-  const {restFor} = workouts;
   const rest = (block, day, name) =>
     workouts.workoutSlots(workouts.workoutFor(block, day)).find(e => e.n === name).rest;
 
@@ -271,11 +270,6 @@ section("Rest comes from the movement, not its place in the list");
 
   equal("an AMRAP lead is still a lead", rest("A", "chest", "Pull-ups"), 120);
   equal("an AMRAP finisher is not", rest("A", "chest", "Push-ups"), 90);
-
-  const slot = prescribedExercises().get("hip_thrust");
-  equal("restFor reads the prescription, not the program", restFor(slot), 120);
-  equal("dropping it to three sets drops the rest",
-    restFor({id: slot.id, s: 3, r: slot.r}), 90);
 
   const positional = workouts.workoutFor("C", "chest").sections[0].ex
     .map((e, i) => e.rest === (i < 2 ? 120 : 60));
@@ -355,6 +349,11 @@ section("Storage round trip and legacy migration");
   equal("a session keyed by date alone gets that date on load", state.sessions["2026-07-01"].date, "2026-07-01");
 
   localStorage.clear();
+  localStorage.setItem("overload.v1", JSON.stringify({"2026-07-01": null, "2026-07-02": logged("2026-07-02", "legs", 0)}));
+  hydrate();
+  equal("an empty saved session is dropped on load", Object.keys(state.sessions), ["2026-07-02"]);
+
+  localStorage.clear();
   state.sessions = {"2026-09-01": logged("2026-09-01", "chest", 0)};
   const {saveSessions, loadSessions} = await import("../src/store/storage.js");
   saveSessions(state.sessions);
@@ -400,7 +399,7 @@ section("Rules the views share live below them");
 
 section("Effort tunes the next target");
 {
-  const {topSet, exposures, hasStalled, prescribedCount} = progression;
+  const {topSet} = progression;
   const press = {id: "flat_db_press", r: "8-10", bw: 0};
   const at = (pairs, effort) =>
     suggestTarget(press, {date: "2026-09-01", sets: setsOf(pairs), effort});
@@ -487,7 +486,7 @@ section("Stall detection");
   check("dropping the weight starts the count over", !hasStalledFor(press));
 
   state.sessions["2026-08-04"].entries.flat_db_press = setsOf([[45, 10]]);
-  const stalledToday = today => progression.hasStalled(state.sessions, press, "2026-09-01", undefined, today);
+  const stalledToday = today => progression.hasStalled(state.sessions, press, "2026-09-01", "chest", today);
   check("matching it today is still a stall", stalledToday(setsOf([[45, 10]])));
   check("one more rep today clears it", !stalledToday(setsOf([[45, 10], [45, 11]])));
   check("a new weight typed today clears it", !stalledToday([{w: "40", r: ""}]));
@@ -610,8 +609,6 @@ section("Last time is looked up within the same kind of session");
   check("an arms card looks past the conditioning interval", onArms && onArms.date === "2026-08-20", onArms && onArms.date);
   const onConditioning = priorSets(state.sessions, "push_press", "2026-09-01", "conditioning");
   check("a conditioning card sees the interval", onConditioning && onConditioning.date === "2026-08-30", onConditioning && onConditioning.date);
-  const unscoped = priorSets(state.sessions, "push_press", "2026-09-01");
-  check("without a day it still finds the latest of either", unscoped && unscoped.date === "2026-08-30", unscoped && unscoped.date);
   const heavy = {id: "push_press", bw: 0};
   ["2026-08-01", "2026-08-08", "2026-08-15"].forEach(date => {
     state.sessions[date] = logged(date, "arms", 1, {push_press: setsOf([[40, 8]])});

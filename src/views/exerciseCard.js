@@ -22,7 +22,7 @@ function isFolded(exercise){
   return isFinished(exercise) !== state.foldFlips.has(exercise.id);
 }
 
-const asksDifficulty = exercise => !exercise.core && !exercise.stray;
+const asksDifficulty = exercise => !exercise.isCore && !exercise.stray;
 
 function isFinished(exercise){
   return isComplete(exercise) && timedSetIndex(exercise, sideWaitingFor) < 0
@@ -167,7 +167,7 @@ function fillCard(card, exercise, slot, notch){
   const logged = currentSets(exercise.id);
 
   const columns = el("div", "set head");
-  columns.innerHTML = `<div>${exercise.core || exercise.win ? "rd" : "#"}</div><div>${exercise.load === "level" ? "level" : "weight (lbs)"}</div><div></div><div>${unit}</div>`;
+  columns.innerHTML = `<div>${exercise.isCore || exercise.win ? "rd" : "#"}</div><div>${exercise.isLevel ? "level" : "weight (lbs)"}</div><div></div><div>${unit}</div>`;
   const timeCell = el("div");
   if(exercise.win) timeCell.appendChild(workWindowButton(exercise));
   else if(exercise.unit === "sec") timeCell.appendChild(holdButton(exercise, prior));
@@ -296,12 +296,12 @@ function setRow(exercise, index, logged, prior, refreshers, refreshRepeats){
   const last = prior && prior.sets[index];
   const unit = unitName(exercise);
 
-  const number = el("div", "set-n", exercise.core || exercise.win ? "R" + (index + 1) : index + 1);
+  const number = el("div", "set-n", exercise.isCore || exercise.win ? "R" + (index + 1) : index + 1);
 
   const weight = el("input");
   weight.type = "text";
   weight.inputMode = "decimal";
-  weight.placeholder = last && last.w ? last.w : exercise.load === "level" ? "LVL" : exercise.bw ? "BW" : "WT";
+  weight.placeholder = last && last.w ? last.w : exercise.isLevel ? "LVL" : exercise.bw ? "BW" : "WT";
   weight.value = (logged[index] && logged[index].w) || "";
   weight.setAttribute("aria-label", `${exercise.n} set ${index + 1} weight`);
 

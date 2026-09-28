@@ -24,7 +24,7 @@ function newSessionKey(dateStr){
 }
 
 function sessionsOn(sessions, dateStr){
-  return Object.keys(sessions).filter(key => sessions[key] && sessions[key].date === dateStr).sort();
+  return Object.keys(sessions).filter(key => sessions[key].date === dateStr).sort();
 }
 
 function latestOn(dateStr, isMatch){
@@ -40,7 +40,7 @@ function setBlockIndex(index){
 function savedBefore(isMatch){
   const current = state.current;
   return Object.keys(state.sessions).filter(key => key !== current.key).sort().map(key => state.sessions[key])
-    .filter(s => s && isMatch(s)).pop() || null;
+    .filter(isMatch).pop() || null;
 }
 
 function carriedSwaps(){

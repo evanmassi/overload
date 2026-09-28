@@ -246,7 +246,7 @@ no storage key before something writes it.
 | Scoring, targets, stalls, back-off | `progression.js` | Math inside a view |
 | Beat, match or below | `trend` in `progression.js` | Comparing scores in a view |
 | Whether a set counts as logged | `isLogged` in `sets.js` | `set && set.r` |
-| Rest after a set | `restAfterSet` in `rules/exercises.js` | Rewriting the ternary |
+| Rest after a set | `restAfterSet` in `rules/workouts.js` | Rewriting the ternary |
 | Which move fills a slot, and strays | `resolveSlot(slot, swaps)`, `strayIds` in `store/slots.js` | Reading `swaps` by hand |
 | Version rotation and recent workouts | `rotation.js` | Counting sessions in a view |
 | Exercise lookup and derived fields | `findExercise` in `rules/exercises.js` | Reading `CATALOG` by hand |

@@ -51,13 +51,13 @@ export function backoffWeight(sets, isBodyweight){
 }
 
 function earlierKeysOfSameKind(sessions, beforeKey, day){
-  const crossTraining = day === undefined ? null : isCrossTraining(day);
+  const crossTraining = isCrossTraining(day);
   return Object.keys(sessions)
-    .filter(key => key < beforeKey && (crossTraining === null || isCrossTraining(sessions[key].day) === crossTraining))
+    .filter(key => key < beforeKey && isCrossTraining(sessions[key].day) === crossTraining)
     .sort().reverse();
 }
 
-export function exposures(sessions, exerciseId, beforeKey, limit, day){
+function exposures(sessions, exerciseId, beforeKey, limit, day){
   const found = [];
   for(const key of earlierKeysOfSameKind(sessions, beforeKey, day)){
     const session = sessions[key];
@@ -77,14 +77,14 @@ export function beatsLastTime(exercise, sets, prior){
   return !!prior && trend(topSet(sets, exercise.bw), topSet(prior.sets, exercise.bw), exercise.bw) === "up";
 }
 
-export function hasStalled(sessions, exercise, beforeKey, day, today){
+export function hasStalled(sessions, exercise, beforeKey, day, todaySets){
   const recent = exposures(sessions, exercise.id, beforeKey, STALL_EXPOSURES, day);
   if(recent.length < STALL_EXPOSURES) return false;
   const tops = recent.map(entry => topSet(entry.sets, exercise.bw));
   const weight = num(tops[0].w);
   const oldest = score(tops[tops.length - 1], exercise.bw);
   if(!tops.every(top => num(top.w) === weight && score(top, exercise.bw) <= oldest)) return false;
-  return !today.some(set => set.w && num(set.w) !== weight) && !beatsLastTime(exercise, today, recent[0]);
+  return !todaySets.some(set => set.w && num(set.w) !== weight) && !beatsLastTime(exercise, todaySets, recent[0]);
 }
 
 export function suggestTarget(exercise, prior, held){
@@ -95,8 +95,8 @@ export function suggestTarget(exercise, prior, held){
   const sets = prior.sets.filter(isLogged);
   const topReps = num(top.r);
   const topWeight = num(top.w);
-  const effort = prior.effort || "medium";
-  const step = EFFORT_STEPS[effort] === undefined ? 1 : EFFORT_STEPS[effort];
+  const effort = prior.effort in EFFORT_STEPS ? prior.effort : "medium";
+  const step = EFFORT_STEPS[effort];
   const aim = (w, r, change) => ({w: w ? String(w) : "", r: String(r), change, isPush: w > topWeight || r > topReps});
   const addReps = reps => aim(topWeight, reps, reps > topReps ? countChange(reps - topReps, unitSuffix(exercise)) : "every set");
 
@@ -108,9 +108,8 @@ export function suggestTarget(exercise, prior, held){
 
   const toppedEverySet = (sets.length >= 2 || exercise.s === 1) && sets.every(set => num(set.r) >= range.max);
   if(toppedEverySet || topReps > range.max){
-    const byLevel = exercise.load === "level";
-    const added = (byLevel ? 1 : WEIGHT_STEP_LB) * step;
-    return aim(topWeight + added, range.min, byLevel ? `+${added} level${added === 1 ? "" : "s"}` : `+${added} lb`);
+    const added = (exercise.isLevel ? 1 : WEIGHT_STEP_LB) * step;
+    return aim(topWeight + added, range.min, weightChange(added, exercise.isLevel));
   }
 
   return addReps(Math.min(topReps + step, range.max));
@@ -124,12 +123,15 @@ function countChange(n, suffix){
   return `${signed(n)} rep${Math.abs(n) === 1 ? "" : "s"}`;
 }
 
+function weightChange(n, isLevel){
+  return isLevel ? `${signed(n)} level${Math.abs(n) === 1 ? "" : "s"}` : `${signed(n)} lb`;
+}
+
 export function progressSince(exercise, first, latest, isBodyweight){
   const weightGain = num(latest.w) - num(first.w);
   const repGain = num(latest.r) - num(first.r);
-  const byLevel = !!exercise && exercise.load === "level";
   const text = weightGain
-    ? `${signed(weightGain)} ${byLevel ? "level" + (Math.abs(weightGain) === 1 ? "" : "s") : "lb"}`
+    ? weightChange(weightGain, !!exercise && exercise.isLevel)
     : repGain ? countChange(repGain, exercise ? unitSuffix(exercise) : "") : "same";
   return {text, direction: trend(latest, first, isBodyweight)};
 }

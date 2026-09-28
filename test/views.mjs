@@ -708,12 +708,12 @@ section("Two sessions of the same lift on one day compare in order");
   state.sessions["2026-09-01T08:00:00"] = {date: "2026-09-01", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "50", r: "10"}]}};
   state.sessions["2026-09-01T18:00:00"] = {date: "2026-09-01", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "55", r: "10"}]}};
   const {priorSets} = await import("../src/rules/progression.js");
-  const prior = priorSets(state.sessions, "flat_db_press", "2026-09-01T18:00:00");
+  const prior = priorSets(state.sessions, "flat_db_press", "2026-09-01T18:00:00", "chest");
   check("the evening compares against the morning", prior && prior.sets[0].w === "50" && prior.date === "2026-09-01");
-  const earlier = priorSets(state.sessions, "flat_db_press", "2026-09-01T08:00:00");
+  const earlier = priorSets(state.sessions, "flat_db_press", "2026-09-01T08:00:00", "chest");
   check("the morning has nothing before it", earlier === null);
   state.sessions["2026-08-30"] = {date: "2026-08-30", day: "chest", block: "A", blockIndex: 0, entries: {flat_db_press: [{w: "45", r: "10"}]}};
-  check("an old date-keyed session still counts as prior", priorSets(state.sessions, "flat_db_press", "2026-09-01T08:00:00").sets[0].w === "45");
+  check("an old date-keyed session still counts as prior", priorSets(state.sessions, "flat_db_press", "2026-09-01T08:00:00", "chest").sets[0].w === "45");
 }
 
 section("History shows lifts the session plan does not contain");

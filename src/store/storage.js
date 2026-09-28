@@ -17,7 +17,7 @@ function writeJson(key, value){
 export function migrateLegacySessions(store){
   for(const key in store){
     const session = store[key];
-    if(!session) continue;
+    if(!session){ delete store[key]; continue; }
     if(LEGACY_DAY_KEYS[session.day]) session.day = LEGACY_DAY_KEYS[session.day];
     if(!session.date) session.date = key;
   }

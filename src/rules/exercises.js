@@ -9,6 +9,7 @@ function derive(id, record){
     pattern: record.pattern,
     load: record.load,
     bw: BODYWEIGHT_LOADS.has(record.load),
+    isLevel: record.load === "level",
     per: record.per || null,
     unit: record.unit || null,
     target: record.target
