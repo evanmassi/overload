@@ -37,7 +37,7 @@ export function renderLog(main){
     groupedRow(CROSS_LABEL, dayRow("blockset cross", CROSS_KEYS, recent)));
 
   const head = el("div", "dayhead");
-  head.innerHTML = `<p class="eyebrow"><b>Version ${current.block}</b>${lastTimeNote()}</p><h2 data-text="${workout.focus}">${workout.focus}</h2>`;
+  head.innerHTML = `<p class="eyebrow"><b>Version ${current.block}</b>${lastTimeNote()}</p><h2 data-text="${DAYS[current.day].label}">${DAYS[current.day].label}</h2>`;
   head.appendChild(placeSwitch());
   main.appendChild(head);
 

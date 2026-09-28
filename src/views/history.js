@@ -99,7 +99,7 @@ function sessionCard(key, session, workout){
   row.setAttribute("role", "button");
   row.setAttribute("aria-expanded", String(open));
   const top = el("div", "hist-top");
-  top.innerHTML = `<h3>${workout.focus}</h3><span class="chip live">${session.block}</span><span class="chip" title="${date}">${date.slice(5)}</span>`;
+  top.innerHTML = `<h3>${DAYS[session.day].label}</h3><span class="chip live">${session.block}</span><span class="chip" title="${date}">${date.slice(5)}</span>`;
   const took = elapsedLabel(session.startedAt, session.lastLoggedAt);
   const count = loggedCount(session);
   const foot = el("div", "hist-foot", `${count} set${count === 1 ? "" : "s"}${took ? " · " + took : ""}`);

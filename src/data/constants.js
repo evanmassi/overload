@@ -40,12 +40,15 @@ export const LEAD_SET_COUNT = 4;
 export const DEFAULT_REST = 90;
 export const TIMER_TICK_MS = 250;
 export const TIMER_RESET_DELAY_MS = 3000;
+export const LONG_PRESS_MS = 500;
+export const TIMER_PRESETS = [15, 30, 45, 60, 90, 120, 180, 300, 600];
 export const LIVE_FINISH_MS = 1000;
 export const WARN_COUNTDOWN_SECONDS = 10;
 export const FINAL_COUNTDOWN_SECONDS = 3;
 export const VIBRATE_PATTERN = [200, 100, 200];
 export const BEEP_PULSE_GAP_SECONDS = 0.06;
 export const BEEP_LATE_TOLERANCE_SECONDS = 0.25;
+export const BEEP_RELEASE_SECONDS = 0.12;
 export const BEEP_COUNTDOWN = {wave: "triangle", volume: 1, pulses: [{freq: 880, seconds: 0.12}]};
 export const BEEP_GO = {wave: "triangle", volume: 1, pulses: [{freq: 1320, seconds: 1}]};
 export const BEEP_START = {wave: "triangle", volume: 0.6, pulses: [{freq: 1760, seconds: 0.1}]};
@@ -69,7 +72,6 @@ export const LOAD_LABEL = {
   level: "machine level"
 };
 
-
 export const ICON_SWAP = '<i class="icon">swap_horiz</i>';
 export const TREND_ICON = {
   up: '<i class="icon">keyboard_double_arrow_up</i>',
@@ -84,7 +86,3 @@ export const STALL_BACKOFF_PERCENT = 10;
 export const CONSISTENCY_WEEKS = 12;
 export const WEEKDAY_LABELS = ["M", "", "W", "", "F", "", ""];
 export const RECENT_DAYS = 7;
-
-export const LONG_PRESS_MS = 500;
-export const TIMER_PRESETS = [15, 30, 45, 60, 90, 120, 180, 300, 600];
-export const BEEP_RELEASE_SECONDS = 0.12;

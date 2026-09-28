@@ -1,6 +1,6 @@
 const interval = (name, rounds, on, off, ex) => ({kind: "interval", name, rounds, on, off, ex});
 const circuit = (name, rounds, off, ex) => ({kind: "circuit", name, rounds, off, ex});
-const finish = (ex, off) => ({kind: "finish", name: "Finish", off: off || 60, ex});
+const finish = ex => ({kind: "finish", name: "Finish", off: 60, ex});
 
 const hold = (id, seconds, sets) => ({id, r: String(seconds), unit: "sec", s: sets});
 const reps = (id, count) => ({id, r: String(count)});
@@ -10,7 +10,7 @@ const counted = id => ({id});
 
 export const CROSS_TRAINING = {
   A: {
-    conditioning: {focus: "Conditioning", sections: [
+    conditioning: {sections: [
       interval("Dumbbells", 4, 40, 20, [
         counted("thruster"),
         counted("lateral_lunge"),
@@ -39,7 +39,7 @@ export const CROSS_TRAINING = {
       ]),
       finish([hold("bear_crawl", 40, 4)])
     ]},
-    functional: {focus: "Functional", sections: [
+    functional: {sections: [
       circuit("Dumbbells", 4, 30, [
         timed("farmer_carry", 40),
         reps("turkish_getup", 2),
@@ -66,7 +66,7 @@ export const CROSS_TRAINING = {
       ]),
       finish([hold("deep_squat_hold", 60, 2), hold("hollow_hold", 30, 2)])
     ]},
-    mobility: {focus: "Mobility", sections: [
+    mobility: {sections: [
       circuit("Floor", 2, 15, [
         hold("hip_9090", 45),
         reps("cossack_squat", 8),
@@ -97,7 +97,7 @@ export const CROSS_TRAINING = {
     ]}
   },
   B: {
-    conditioning: {focus: "Conditioning", sections: [
+    conditioning: {sections: [
       interval("Dumbbells", 4, 40, 20, [
         counted("alt_snatch"),
         counted("goblet_squat"),
@@ -126,7 +126,7 @@ export const CROSS_TRAINING = {
       ]),
       finish([hold("wall_sit", 45, 3)])
     ]},
-    functional: {focus: "Functional", sections: [
+    functional: {sections: [
       circuit("Dumbbells", 4, 30, [
         timed("suitcase_carry", 40),
         reps("single_leg_rdl", 8),
@@ -153,7 +153,7 @@ export const CROSS_TRAINING = {
       ]),
       finish([hold("bear_crawl", 30, 3), hold("hollow_hold", 30, 3)])
     ]},
-    mobility: {focus: "Mobility", sections: [
+    mobility: {sections: [
       circuit("Floor", 2, 15, [
         hold("pigeon", 45),
         reps("worlds_greatest", 5),
@@ -182,7 +182,7 @@ export const CROSS_TRAINING = {
     ]}
   },
   C: {
-    conditioning: {focus: "Conditioning", sections: [
+    conditioning: {sections: [
       interval("Dumbbells", 4, 40, 20, [
         counted("devil_press"),
         counted("reverse_lunge"),
@@ -211,7 +211,7 @@ export const CROSS_TRAINING = {
       ]),
       finish([hold("bear_crawl", 45, 4)])
     ]},
-    functional: {focus: "Functional", sections: [
+    functional: {sections: [
       circuit("Dumbbells", 4, 30, [
         timed("overhead_carry", 30),
         reps("goblet_cossack", 6),
@@ -238,7 +238,7 @@ export const CROSS_TRAINING = {
       ]),
       finish([hold("side_plank_reach", 20, 2), hold("wall_sit", 45, 2)])
     ]},
-    mobility: {focus: "Mobility", sections: [
+    mobility: {sections: [
       circuit("Floor", 2, 15, [
         hold("frog_stretch", 45),
         reps("jefferson_curl", 8),

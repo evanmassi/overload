@@ -3,7 +3,7 @@ const core = (...pairs) => ({kind: "core", name: "Core finisher", rounds: 2, ex:
 
 export const PROGRAM = {
   A: {
-    chest: {focus: "Chest & Back", sections: [
+    chest: {sections: [
       lifts([
         {id: "flat_db_press", s: 4, r: "8-10"},
         {id: "pullup", s: 4, r: "AMRAP"},
@@ -37,7 +37,7 @@ export const PROGRAM = {
         [{id: "v_up", r: "12"}, {id: "dead_bug", r: "12"}]
       )
     ]},
-    legs: {focus: "Legs & Back", sections: [
+    legs: {sections: [
       lifts([
         {id: "goblet_squat", s: 4, r: "10-12"},
         {id: "db_rdl", s: 4, r: "8-10"},
@@ -71,7 +71,7 @@ export const PROGRAM = {
         [{id: "v_up", r: "12"}, {id: "bird_dog", r: "12"}]
       )
     ]},
-    arms: {focus: "Shoulders & Arms", sections: [
+    arms: {sections: [
       lifts([
         {id: "seated_db_press", s: 4, r: "8-10"},
         {id: "lateral_raise", s: 4, r: "12-15"},
@@ -106,7 +106,7 @@ export const PROGRAM = {
     ]}
   },
   B: {
-    chest: {focus: "Chest & Back", sections: [
+    chest: {sections: [
       lifts([
         {id: "incline_db_press", s: 4, r: "8-10"},
         {id: "chinup", s: 4, r: "AMRAP"},
@@ -140,7 +140,7 @@ export const PROGRAM = {
         [{id: "reverse_crunch", r: "15"}, {id: "plank", r: "45", unit: "sec"}]
       )
     ]},
-    legs: {focus: "Legs & Back", sections: [
+    legs: {sections: [
       lifts([
         {id: "db_front_squat", s: 4, r: "8-10"},
         {id: "single_leg_rdl", s: 3, r: "10"},
@@ -174,7 +174,7 @@ export const PROGRAM = {
         [{id: "plank_up_down", r: "12"}, {id: "flutter_kicks", r: "40", unit: "sec"}]
       )
     ]},
-    arms: {focus: "Shoulders & Arms", sections: [
+    arms: {sections: [
       lifts([
         {id: "standing_ohp", s: 4, r: "8-10"},
         {id: "arnold_press", s: 3, r: "10-12"},
@@ -209,7 +209,7 @@ export const PROGRAM = {
     ]}
   },
   C: {
-    chest: {focus: "Chest & Back", sections: [
+    chest: {sections: [
       lifts([
         {id: "flat_db_press", s: 5, r: "5-6"},
         {id: "wide_pullup", s: 4, r: "6-8"},
@@ -242,7 +242,7 @@ export const PROGRAM = {
         [{id: "dead_bug", r: "15"}, {id: "plank", r: "60", unit: "sec"}]
       )
     ]},
-    legs: {focus: "Legs & Back", sections: [
+    legs: {sections: [
       lifts([
         {id: "bulgarian", s: 4, r: "8"},
         {id: "stiff_leg_dl", s: 4, r: "10"},
@@ -276,7 +276,7 @@ export const PROGRAM = {
         [{id: "dead_bug", r: "15"}, {id: "mountain_climber", r: "45", unit: "sec"}]
       )
     ]},
-    arms: {focus: "Shoulders & Arms", sections: [
+    arms: {sections: [
       lifts([
         {id: "push_press", s: 4, r: "6-8"},
         {id: "seated_lateral_raise", s: 4, r: "15"},

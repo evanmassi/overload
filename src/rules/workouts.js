@@ -46,8 +46,8 @@ const PLACEMENT = {
   finish: roundsWithRest
 };
 
-function build(focus, sections){
-  return {focus, sections: sections.map(section => Object.assign({}, section, {
+function build(sections){
+  return {sections: sections.map(section => Object.assign({}, section, {
     ex: section.ex.map((slot, i) => ready(slot, PLACEMENT[section.kind](slot, section, i)))
   }))};
 }
@@ -58,7 +58,7 @@ function buildBook(book, days){
     built[block] = {};
     for(const day of days){
       const workout = book[block][day];
-      built[block][day] = {gym: build(workout.focus, workout.sections), away: build(workout.focus, workout.away)};
+      built[block][day] = {gym: build(workout.sections), away: build(workout.away)};
     }
   }
   return built;
