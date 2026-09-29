@@ -84,7 +84,7 @@ export function openSwapSheet(slot){
 
   sheetGroup("Type your own");
   body.appendChild(sheetEntry("Exercise name", "Use", input => {
-    const id = registerCustom(input.value.trim());
+    const id = registerCustom(input.value);
     if(id && !pick(slot, id)){
       input.value = "";
       input.placeholder = "Already in this session";

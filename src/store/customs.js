@@ -14,7 +14,7 @@ export function exerciseName(id){
   return known ? known.n : (state.customNames[id] || id);
 }
 
-export function customIdFor(name){
+function customIdFor(name){
   const target = squash(name);
   if(!target) return null;
   for(const id in state.customNames) if(squash(state.customNames[id]) === target) return id;
@@ -25,14 +25,15 @@ export function customIdFor(name){
 
 export function setsLoggedFor(id){
   let n = 0;
-  for(const date in state.sessions){
-    const sets = (state.sessions[date].entries || {})[id];
+  for(const key in state.sessions){
+    const sets = (state.sessions[key].entries || {})[id];
     if(sets) n += sets.filter(isLogged).length;
   }
   return n;
 }
 
-export function registerCustom(name){
+export function registerCustom(typed){
+  const name = typed.trim();
   const id = customIdFor(name);
   if(!id) return null;
   if(!findExercise(id) && !state.customNames[id]){
@@ -54,12 +55,12 @@ export function removeCustom(id){
   persistCustomNames();
   delete state.holds[id];
   persistHolds();
-  for(const date in state.sessions){
-    const session = state.sessions[date];
+  for(const key in state.sessions){
+    const session = state.sessions[key];
     if(session.entries && session.entries[id]) delete session.entries[id];
     if(session.swaps) for(const slotId in session.swaps)
       if(session.swaps[slotId] === id) delete session.swaps[slotId];
-    if(!loggedCount(session)) delete state.sessions[date];
+    if(!loggedCount(session)) delete state.sessions[key];
   }
   for(const slotId in state.current.swaps)
     if(state.current.swaps[slotId] === id) delete state.current.swaps[slotId];

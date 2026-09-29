@@ -192,24 +192,24 @@ section("Progression targets");
 section("Custom exercises keep one identity");
 {
   reset();
-  const first = customs.customIdFor("sledgehammer slams");
+  const first = customs.registerCustom("sledgehammer slams");
   equal("a new name mints a custom id", first, "custom_sledgehammer_slams");
 
   state.customNames = {custom_sledgehammer_slams: "sledgehammer slams"};
   for(const variant of ["sledgehammer slams", "Sledgehammer Slams", "sledgehammer slam", "sledge-hammer slams", "Sledgehammer Slams!"])
-    equal(`"${variant}" resolves to the same exercise`, customs.customIdFor(variant), first);
+    equal(`"${variant}" resolves to the same exercise`, customs.registerCustom(variant), first);
 
-  equal("a genuinely different name does not", customs.customIdFor("tyre flips"), "custom_tyre_flips");
+  equal("a genuinely different name does not", customs.registerCustom("tyre flips"), "custom_tyre_flips");
 
   state.customNames = {};
-  equal("typing a program move's name resolves to that move", customs.customIdFor("Face Pull"), "face_pull");
-  equal("punctuation variance still resolves", customs.customIdFor("bench dips"), "bench_dip");
-  equal("empty input yields nothing", customs.customIdFor("   "), null);
+  equal("typing a program move's name resolves to that move", customs.registerCustom("Face Pull"), "face_pull");
+  equal("punctuation variance still resolves", customs.registerCustom("bench dips"), "bench_dip");
+  equal("empty input yields nothing", customs.registerCustom("   "), null);
 
-  equal("a nickname resolves to the move it names", customs.customIdFor("lateral push ups"), "archer_pushup");
-  equal("so does a nickname for a move you described", customs.customIdFor("weighted shoulder rotations"), "shoulder_circles");
+  equal("a nickname resolves to the move it names", customs.registerCustom("lateral push ups"), "archer_pushup");
+  equal("so does a nickname for a move you described", customs.registerCustom("weighted shoulder rotations"), "shoulder_circles");
   equal("a custom name you already own beats a nickname",
-    (state.customNames = {custom_arm_circles: "arm circles"}, customs.customIdFor("arm circles")), "custom_arm_circles");
+    (state.customNames = {custom_arm_circles: "arm circles"}, customs.registerCustom("arm circles")), "custom_arm_circles");
 }
 
 section("Swapping keeps history with the movement");
@@ -320,18 +320,21 @@ section("Backup import merges rather than overwrites");
 {
   reset();
   state.sessions = {"2026-09-01": {date: "2026-09-01", day: "chest", block: "A", entries: {pullup: setsOf([["", 8]])}}};
-  const merged = backup.mergeSessions({
+  backup.importBackup(JSON.stringify({
     "2026-09-01": {date: "2026-09-01", day: "chest", block: "A", entries: {pullup: setsOf([["", 8], ["", 7]])}},
     "2026-09-03": {date: "2026-09-03", day: "legs", block: "A", entries: {goblet_squat: setsOf([[50, 10]])}}
-  });
-  equal("both an update and a new date merge", merged, 2);
+  }));
+  equal("both an update and a new date merge", state.backupResult, "merged 2");
   equal("the fuller copy of a shared date wins", loggedCount(state.sessions["2026-09-01"]), 2);
 
-  backup.mergeSessions({"2026-09-01": {date: "2026-09-01", day: "chest", block: "A", entries: {pullup: setsOf([["", 8]])}}});
+  backup.importBackup(JSON.stringify({"2026-09-01": {date: "2026-09-01", day: "chest", block: "A", entries: {pullup: setsOf([["", 8]])}}}));
   equal("a thinner copy does not overwrite", loggedCount(state.sessions["2026-09-01"]), 2);
 
-  backup.mergeSessions({"2026-09-05": {date: "2026-09-05"}});
+  backup.importBackup(JSON.stringify({"2026-09-05": {date: "2026-09-05"}}));
   equal("a malformed record is ignored", state.sessions["2026-09-05"], undefined);
+
+  backup.importBackup("not json");
+  equal("a file that is not JSON says so", state.backupResult, "bad file");
 }
 
 section("Storage round trip and legacy migration");

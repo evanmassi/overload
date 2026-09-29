@@ -19,6 +19,7 @@ export const DAYS = {
 export const LEGACY_DAY_KEYS = {mon: "chest", wed: "legs", fri: "arms"};
 
 export const SESSIONS_KEY = "overload.v1";
+export const LEGACY_SESSIONS_KEY = "ironledger.v1";
 export const CUSTOM_KEY = "overload.custom.v1";
 export const SOUND_KEY = "overload.sound.v1";
 export const HOLD_KEY = "overload.hold.v1";
@@ -56,6 +57,7 @@ export const START_BEEP_GRACE_MS = 1500;
 
 export const AUTOSAVE_DELAY_MS = 1200;
 export const CONFIRM_WINDOW_MS = 8000;
+export const BACKUP_LINK_LIFETIME_MS = 2000;
 export const SHEET_PICK_MS = 420;
 export const SHEET_CLOSE_MS = 240;
 

@@ -1,6 +1,4 @@
-import {SESSIONS_KEY, CUSTOM_KEY, SOUND_KEY, HOLD_KEY, LEGACY_DAY_KEYS} from "../data/constants.js";
-
-const LEGACY_SESSIONS_KEY = "ironledger.v1";
+import {SESSIONS_KEY, LEGACY_SESSIONS_KEY, CUSTOM_KEY, SOUND_KEY, HOLD_KEY, LEGACY_DAY_KEYS} from "../data/constants.js";
 
 function readJson(key, fallbackKey){
   try{

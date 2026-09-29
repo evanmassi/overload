@@ -23,12 +23,12 @@ function newSessionKey(dateStr){
   return key;
 }
 
-function sessionsOn(sessions, dateStr){
-  return Object.keys(sessions).filter(key => sessions[key].date === dateStr).sort();
+function sessionsOn(dateStr){
+  return Object.keys(state.sessions).filter(key => state.sessions[key].date === dateStr).sort();
 }
 
 function latestOn(dateStr, isMatch){
-  return sessionsOn(state.sessions, dateStr).filter(key => isMatch(state.sessions[key])).pop() || null;
+  return sessionsOn(dateStr).filter(key => isMatch(state.sessions[key])).pop() || null;
 }
 
 function setBlockIndex(index){
@@ -109,7 +109,6 @@ function openSession(key, dateStr, day, blockIndex){
     setBlockIndex(blockIndex === null ? nextBlockIndex(state.sessions, current.day) : blockIndex);
   }
 
-  state.foldFlips.clear();
   current.entries = {};
   current.isAway = saved ? !!saved.isAway : carriedAway();
   current.swaps = saved ? Object.assign({}, saved.swaps) : carriedSwaps();
@@ -125,7 +124,7 @@ function openSession(key, dateStr, day, blockIndex){
 }
 
 export function loadDate(dateStr){
-  const latest = sessionsOn(state.sessions, dateStr).pop();
+  const latest = sessionsOn(dateStr).pop();
   openSession(latest || newSessionKey(dateStr), dateStr, null, null);
 }
 
@@ -255,8 +254,6 @@ function queueSave(){
 }
 
 export function flushNow(){
-  const focused = typeof document !== "undefined" && document.activeElement;
-  if(focused && focused.tagName === "INPUT") focused.blur();
   clearTimeout(saveTimer);
   commitNow();
 }
@@ -276,9 +273,7 @@ export function openSetIndex(exercise){
 }
 
 export function nextRest(){
-  const workout = workoutOf(state.current);
-  if(!workout) return null;
-  for(const exercise of resolvedExercises(workout, state.current.swaps)){
+  for(const exercise of resolvedExercises(workoutOf(state.current), state.current.swaps)){
     const index = openSetIndex(exercise);
     if(index >= 0) return restAfterSet(exercise, index);
   }

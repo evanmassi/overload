@@ -27,14 +27,20 @@ byId("tabs").addEventListener("click", event => {
   changes.notify();
 });
 
+function commitTypingAndSave(){
+  const focused = document.activeElement;
+  if(focused && focused.tagName === "INPUT") focused.blur();
+  flushNow();
+}
+
 document.addEventListener("visibilitychange", () => {
-  if(document.visibilityState === "hidden") flushNow();
+  if(document.visibilityState === "hidden") commitTypingAndSave();
   else {
     unlockAudio();
     followToday(iso(new Date()));
   }
 });
-window.addEventListener("pagehide", flushNow);
+window.addEventListener("pagehide", commitTypingAndSave);
 
 changes.subscribe(render);
 hydrate();

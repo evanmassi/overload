@@ -1,20 +1,42 @@
-import {APP_VERSION} from "../data/constants.js";
+import {APP_VERSION, BACKUP_LINK_LIFETIME_MS} from "../data/constants.js";
 import {state} from "../store/state.js";
-import {exportSessions, importSessions} from "../store/backup.js";
+import {backupFile, importBackup, showBackupResult} from "../store/backup.js";
 import {el} from "./dom.js";
 import {actionButton} from "./controls.js";
 import {soundOn, setSoundOn, testTone, audioState} from "./sound.js";
+
+function downloadBackup(){
+  const file = backupFile();
+  const url = URL.createObjectURL(new Blob([file.text], {type: "application/json"}));
+  const link = el("a");
+  link.href = url;
+  link.download = file.name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), BACKUP_LINK_LIFETIME_MS);
+}
+
+function readBackup(event){
+  const file = event.target.files && event.target.files[0];
+  event.target.value = "";
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => importBackup(reader.result);
+  reader.onerror = () => showBackupResult("read failed");
+  reader.readAsText(file);
+}
 
 function backupControls(){
   const picker = el("input");
   picker.type = "file";
   picker.accept = "application/json,.json";
   picker.hidden = true;
-  picker.addEventListener("change", importSessions);
+  picker.addEventListener("change", readBackup);
 
   const box = el("div", "backup");
   box.append(
-    actionButton("Export backup", {tone: "primary", steady: true}, exportSessions),
+    actionButton("Export backup", {tone: "primary", steady: true}, downloadBackup),
     actionButton("Import backup", {tone: "primary", steady: true}, () => picker.click()),
     picker,
     el("span", "backup-result", state.backupResult));

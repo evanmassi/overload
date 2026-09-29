@@ -66,8 +66,9 @@ The folder is the layer. A file imports only from its own layer or the ones list
   `swapSlot`, `resetSwaps`, `setAway`, `setDay`, `chooseBlock`, `setEffort`, `setNotes`), and each one saves.
   `logSet` does not re-render, because the set row updates in place; the rest do. `flushNow()` runs on hide and
   pagehide. Views never write `state.current` or `state.sessions` directly.
-- `persistSessions`, `persistCustomNames`, `persistHolds` in `state.js` are the only save calls. `storage.js` is the
-  only reader and writer behind them.
+- `persistSessions`, `persistCustomNames`, `persistHolds` in `state.js` are the only save calls for app state.
+  The sound setting is the one exception: `views/sound.js` owns it and saves it through `storage.js`, which stays the
+  only file that touches `localStorage`.
 
 ---
 
@@ -94,7 +95,7 @@ the same workout and place, and its place from the last session saved.
 Keys are `YYYY-MM-DDTHH:MM:SS` with a `.n` suffix on a collision; older logs are keyed by date alone and must keep
 sorting and comparing correctly. Every session has a `date` once loaded, so code reads `session.date` and never the key.
 
-**Storage keys** are `overload.<name>.v1`, defined once in `constants.js`. Legacy shapes are converted at read time
+**Storage keys** are `overload.v1` for sessions and `overload.<name>.v1` for the rest, defined once in `constants.js`. Legacy shapes are converted at read time
 inside `storage.js` (see `migrateLegacySessions` and the legacy key fallback). No migration system until a second
 version of a key exists.
 
@@ -157,7 +158,7 @@ localhost, `main.js` unregisters the worker and clears caches so development alw
 
 ### Pre-Implementation Checklist
 
-1. **Read the data** the change touches (`catalog.js`, `program.js`, `offdays.js`, the session shape above) before writing code.
+1. **Read the data** the change touches (`catalog.js`, `program.js`, `crossTraining.js`, the session shape above) before writing code.
 2. **Verify exact field names.** Sets are `{w, r}`. Every workout is `sections` and `away`, each with a `kind` (`straight`,
    `core`, `interval`, `circuit`, `finish`) and its slots in `ex`. How a slot rests and counts follows its kind.
 3. **Find the owner.** Search for the module that already does the job before writing a new function.
