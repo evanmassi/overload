@@ -4,7 +4,6 @@
   --font-icon: 'Material Symbols Outlined';
 
   --size-display: 26px;
-  --size-section: 24px;
   --size-body: 13px;
   --size-control: 14px;
   --size-meta: 11px;
@@ -17,7 +16,6 @@
 
   --track-control: 0.3em;   /* uppercase button labels */
   --track-title: 0.34em;    /* card titles */
-  --track-eyebrow: 0.42em;  /* section eyebrows */
   --track-meta: 0.18em;
   --leading-body: 1.7;
 }

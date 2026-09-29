@@ -1,23 +1,19 @@
+import {PHASE_STEP_MS} from "./phase.js";
+
 const FIRE_WINDOW_MS = 1000;
 const CLICK_GUARD_MS = 300;
 const LAYERS = ["side-l", "side-r", "plate", "glow", "bloom", "frame", "fill", "stripe", "halo", "hair", "hair-echo"];
 const CORNERS = ["tl", "tr", "bl", "br"];
 const HOLD_KEYS = new Set(["Enter", " "]);
 
-const PHASE_STEP_MS = 3646;
-
 const latestFire = {key: null, at: 0};
 
 let phase = 0;
 
-function make(name){
+function layer(host, name){
   const span = document.createElement("span");
   span.className = "btn-" + name;
-  return span;
-}
-
-function layer(host, name){
-  return host.appendChild(make(name));
+  return host.appendChild(span);
 }
 
 function brackets(host){
@@ -51,6 +47,7 @@ function wire(el, key){
     if(key) Object.assign(latestFire, {key, at: lastFire});
     if(fired){
       el.removeAttribute("data-fired");
+      // PITFALL: reading offsetWidth forces a reflow, without which the browser skips restarting the fire animation
       void el.offsetWidth;
     }
     fired = true;
@@ -79,7 +76,7 @@ function wire(el, key){
   el.addEventListener("keyup", event => { if(HOLD_KEYS.has(event.key) && held) fire(); });
 
   const replay = key && key === latestFire.key ? FIRE_WINDOW_MS - (Date.now() - latestFire.at) : 0;
-  if(replay > 0 && replay <= FIRE_WINDOW_MS){ fired = true; expire(replay); }
+  if(replay > 0){ fired = true; expire(replay); }
   paint();
 }
 

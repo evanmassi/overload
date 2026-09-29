@@ -113,7 +113,8 @@ version of a key exists.
 - **Typed text is never markup.** Custom names, set values and notes go in through `textContent`, or through
   `escapeHtml` inside an HTML template. Raw interpolation of anything the user typed is a bug.
 - **Colors come from the tokens** in `src/ui/tokens/`. Need a new color, add a token first.
-- **Two type families.** Lato for language, IBM Plex Mono for data (weights, reps, times, tags, dates).
+- **Two type families.** Archivo for headings, Chivo Mono for everything else, data included (weights, reps, times,
+  tags, dates).
 - **Phone first, 390px wide.** The number keyboard covers the bottom of the screen while typing, so anything needed
   mid-set lives in the sticky header. Card text never wraps.
 - **Every class the code renders needs a rule.** `test/guards.mjs` fails otherwise. Before deleting CSS, search

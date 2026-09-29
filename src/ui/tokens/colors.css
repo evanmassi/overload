@@ -4,7 +4,6 @@
   --bg-stage: #0a0c0f;
   --bg-panel: rgba(10, 14, 18, 0.72);
   --line-hairline: rgba(231, 234, 238, 0.1);
-  --line-control: rgba(231, 234, 238, 0.3);
   --scanline-ground: rgba(255, 255, 255, 0.035);
 
   /* ink */
@@ -20,6 +19,9 @@
   --accent-ink: #f4feff;
   --accent-glow: rgba(95, 227, 240, 0.8);
   --accent-glow-soft: rgba(95, 227, 240, 0.35);
+  --accent-edge: rgba(95, 227, 240, 0.5);
+  --accent-edge-inner: rgba(95, 227, 240, 0.26);
+  --accent-lit: rgba(190, 250, 255, 0.85);
 
   /* success — mint */
   --success: #62eda0;
@@ -28,6 +30,9 @@
   --success-ink: #e8fff1;
   --success-glow: rgba(98, 237, 160, 0.8);
   --success-glow-soft: rgba(98, 237, 160, 0.3);
+  --success-edge: rgba(98, 237, 160, 0.5);
+  --success-edge-inner: rgba(98, 237, 160, 0.26);
+  --success-lit: rgba(196, 255, 222, 0.88);
 
   /* warning — amber */
   --warning: #ffb648;
@@ -36,6 +41,9 @@
   --warning-ink: #fff5e4;
   --warning-glow: rgba(255, 182, 72, 0.8);
   --warning-glow-soft: rgba(255, 182, 72, 0.3);
+  --warning-edge: rgba(255, 182, 72, 0.5);
+  --warning-edge-inner: rgba(255, 182, 72, 0.26);
+  --warning-lit: rgba(255, 220, 160, 0.9);
 
   /* danger — red */
   --danger: #ff5d5d;
@@ -44,6 +52,9 @@
   --danger-ink: #ffeaea;
   --danger-glow: rgba(255, 93, 93, 0.8);
   --danger-glow-soft: rgba(255, 93, 93, 0.35);
+  --danger-edge: rgba(255, 93, 93, 0.52);
+  --danger-edge-inner: rgba(255, 93, 93, 0.28);
+  --danger-lit: rgba(255, 180, 180, 0.9);
 
   /* secondary — grey-blue */
   --secondary: #9fc9d0;
@@ -51,4 +62,7 @@
   --secondary-ink: #d4e2e5;
   --secondary-glow: rgba(159, 201, 208, 0.7);
   --secondary-glow-soft: rgba(159, 201, 208, 0.25);
+  --secondary-edge: rgba(159, 201, 208, 0.45);
+  --secondary-edge-inner: rgba(159, 201, 208, 0.22);
+  --secondary-lit: rgba(214, 236, 240, 0.85);
 }

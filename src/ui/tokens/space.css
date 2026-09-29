@@ -8,8 +8,6 @@
 
   /* holographic layering */
   --offset-plate: 3px;           /* framed variants */
-  --offset-plate-ghost: 2.5px;   /* text-only variants */
-  --offset-plate-hold: 1px;      /* pulled into register while held */
 
   /* targeting brackets */
   --bracket-inset: 5px;
@@ -17,13 +15,6 @@
   --bracket-echo-inset: 10px;
   --bracket-echo-arm: 19px;
 
-  /* emanation travel */
-  --emit-hair: 18px;
-  --emit-hair-echo: 31px;
-  --emit-halo: 18px;
-
   /* layout */
-  --gap-card: 26px;
   --gap-stack: 14px;
-  --stage-min: 200px;
 }

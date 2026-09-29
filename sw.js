@@ -13,7 +13,7 @@ const ASSETS = [
   './src/views/saveStatus.js', './src/views/settings.js', './src/views/sound.js', './src/views/timer.js',
   './src/views/sheets/howtoSheet.js', './src/views/sheets/relabelSheet.js', './src/views/sheets/sheet.js',
   './src/views/sheets/swapSheet.js', './src/views/sheets/timerSheet.js',
-  './src/ui/button.js', './src/ui/field.js', './src/ui/panel.js',
+  './src/ui/button.js', './src/ui/field.js', './src/ui/panel.js', './src/ui/phase.js',
   './src/ui/button.css', './src/ui/field.css', './src/ui/index.css', './src/ui/panel.css',
   './src/ui/stripe.css', './src/ui/tokens/animations.css', './src/ui/tokens/colors.css',
   './src/ui/tokens/fonts.css', './src/ui/tokens/motion.css', './src/ui/tokens/space.css',

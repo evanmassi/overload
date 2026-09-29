@@ -1,5 +1,6 @@
+import {PHASE_STEP_MS} from "./phase.js";
+
 const LAYERS = ["plate", "frame", "wash"];
-const PHASE_STEP_MS = 3646;
 const GOLDEN = 0.6180339887;
 const CLOCK_MIN_MS = 19000;
 const CLOCK_SPREAD_MS = 12000;
@@ -7,10 +8,10 @@ const CLOCK_SPREAD_MS = 12000;
 let phase = 0;
 
 export function makeField(input, options = {}){
-  const {tone = "primary", steady = false} = options;
+  const {steady = false} = options;
   const host = document.createElement("span");
   host.className = "field";
-  host.dataset.tone = tone;
+  host.dataset.tone = "primary";
   if(steady) host.dataset.steady = "";
   const index = phase++;
   host.style.setProperty("--f-clock", Math.round(CLOCK_MIN_MS + (index * GOLDEN % 1) * CLOCK_SPREAD_MS) + "ms");
