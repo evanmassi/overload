@@ -36,10 +36,9 @@ for(const file of modules){
 }
 
 section("Dead exports");
-const testSource = filesUnder(at("test"), ".mjs").map(read).join("\n");
 const dead = [];
 for(const file in exportsByFile){
-  const elsewhere = modules.filter(other => other !== file).map(sourceOf).join("\n") + "\n" + testSource;
+  const elsewhere = modules.filter(other => other !== file).map(sourceOf).join("\n");
   exportsByFile[file].filter(name => !new RegExp(`\\b${name}\\b`).test(elsewhere))
     .forEach(name => dead.push(file + " → " + name));
 }

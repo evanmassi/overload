@@ -80,9 +80,8 @@ class FakeNode {
 
 export function installDom(){
   const byId = {};
-  const ids = ["main", "tabs", "sessiontime", "timenote", "status", "timer", "clock",
-               "sheet", "sheetback", "sheetclose", "sheettitle", "sheetbody", "notes",
-               "setbar", "tally"];
+  const ids = ["main", "tabs", "sessiontime", "timenote", "status", "timer",
+               "sheet", "sheetback", "sheetclose", "sheettitle", "sheetbody", "setbar", "tally"];
   ids.forEach(id => { byId[id] = new FakeNode("div"); });
 
   const doc = {
@@ -103,9 +102,6 @@ export function installDom(){
   globalThis.window = {addEventListener: noop, scrollTo: noop};
   if(!globalThis.navigator)
     Object.defineProperty(globalThis, "navigator", {value: {}, configurable: true});
-  globalThis.Blob = function(){};
-  globalThis.FileReader = function(){};
-  globalThis.prompt = () => null;
 
   return byId;
 }
@@ -120,4 +116,3 @@ export function installStorage(){
   };
 }
 
-export {FakeNode};

@@ -26,6 +26,14 @@ const rp = row => cell(row, 3);
 
 const sheetClosed = () => els.sheet.hidden || "closing" in els.sheet.dataset;
 
+const realNow = Date.now;
+const comeBackAfter = ms => {
+  Date.now = () => realNow() + ms;
+  document.visibilityState = "visible";
+  document.fire("visibilitychange");
+  Date.now = realNow;
+};
+
 function fresh(){
   localStorage.clear();
   els.sheet.hidden = true;
@@ -925,14 +933,6 @@ section("Beeps are scheduled on the audio clock when a rest starts");
   equal("with the blip now and the go a second later", startsAt().slice(0, 2), [0, 1]);
   stop();
 
-  const realNow = Date.now;
-  const comeBackAfter = ms => {
-    Date.now = () => realNow() + ms;
-    document.visibilityState = "visible";
-    document.fire("visibilitychange");
-    Date.now = realNow;
-  };
-
   reset();
   start(5);
   equal("a fresh rest schedules ahead and plays nothing yet", startsAt().slice(0, 1), [2]);
@@ -1055,13 +1055,6 @@ section("Effort is asked once per main move");
   check("no core superset asks", coreCards.every(c => c.find("effort").length === 0));
 }
 
-const realNow = Date.now;
-const comeBackAfter = ms => {
-  Date.now = () => realNow() + ms;
-  document.visibilityState = "visible";
-  document.fire("visibilitychange");
-  Date.now = realNow;
-};
 const timedCards = () => els.main.find("ex-item").filter(card => card.find("ex-time").length);
 const longPress = async () => {
   const {LONG_PRESS_MS} = await import("../src/data/constants.js");

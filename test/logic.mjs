@@ -11,7 +11,7 @@ const {suggestTarget, loggedCount, priorSets} = progression;
 const aimed = target => (target.w ? target.w + "×" : "") + target.r;
 
 const hasStalledFor = exercise => progression.hasStalled(state.sessions, exercise, "2026-09-01", "chest", []);
-const prescribedCountFor = (block, day, isAway) => progression.prescribedCount(workouts.workoutFor(block, day, isAway));
+const prescribedCountFor = (block, day, isAway) => progression.prescribedCount(workouts.workoutOf({block, day, isAway}));
 
 section("Program data");
 {
@@ -64,7 +64,7 @@ section("Program data");
   equal("every exercise has a default target for swaps", untargeted, []);
 
   for(const block of BLOCKS) for(const day of DAY_KEYS) for(const isAway of [false, true]){
-    const workout = workouts.workoutFor(block, day, isAway);
+    const workout = workouts.workoutOf({block, day, isAway});
     const name = `${block}/${day}${isAway ? " away" : ""}`;
     equal(`${name} is lifts then a core superset`, workout.sections.map(section => section.kind), ["straight", "core"]);
     const main = workout.sections[0].ex;
@@ -256,7 +256,7 @@ section("Removing a custom exercise takes its sets with it");
 section("Rest comes from the movement, not its place in the list");
 {
   const rest = (block, day, name) =>
-    workouts.workoutSlots(workouts.workoutFor(block, day)).find(e => e.n === name).rest;
+    workouts.workoutSlots(workouts.workoutOf({block, day})).find(e => e.n === name).rest;
 
   equal("a heavy five gets the long rest", rest("C", "chest", "Flat DB Bench Press"), 180);
   equal("the day's lead compound gets two minutes", rest("A", "chest", "Flat DB Bench Press"), 120);
@@ -271,7 +271,7 @@ section("Rest comes from the movement, not its place in the list");
   equal("an AMRAP lead is still a lead", rest("A", "chest", "Pull-ups"), 120);
   equal("an AMRAP finisher is not", rest("A", "chest", "Push-ups"), 90);
 
-  const positional = workouts.workoutFor("C", "chest").sections[0].ex
+  const positional = workouts.workoutOf({block: "C", day: "chest"}).sections[0].ex
     .map((e, i) => e.rest === (i < 2 ? 120 : 60));
   check("the old positional rule no longer describes the day",
     positional.some(same => !same));
@@ -377,7 +377,7 @@ section("Rules the views share live below them");
   equal("rest between sets is the move's own", workouts.restAfterSet(press, 0), press.rest);
   equal("the last set rests into the next move", workouts.restAfterSet(press, press.s - 1), press.restAfter);
 
-  const workout = workouts.workoutFor("A", "chest");
+  const workout = workouts.workoutOf({block: "A", day: "chest"});
   const session = {
     swaps: {flat_db_press: "db_rdl"},
     entries: {db_rdl: setsOf([[95, 10]]), leg_curl: setsOf([[40, 12]]), hammer_curl: [{w: "", r: ""}]}
@@ -498,7 +498,7 @@ section("Stall detection");
 section("Cross-training sits beside the program, not inside it");
 {
   for(const block of BLOCKS) for(const day of CROSS_KEYS) for(const isAway of [false, true]){
-    const workout = workouts.workoutFor(block, day, isAway);
+    const workout = workouts.workoutOf({block, day, isAway});
     const name = `${block}/${day}${isAway ? " away" : ""}`;
     const total = prescribedCountFor(block, day, isAway);
     check(`${name} has three sections`, workout.sections.length === 3, workout.sections.length);
@@ -507,12 +507,12 @@ section("Cross-training sits beside the program, not inside it");
     equal(`${name} lists no move twice`, ids.filter((id, i) => ids.indexOf(id) !== i), []);
   }
 
-  const thruster = workouts.workoutFor("A", "conditioning").sections[0].ex[0];
+  const thruster = workouts.workoutOf({block: "A", day: "conditioning"}).sections[0].ex[0];
   equal("an interval move takes its shape from its section",
     [thruster.s, thruster.r, thruster.win, thruster.rest, thruster.restAfter], [4, "AMRAP", 40, 20, 20]);
-  const hang = workouts.workoutFor("A", "functional").sections[2].ex[0];
+  const hang = workouts.workoutOf({block: "A", day: "functional"}).sections[2].ex[0];
   equal("a finisher keeps its own set count", [hang.s, hang.r, hang.unit, hang.rest], [2, "30", "sec", 60]);
-  const stairs = workouts.workoutFor("A", "conditioning").sections[2].ex[0];
+  const stairs = workouts.workoutOf({block: "A", day: "conditioning"}).sections[2].ex[0];
   equal("a machine finisher logs level and minutes", [stairs.load, stairs.unit, !!stairs.bw], ["level", "min", true]);
 
   const strengthGoblet = prescribedExercises().get("goblet_squat");
@@ -600,7 +600,7 @@ section("Prescribed set counts");
   }
   equal("main work plus core makes up the total",
     prescribedCountFor("A", "chest"),
-    workouts.workoutFor("A", "chest").sections[0].ex.reduce((n, e) => n + e.s, 0) + 12);
+    workouts.workoutOf({block: "A", day: "chest"}).sections[0].ex.reduce((n, e) => n + e.s, 0) + 12);
 }
 
 section("Last time is looked up within the same kind of session");
