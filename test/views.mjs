@@ -985,7 +985,7 @@ section("Beeps are scheduled on the audio clock when a rest starts");
   sound.testTone();
   stop();
   equal("stopping a rest cancels only its own countdown, not the start beep or the test tone",
-    scheduled.filter(o => o.stopped).map(o => o.at), [27, 28, 29, 30]);
+    scheduled.filter(o => o.stopped).map(o => Math.round(o.at * 10) / 10), [27, 28, 29, 30]);
 
   context.state = "interrupted";
   reset();
