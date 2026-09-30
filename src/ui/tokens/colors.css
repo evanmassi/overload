@@ -5,6 +5,11 @@
   --bg-panel: rgba(10, 14, 18, 0.72);
   --line-hairline: rgba(231, 234, 238, 0.1);
   --scanline-ground: rgba(255, 255, 255, 0.035);
+  --scanline-sheet: rgba(255, 255, 255, 0.03);
+  --bg-backdrop: rgba(6, 8, 10, 0.72);
+  --bg-veil: rgba(3, 5, 7, 0.94);
+  --line-track: rgba(231, 234, 238, 0.08);
+  --line-divider: rgba(231, 234, 238, 0.16);
 
   /* ink */
   --ink-1: #f3f5f7;
@@ -19,6 +24,7 @@
   --accent-ink: #f4feff;
   --accent-glow: rgba(95, 227, 240, 0.8);
   --accent-glow-soft: rgba(95, 227, 240, 0.35);
+  --accent-wash: rgba(90, 208, 242, 0.06);
   --accent-edge: rgba(95, 227, 240, 0.5);
   --accent-edge-inner: rgba(95, 227, 240, 0.26);
   --accent-lit: rgba(190, 250, 255, 0.85);
