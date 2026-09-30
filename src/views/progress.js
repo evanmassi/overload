@@ -3,7 +3,7 @@ import {findExercise} from "../rules/exercises.js";
 import {state, changes} from "../store/state.js";
 import {exerciseName} from "../store/customs.js";
 import {topSet, score, loggedAsBodyweight, progressSince} from "../rules/progression.js";
-import {iso, shortDate, monthLabel, unitSuffix, unitName, weightUnit} from "../rules/format.js";
+import {iso, shortDate, monthLabel, setSummary, unitSuffix, unitName, weightUnit} from "../rules/format.js";
 import {addDays, mondayOf, trainingDays} from "../rules/calendar.js";
 import {isLogged} from "../rules/sets.js";
 import {makePanel} from "../ui/panel.js";
@@ -66,7 +66,7 @@ function progressCard(entry){
   if(points.length > 1) card.appendChild(sparkline(points.map(point => point.value), bestIndex));
 
   const count = `${points.length} session${points.length === 1 ? "" : "s"}`;
-  const bestText = points.length > 1 ? ` · best ${best.w ? best.w + "×" : ""}${best.r}${suffix}` : "";
+  const bestText = points.length > 1 ? ` · best ${setSummary([best], suffix)}` : "";
   card.appendChild(el("p", "prog-foot", `${count}${bestText} · last ${shortDate(latest.date)}`));
   return card;
 }

@@ -1,4 +1,4 @@
-import {BLOCKS, DAY_KEYS, CROSS_KEYS, DAYS, TREND_ICON, DEFAULT_REST, RECENT_DAYS, STRENGTH_LABEL, CROSS_LABEL} from "../data/constants.js";
+import {BLOCKS, DAYS, TREND_ICON, DEFAULT_REST, RECENT_DAYS} from "../data/constants.js";
 import {findExercise} from "../rules/exercises.js";
 import {workoutOf, corePairs} from "../rules/workouts.js";
 import {recentDays, previousOf} from "../rules/rotation.js";
@@ -10,7 +10,7 @@ import {loadDate, chooseBlock, setDay, setNotes, setAway, resetSwaps} from "../s
 import {makeField} from "../ui/field.js";
 import {makePanel} from "../ui/panel.js";
 import {el} from "./dom.js";
-import {choiceRow, groupedRow, confirmButton} from "./controls.js";
+import {choiceRow, workoutRows, confirmButton} from "./controls.js";
 import {exerciseCard, corePairCard} from "./exerciseCard.js";
 
 export function renderLog(main){
@@ -33,8 +33,7 @@ export function renderLog(main){
   main.appendChild(bar);
 
   const recent = recentDays(state.sessions, new Date());
-  main.append(groupedRow(STRENGTH_LABEL, dayRow("blockset strength", DAY_KEYS, recent)),
-    groupedRow(CROSS_LABEL, dayRow("blockset cross", CROSS_KEYS, recent)));
+  main.append(...workoutRows("day:", day => day === current.day, setDay, day => recent.has(day) ? doneMark() : null));
 
   const head = el("div", "dayhead");
   head.innerHTML = `<p class="eyebrow"><b>Version ${current.block}</b>${lastTimeNote()}</p><h2 data-text="${DAYS[current.day].label}">${DAYS[current.day].label}</h2>`;
@@ -68,21 +67,10 @@ export function renderLog(main){
   if(swapped) main.appendChild(resetRow(swapped));
 }
 
-function dayRow(className, keys, done){
-  const current = state.current;
-  const row = choiceRow(className, keys.map(day => ({
-    label: DAYS[day].short,
-    key: "day:" + day,
-    chosen: day === current.day,
-    onPick: () => setDay(day)
-  })), {ghost: true});
-  keys.forEach((day, i) => {
-    if(!done.has(day)) return;
-    const mark = el("i", "icon day-done", "check");
-    mark.title = `Done in the last ${RECENT_DAYS} days`;
-    row.children[i].appendChild(mark);
-  });
-  return row;
+function doneMark(){
+  const mark = el("i", "icon day-done", "check");
+  mark.title = `Done in the last ${RECENT_DAYS} days`;
+  return mark;
 }
 
 function lastTimeNote(){

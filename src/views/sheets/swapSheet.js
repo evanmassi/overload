@@ -23,24 +23,26 @@ function lastDate(id){
   return last ? "last " + shortDate(last.date) : "";
 }
 
-function slotTag(slot, id){
-  if(id === resolveSlot(slot, state.current.swaps).id) return '<b class="tag sheet-tag in-use">in use</b>';
+const isInUse = (slot, id) => id === resolveSlot(slot, state.current.swaps).id;
+
+function slotTag(slot, id, inUse){
+  if(inUse) return '<b class="tag sheet-tag in-use">in use</b>';
   return id === slot.id ? '<b class="tag sheet-tag">program</b>' : "";
 }
 
-const inUseClass = (slot, id) => id === resolveSlot(slot, state.current.swaps).id ? " in-use" : "";
-
 function exerciseRow(slot, id){
-  const button = el("button", "sheet-item" + inUseClass(slot, id));
+  const inUse = isInUse(slot, id);
+  const button = el("button", "sheet-item" + (inUse ? " in-use" : ""));
   const when = lastDate(id);
-  button.innerHTML = `<span>${escapeHtml(exerciseName(id))}</span>${slotTag(slot, id)}${when ? `<em>${when}</em>` : ""}`;
+  button.innerHTML = `<span>${escapeHtml(exerciseName(id))}</span>${slotTag(slot, id, inUse)}${when ? `<em>${when}</em>` : ""}`;
   button.addEventListener("click", () => pick(slot, id, button));
   return button;
 }
 
 function customRow(slot, id, taken){
-  const use = el("button", "pick" + inUseClass(slot, id));
-  use.innerHTML = `${escapeHtml(state.customNames[id])}${slotTag(slot, id)}`;
+  const inUse = isInUse(slot, id);
+  const use = el("button", "pick" + (inUse ? " in-use" : ""));
+  use.innerHTML = `${escapeHtml(state.customNames[id])}${slotTag(slot, id, inUse)}`;
   use.disabled = taken.has(id);
   if(use.disabled) use.title = "Already in this session";
   use.addEventListener("click", () => pick(slot, id, use));

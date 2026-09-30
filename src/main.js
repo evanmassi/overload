@@ -28,8 +28,7 @@ byId("tabs").addEventListener("click", event => {
 });
 
 function commitTypingAndSave(){
-  const focused = document.activeElement;
-  if(focused && focused.tagName === "INPUT") focused.blur();
+  if(document.activeElement) document.activeElement.blur();
   flushNow();
 }
 

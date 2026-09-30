@@ -20,7 +20,7 @@ function deltaMark(key, id, sets, isBodyweight){
   const prior = priorSets(state.sessions, id, key, state.sessions[key].day);
   if(!prior) return `<i class="hist-delta up" title="First time logged">new</i>`;
   const direction = trend(topSet(sets, isBodyweight), topSet(prior.sets, isBodyweight), isBodyweight);
-  return `<i class="hist-delta ${direction}" title="${TREND_WORD[direction]} ${prior.date}">${TREND_ICON[direction]}</i>`;
+  return `<i class="hist-delta ${direction}" title="${TREND_WORD[direction]} ${escapeHtml(prior.date)}">${TREND_ICON[direction]}</i>`;
 }
 
 function exerciseLine(key, id, sets, name, exercise, extraClass, mark){
@@ -99,7 +99,7 @@ function sessionCard(key, session, workout){
   row.setAttribute("role", "button");
   row.setAttribute("aria-expanded", String(open));
   const top = el("div", "hist-top");
-  top.innerHTML = `<h3>${DAYS[session.day].label}</h3><span class="chip live">${session.block}</span><span class="chip" title="${date}">${date.slice(5)}</span>`;
+  top.innerHTML = `<h3>${DAYS[session.day].label}</h3><span class="chip live">${escapeHtml(session.block)}</span><span class="chip" title="${escapeHtml(date)}">${escapeHtml(date.slice(5))}</span>`;
   const took = elapsedLabel(session.startedAt, session.lastLoggedAt);
   const count = loggedCount(session);
   const foot = el("div", "hist-foot", `${count} set${count === 1 ? "" : "s"}${took ? " · " + took : ""}`);

@@ -39,7 +39,7 @@ function summaryFor(exercise){
   const chips = setRuns(state.current.entries[exercise.id], unitSuffix(exercise))
     .map(run => `<b>${run.count > 1 ? `<i>${run.count}×</i>` : ""}${escapeHtml(run.part)}</b>`);
   const effort = state.current.effort[exercise.id];
-  if(effort) chips.push(`<em>${effort}</em>`);
+  if(effort) chips.push(`<em>${escapeHtml(effort)}</em>`);
   return chips.join("");
 }
 
@@ -278,7 +278,7 @@ function stallPrompt(exercise, slot, prior){
   if(dropped){
     actions.push(calloutAction(`drop to ${dropped}`, "stall-drop:" + exercise.id, () => {
       const first = currentSets(exercise.id)[0];
-      logSet(exercise, 0, {w: String(dropped), r: (first && first.r) || ""});
+      recordSet(exercise, 0, {w: String(dropped), r: (first && first.r) || ""});
       changes.notify();
     }));
   }

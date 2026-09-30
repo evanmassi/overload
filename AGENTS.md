@@ -106,7 +106,8 @@ version of a key exists.
 ## UI
 
 - **Every button goes through `makeButton` or `makeIconButton`**, every text or date input through
-  `makeField`, every framed surface through `makePanel`. Never hand-build the layered spans.
+  `makeField`, every framed surface through `makePanel`. Never hand-build the layered spans. The one exception is a
+  list row in a pop-up (`.sheet-item`, `.pick`): a plain `button` styled as a row.
 - **Views build with the shared helpers.** `el(tag, className, text)` from `views/dom.js` makes an element.
   `views/controls.js` has `actionButton` for a labelled button with a handler, `choiceRow` for a row of options
   with one lit, and `confirmButton` for tap-twice actions. A button's lit state is `setChosen`.
