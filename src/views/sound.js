@@ -16,7 +16,6 @@ export function soundOn(){ return on; }
 
 export function loadSoundPreference(){
   on = loadSoundOn();
-  return on;
 }
 
 export function setSoundOn(value){
@@ -24,7 +23,6 @@ export function setSoundOn(value){
   saveSoundOn(on);
   if(on){ if(unlockAudio() && restEndsAt) place(); }
   else drop(() => true);
-  return on;
 }
 
 export function audioState(){
@@ -98,10 +96,8 @@ function place(){
 export function scheduleRest(endsAt, isLeadIn){
   restEndsAt = endsAt;
   restLastBeep = isLeadIn ? BEEP_START : BEEP_GO;
-  if(!on) return false;
-  if(!unlockAudio()) return false;
+  if(!on || !unlockAudio()) return;
   place();
-  return true;
 }
 
 export function cancelRest(){

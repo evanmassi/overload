@@ -16,7 +16,7 @@ const prescribedCountFor = (block, day, isAway) => progression.prescribedCount(w
 section("Program data");
 {
   const known = everyExercise();
-  equal("three week blocks", Object.keys(PROGRAM), BLOCKS);
+  equal("three versions", Object.keys(PROGRAM), BLOCKS);
   check("192 catalogued exercises", known.size === 192, known.size);
 
   const prescribed = prescribedExercises();

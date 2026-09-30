@@ -88,7 +88,7 @@ equal("every rendered class has a CSS rule", unstyled, []);
 
 section("Service worker precache");
 const assets = read(at("sw.js")).match(/const ASSETS = \[([\s\S]*?)\];/)[1];
-const precached = [...assets.matchAll(/'\.\/([^']*)'/g)].map(match => match[1]);
+const precached = [...assets.matchAll(/"\.\/([^"]*)"/g)].map(match => match[1]);
 const shipped = ["", "index.html", "manifest.json"].concat(
   [...filesUnder(at("src"), ".js"), ...filesUnder(at("src"), ".css"), ...filesUnder(at("icons"), ".png")].map(relative));
 equal("every shipped file is precached", shipped.filter(file => !precached.includes(file)), []);

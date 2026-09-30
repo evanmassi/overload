@@ -1,7 +1,7 @@
 {
   "name": "Overload",
   "short_name": "Overload",
-  "description": "Strength training log with a three-week rotation.",
+  "description": "Strength training log",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

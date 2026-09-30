@@ -829,17 +829,14 @@ section("Sound is optional, remembered and testable");
   check("with no Web Audio the state says so", sound.audioState() === "unsupported");
   check("unlocking a browser without it fails quietly", sound.unlockAudio() === false);
   check("a beep with no context is a no-op, not a throw", sound.testTone() === false);
-  check("and a rest cannot be scheduled", sound.scheduleRest(Date.now() + 5000) === false);
-  sound.cancelRest();
 
   check("sound defaults to on", sound.soundOn() === true);
   sound.setSoundOn(false);
   check("turning it off sticks", sound.soundOn() === false);
-  check("and a rest schedules nothing", sound.scheduleRest(Date.now() + 5000) === false);
-  sound.cancelRest();
   check("the preference is written to storage",
     localStorage.getItem("overload.sound.v1") === "off");
-  check("and it survives a reload", sound.loadSoundPreference() === false);
+  sound.loadSoundPreference();
+  check("and it survives a reload", sound.soundOn() === false);
 
   sound.setSoundOn(true);
   check("turning it back on sticks", sound.soundOn() === true);
